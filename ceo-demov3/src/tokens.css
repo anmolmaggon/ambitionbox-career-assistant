@@ -1,0 +1,82 @@
+/*
+ * AmbitionBox V3 draft tokens
+ * Hierarchy: primitive -> semantic -> component.
+ * These preserve the current visual values and remain unlocked.
+ */
+:root {
+  color: #17192b;
+  background: #e7e9f1;
+  font-family: 'Figtree', Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+
+  /* Primitive colour */
+  --ab-color-white: #ffffff;
+  --ab-color-canvas: #f7f8fc;
+  --ab-color-stage: #e7e9f1;
+  --ab-color-ink: #17192b;
+  --ab-color-muted: #626985;
+  --ab-color-subtle: #8d92a8;
+  --ab-color-line: #e7e9f1;
+  --ab-color-primary: #3f5cfb;
+  --ab-color-primary-dark: #263db8;
+  --ab-color-success: #168b63;
+  --ab-color-warning: #b96a12;
+  --ab-color-danger: #c94b58;
+  --ab-color-violet: #7a4be3;
+
+  /* Primitive spacing: 4px grid */
+  --ab-space-1: 4px;
+  --ab-space-2: 8px;
+  --ab-space-3: 12px;
+  --ab-space-4: 16px;
+  --ab-space-5: 20px;
+  --ab-space-6: 24px;
+  --ab-space-8: 32px;
+
+  /* Primitive type */
+  --ab-font-display: 34px;
+  --ab-font-title: 22px;
+  --ab-font-action: 17px;
+  --ab-font-body: 14px;
+  --ab-font-meta: 10px;
+  --ab-leading-tight: 1.08;
+  --ab-leading-body: 1.5;
+
+  /* Primitive shape and motion */
+  --ab-radius-button: 999px;
+  --ab-radius-input: 14px;
+  --ab-radius-surface: 20px;
+  --ab-motion-fast: 160ms;
+  --ab-motion-standard: 320ms;
+  --ab-ease-out: cubic-bezier(.22, 1, .36, 1);
+
+  /* Semantic aliases retained for current components */
+  --canvas: var(--ab-color-canvas);
+  --surface: var(--ab-color-white);
+  --ink: var(--ab-color-ink);
+  --muted: var(--ab-color-muted);
+  --subtle: var(--ab-color-subtle);
+  --line: var(--ab-color-line);
+  --primary: var(--ab-color-primary);
+  --primary-dark: var(--ab-color-primary-dark);
+  --teal: var(--ab-color-success);
+  --amber: var(--ab-color-warning);
+  --danger: var(--ab-color-danger);
+  --violet: var(--ab-color-violet);
+  --shadow: 0 12px 36px rgba(33, 39, 79, .09);
+
+  /* Component defaults */
+  --button-bg-primary: var(--primary);
+  --button-text-primary: var(--surface);
+  --button-radius: var(--ab-radius-button);
+  --input-radius: var(--ab-radius-input);
+  --surface-radius: var(--ab-radius-surface);
+  --focus-ring: 0 0 0 3px rgba(63, 92, 251, .28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ab-motion-fast: 0ms;
+    --ab-motion-standard: 0ms;
+  }
+}

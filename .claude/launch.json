@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ceo-demov3",
+      "url": "http://127.0.0.1:4273",
+      "port": 4273
+    }
+  ]
+}

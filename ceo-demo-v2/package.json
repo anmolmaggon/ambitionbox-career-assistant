@@ -1,0 +1,27 @@
+{
+  "name": "ambitionbox-ceo-demo-v2",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4175",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4176",
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/golden-path.spec.js",
+    "capture": "node scripts/capture-states.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/figtree": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.8",
+    "framer-motion": "^12.39.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "vite": "^8.0.12"
+  }
+}

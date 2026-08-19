@@ -1,0 +1,4 @@
+interface:
+  display_name: "AmbitionBox V3 Workflow"
+  short_description: "Keep V3 design work consistent and scoped"
+  default_prompt: "Use $ambitionbox-v3-workflow to make a scoped change to the AmbitionBox V3 demo."

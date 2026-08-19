@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!--
+  AmbitionBox Career Assistant - Matches, Checkpoint 2B
+  Swipeable finite card deck. Swiping navigates only; Save and View job are explicit.
+  Isolated files: matches-2b.html / matches-2b.css / matches-2b.js.
+  Shared tokens.css and components.css remain read-only.
+
+  Deterministic review parameters:
+  ?card=juspay|zeta|complete
+  &saved=juspay,zeta
+  &sheet=saved
+  &cap=1
+-->
+<html lang="en" data-device="mobile">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#c3ccfe">
+  <title>AmbitionBox - Matches</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/ai-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="matches-2b.css">
+</head>
+<body>
+  <a class="skip" href="#matches-main">Skip to job matches</a>
+
+  <div class="screen">
+    <div class="top">
+      <header class="hd">
+        <div class="hd__lead">
+          <p class="hd__eyebrow" id="dateDisplay"></p>
+          <h1 class="hd__greet" id="greetText">Good morning, Arjun</h1>
+        </div>
+        <div class="hd__tools">
+          <button type="button" class="hd__btn" aria-label="Notifications, you have unread alerts">
+            <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="hd__dot" aria-hidden="true"></span>
+          </button>
+          <span class="hd__avatar" role="img" aria-label="Arjun Mehta">AM</span>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Career sections">
+        <span class="tabs__row">
+          <a class="tab" href="home-2a.html" aria-label="Home">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7" fill="none"/><path d="M6 10v9h5v-5h2v5h5v-9" fill="currentColor"/></svg></span>
+            <span class="tab__lb">Home</span>
+          </a>
+          <button type="button" class="tab" aria-label="Pipeline preview">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 18c5 0 4-8 9-8" fill="none"/><circle cx="5" cy="18" r="2.4" fill="currentColor" stroke="none"/><circle cx="10.5" cy="12.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="9.5" r="2.6" fill="currentColor"/></svg></span>
+            <span class="tab__lb">Pipeline</span>
+          </button>
+          <span class="tab tab--active" role="link" aria-current="page" aria-label="Matches">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="12" height="9" rx="2" fill="currentColor"/><path d="M8 5h11a1 1 0 0 1 1 1v9" fill="none"/><path d="M18.5 4.5l.6 1.3 1.4.6-1.4.6-.6 1.3-.6-1.3-1.4-.6 1.4-.6z" fill="currentColor" stroke="none"/></svg></span>
+            <span class="tab__lb">Matches</span>
+          </span>
+          <button type="button" class="tab" aria-label="Events preview">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5" fill="currentColor"/><path d="M4 9h16" stroke="var(--colors-brand-10)" stroke-width="2"/><path d="M9 3v4M15 3v4"/></svg></span>
+            <span class="tab__lb">Events</span>
+          </button>
+          <button type="button" class="tab" aria-label="Prep preview">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/><circle cx="12" cy="12" r="3.4" fill="var(--colors-brand-10)" stroke="none"/></svg></span>
+            <span class="tab__lb">Prep</span>
+          </button>
+        </span>
+      </nav>
+    </div>
+
+    <main id="matches-main">
+      <section class="matches-head gutter" aria-labelledby="matches-heading">
+        <div class="matches-head__copy">
+          <h2 id="matches-heading">Recommended for you</h2>
+          <p id="matches-summary">2 new roles based on your profile and preferences</p>
+        </div>
+      </section>
+
+      <section class="deck-section" id="deck-panel" aria-label="Recommended job matches">
+        <div class="deck-toolbar gutter">
+          <p class="deck-toolbar__counter tnum" id="deck-counter" aria-live="polite">1 of 2</p>
+          <div class="deck-toolbar__controls" role="group" aria-label="Browse matches">
+            <button type="button" class="deck-arrow" id="deck-prev" aria-label="Previous match" disabled>
+              <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button type="button" class="deck-arrow" id="deck-next" aria-label="Next match">
+              <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="deck-wrap">
+          <ul class="deck" id="match-deck" role="list" aria-label="Suggested job matches" tabindex="0"></ul>
+          <div class="deck-edge deck-edge--left" aria-hidden="true"></div>
+          <div class="deck-edge deck-edge--right" aria-hidden="true"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+  <div class="sheet-layer" id="saved-sheet-layer" hidden>
+    <button type="button" class="sheet-scrim" data-action="close-saved" aria-label="Close saved jobs"></button>
+    <section class="saved-sheet" id="saved-sheet" role="dialog" aria-modal="true" aria-labelledby="saved-sheet-title" tabindex="-1">
+      <div class="saved-sheet__handle" aria-hidden="true"></div>
+      <header class="saved-sheet__head">
+        <div>
+          <h2 id="saved-sheet-title">Saved jobs</h2>
+          <p id="saved-sheet-summary">0 roles saved</p>
+        </div>
+        <button type="button" class="saved-sheet__close" data-action="close-saved" aria-label="Close saved jobs">
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="saved-sheet__body" id="saved-sheet-body"></div>
+    </section>
+  </div>
+
+  <div class="floatbar">
+    <button type="button" class="explore" aria-label="Explore AmbitionBox">
+      <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.3 6.1-6.1 2.3 2.3-6.1z" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="ask" id="assistant-button" aria-label="Ask the Career Assistant about Juspay">
+      <img class="ask__orb" src="assets/ai-icon.svg" alt="" aria-hidden="true">
+      <span class="ask__ph" id="assistant-label">Ask about Juspay</span>
+      <span class="ask__send" aria-hidden="true">
+        <svg class="ab-icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </span>
+    </button>
+  </div>
+
+  <noscript>
+    <p class="noscript">JavaScript is required to browse this prototype.</p>
+  </noscript>
+  <script src="matches-2b.js"></script>
+</body>
+</html>

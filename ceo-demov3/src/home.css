@@ -1,0 +1,732 @@
+/*
+ * Home — owned by Claude. Draft layer; nothing here is locked.
+ *
+ * Built on the type and spacing scale documented in context/UI.md:
+ *   Display 30–34 · Section title 21–24 · Action title 16–18 · Body 13–14 · Metadata 10–11 min
+ *   Spacing on a 4px grid using 8, 12, 16, 20, 24, 32
+ * The previous revision ran roughly a step and a half below that scale, which is
+ * why it read unfinished beside the references. The scale is declared once here
+ * and every direction inherits it.
+ *
+ * Load order: styles.css defines .priority-card; prep-v3.css and offer-v3.css define
+ * the interview and offer hero fields. Home overrides use a compound root selector
+ * so hero structure wins regardless of file order.
+ */
+
+.home-screen {
+  /* Type */
+  --h-display: 32px;
+  --h-title: 22px;
+  --h-action: 17px;
+  --h-lead: 16px;
+  --h-body: 14px;
+  --h-small: 13px;
+  --h-meta: 11px;
+  /* Spacing */
+  --h-1: 4px;  --h-2: 8px;  --h-3: 12px; --h-4: 16px;
+  --h-5: 20px; --h-6: 24px; --h-8: 32px;
+  /* Ink */
+  --h-quiet: #6b7390;
+  --h-line: #e1e5f0;
+  background: var(--ab-color-canvas);
+  /* Clears the bottom sheet (handle + chips + ask pill + tabs), which is taller than
+     the shared tab bar `.screen` reserves for. Measured at 230px; the extra is breathing
+     room so the last line never sits flush against the sheet's edge. */
+  padding-bottom: 272px;
+}
+
+/* The eyebrow is set in caps on the live direction: it is a timestamp, and small caps
+   read as metadata rather than as the first line of a sentence. */
+.home--current .home-intro--adaptive > span { text-transform: uppercase; letter-spacing: .11em; font-weight: 800; }
+
+.home-eyebrow,
+.home-intro--adaptive > span,
+.answer-eyebrow,
+.console-eyebrow,
+.composer-eyebrow {
+  display: block; color: var(--h-quiet);
+  font-size: var(--h-meta); font-weight: 750; letter-spacing: .02em;
+}
+
+/* ---------- Greeting and live status ---------- */
+
+/* The sequence is the screen; the greeting introduces it and gets out of the way. */
+.home-intro--adaptive { padding-top: var(--h-4); padding-bottom: var(--h-4); }
+.home-intro--adaptive h1 { margin: var(--h-2) 0 var(--h-2); font-size: var(--h-display); letter-spacing: -.04em; }
+/* MOB-HOME-001 (Cleo): the assistant speaks as plain body text on the canvas, at a
+   size that reads as speech rather than as a caption under a headline. */
+.home-intro--adaptive > p { max-width: 21em; color: #454c66; font-size: var(--h-lead); line-height: 1.5; letter-spacing: -.01em; }
+
+.home-live-summary {
+  width: 100%; min-height: 68px; margin-top: var(--h-4); padding: var(--h-3) var(--h-4);
+  border: 0; border-radius: 20px; box-shadow: 0 10px 26px rgba(26,33,66,.06), 0 1px 3px rgba(26,33,66,.04);
+  display: flex; align-items: center; gap: var(--h-3);
+  color: var(--ab-color-ink); background: var(--ab-color-white); text-align: left; cursor: pointer;
+}
+.home-live-summary > i {
+  width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%;
+  background: var(--ab-color-success); box-shadow: 0 0 0 4px #e2f5ed;
+}
+.home-live-summary > span { min-width: 0; flex: 1; }
+.home-live-summary small, .home-live-summary strong { display: block; }
+.home-live-summary small { color: var(--h-quiet); font-size: var(--h-meta); font-weight: 700; }
+.home-live-summary strong { margin-top: var(--h-1); font-size: var(--h-lead); letter-spacing: -.015em; }
+.home-live-summary > svg { flex: 0 0 auto; color: #98a0b6; }
+
+/* ---------- Adaptive next-best-action hero ---------- */
+
+.home-hero-section { position: relative; }
+
+.home-screen .home-action-hero {
+  min-height: 340px; padding: var(--h-5); border-radius: 24px;
+  display: flex; flex-direction: column;
+  background: #354ed7; box-shadow: 0 18px 38px rgba(45,61,169,.22);
+}
+.home-screen .home-action-hero::after { right: -84px; bottom: -88px; width: 190px; height: 190px; box-shadow: 0 0 0 30px rgba(255,255,255,.035); }
+.home-screen .home-action-hero.priority-card--connect { background: #315c84; }
+/* The interview beat keeps the field prep-v3.css established, so it never reads
+   as the same card as a recruiter reply. */
+.home-screen .home-action-hero.priority-card--interview { background: radial-gradient(circle at 90% 6%, rgba(255,196,110,.32), transparent 38%), linear-gradient(145deg,#2b2450,#5a3fa8); }
+.home-screen .home-action-hero.priority-card--juspay { background: #176a5d; }
+.home-screen .home-action-hero.priority-card--offer { background: #0e5b4d; }
+
+.home-screen .home-action-hero .priority-kicker { font-size: var(--h-meta); letter-spacing: .09em; }
+.home-screen .home-action-hero .time-chip { font-size: var(--h-meta); }
+.home-screen .home-action-hero .priority-company { margin-top: var(--h-5); gap: var(--h-3); }
+.home-screen .home-action-hero .priority-company strong { font-size: var(--h-action); letter-spacing: -.02em; }
+.home-screen .home-action-hero .priority-company small { margin-top: 3px; font-size: var(--h-small); }
+.home-screen .home-action-hero h2 {
+  margin: var(--h-5) 0 var(--h-3); max-width: 15em;
+  font-size: var(--h-title); line-height: 1.22; letter-spacing: -.03em;
+}
+.home-screen .home-action-hero > p { max-width: 26em; font-size: var(--h-body); line-height: 1.5; }
+.home-screen .home-action-hero .priority-facts { margin-top: var(--h-4); flex-wrap: wrap; gap: var(--h-2); }
+.home-screen .home-action-hero .priority-facts span { padding: 7px 10px; border-radius: 9px; font-size: var(--h-meta); }
+
+/* The CTA is static rather than absolutely positioned, so the support line,
+   the facts, and the reasoning row can never be covered by it. */
+.home-screen .home-action-hero .light-button {
+  position: static; width: 100%; left: auto; right: auto; bottom: auto;
+  margin-top: var(--h-5); min-height: 58px; font-size: var(--h-action);
+}
+
+.home-why {
+  position: relative; z-index: 2;
+  width: 100%; min-height: 44px; margin-top: auto; padding: var(--h-4) 0 0;
+  border: 0; border-top: 1px solid rgba(255,255,255,.18); border-radius: 0;
+  display: flex; align-items: center; gap: var(--h-3);
+  background: none; text-align: left; cursor: pointer;
+}
+.home-why > span { min-width: 0; flex: 1; }
+.home-why small { display: block; color: rgba(255,255,255,.62); font-size: var(--h-meta); font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+.home-why b { display: block; margin-top: var(--h-2); color: rgba(255,255,255,.92); font-size: var(--h-small); font-weight: 600; line-height: 1.45; }
+.home-why > svg { flex: 0 0 auto; color: rgba(255,255,255,.55); }
+
+/* ---------- Secondary email recommendation (never a modal) ---------- */
+
+.home-connect-note {
+  margin-top: var(--h-4); padding: var(--h-5); border: 1px solid #dbe1f0; border-radius: 20px;
+  display: flex; gap: var(--h-4); background: var(--ab-color-white);
+}
+.home-connect-icon {
+  width: 44px; height: 44px; flex: 0 0 auto; border-radius: var(--h-3);
+  display: grid; place-items: center; color: var(--ab-color-primary); background: #eef1ff;
+}
+.home-connect-note > div { min-width: 0; flex: 1; }
+.home-connect-kicker { display: block; color: var(--h-quiet); font-size: var(--h-meta); font-weight: 800; letter-spacing: .09em; }
+.home-connect-note h3 { margin: var(--h-2) 0 0; font-size: var(--h-action); line-height: 1.3; letter-spacing: -.025em; }
+.home-connect-note p { margin: var(--h-2) 0 0; color: var(--ab-color-muted); font-size: var(--h-small); line-height: 1.5; }
+.home-connect-action {
+  min-height: 44px; margin-top: var(--h-1); padding: 0; border: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; color: var(--ab-color-primary); font-size: var(--h-body); font-weight: 800; cursor: pointer;
+}
+.home-connect-note small { display: flex; align-items: center; gap: 6px; color: #858ca0; font-size: var(--h-meta); line-height: 1.4; }
+
+/* The presenter time-jump control is styled in prep-v3.css at 38px. It only ever
+   renders on Home, so Home raises it to the 44px floor here. */
+.home-screen .home-timejump { margin-top: var(--h-4); padding: var(--h-4); }
+.home-screen .home-timejump strong { font-size: var(--h-small); }
+.home-screen .home-timejump small { font-size: var(--h-meta); }
+.home-screen .home-timejump button { min-height: 44px; font-size: var(--h-meta); }
+
+/* ---------- Contextual composer ---------- */
+
+.home-assistant-section { padding-top: var(--h-5); }
+.home-composer {
+  width: 100%; min-height: 76px; padding: var(--h-3) var(--h-4);
+  border: 0; border-radius: 24px;
+  display: flex; align-items: center; gap: var(--h-3);
+  color: #202641; background: var(--ab-color-white); box-shadow: 0 10px 26px rgba(36,43,79,.07); cursor: pointer;
+}
+.home-composer-orb {
+  width: 46px; height: 46px; flex: 0 0 auto; border-radius: var(--h-3);
+  display: grid; place-items: center; color: #fff; background: var(--ab-color-primary);
+}
+.home-composer-label { min-width: 0; flex: 1; text-align: left; }
+.home-composer-label strong, .home-composer-label small { display: block; }
+.home-composer-label strong { font-size: var(--h-action); line-height: 1.3; letter-spacing: -.025em; }
+.home-composer-label small { margin-top: 5px; color: var(--h-quiet); font-size: var(--h-meta); line-height: 1.4; }
+.home-composer > svg { flex: 0 0 auto; color: #66708b; }
+
+.home-question-row { margin: var(--h-3) -20px 0; padding: 0 var(--h-5) var(--h-1); display: flex; gap: var(--h-2); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
+.home-question-row::-webkit-scrollbar { display: none; }
+.home-question-row button {
+  min-height: 48px; padding: 0 var(--h-4); border: 1px solid #dfe3ed; border-radius: 14px;
+  flex: 0 0 auto; color: #4f5872; background: var(--ab-color-white);
+  font-size: var(--h-small); font-weight: 700; white-space: nowrap; cursor: pointer; scroll-snap-align: start;
+}
+
+/* ---------- What I set aside ----------
+   The ordered queue behind today's pick. Rows are evidence of arbitration, not
+   navigation, so they carry a reason rather than a stage badge. Replaced the
+   four-stage rail, whose first two rows duplicated bottom-nav tabs. */
+
+.career-journey-section { padding-top: var(--h-8); padding-bottom: var(--h-4); }
+
+.setaside-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--h-3); }
+.setaside-head h2 { margin: 0; font-size: var(--h-title); letter-spacing: -.03em; }
+.setaside-head small { flex: 0 0 auto; color: #858ca0; font-size: var(--h-meta); font-weight: 700; }
+
+.setaside-list {
+  margin-top: var(--h-4); border: 1px solid #dfe3ed; border-radius: 22px;
+  overflow: hidden; background: var(--ab-color-white);
+}
+.setaside-list > button {
+  width: 100%; min-height: 92px; padding: var(--h-4); border: 0;
+  display: flex; align-items: flex-start; gap: var(--h-4);
+  background: var(--ab-color-white); text-align: left; cursor: pointer;
+}
+.setaside-list > button + button { border-top: 1px solid #eef0f6; }
+.setaside-list > button:hover { background: #fafbff; }
+.setaside-list .company-logo { flex: 0 0 auto; margin-top: 2px; }
+.setaside-list > button > svg { flex: 0 0 auto; margin-top: var(--h-3); color: #b3bacb; }
+
+.setaside-copy { min-width: 0; flex: 1; }
+.setaside-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--h-2); }
+.setaside-top strong { font-size: var(--h-action); letter-spacing: -.02em; }
+.setaside-top em { flex: 0 0 auto; color: #858ca0; font-size: var(--h-meta); font-style: normal; font-weight: 700; }
+.setaside-copy small { display: block; margin-top: 3px; color: #70788f; font-size: var(--h-small); }
+/* The reason is the point of the row, so it is ink rather than metadata. */
+.setaside-copy b { display: block; margin-top: var(--h-2); color: #414963; font-size: var(--h-small); font-weight: 600; line-height: 1.45; }
+
+/* The avatar itself is 36px and comes from styles.css, where it is shared with every
+   other screen's Topbar. Home cannot resize it without moving the whole app, so it
+   grows the hit area around it to the 44px floor instead. */
+/* Home only: the wordmark is set in one ink. The blue "Box" is the app-wide treatment
+   from styles.css; here the mark carries the brand colour and the word stays quiet, so
+   the first colour the eye lands on is the pick rather than the header. */
+.home-screen .brand > span:last-child span { color: inherit; }
+
+.home-avatar-button { padding: 4px; border: 0; background: none; line-height: 0; cursor: pointer; }
+/* .avatar is authored for a <button>; as a span it needs the box laid out explicitly. */
+.home-avatar-button .avatar { display: inline-grid; place-items: center; box-sizing: border-box; }
+
+
+/* ==========================================================================
+   Light hero, shared by Answer, Console and Composer
+   The kernel's hero markup is white-on-dark by default; all three light
+   directions need the same ink treatment, so it is written once here and only
+   the surface differs below.
+   ========================================================================== */
+
+.home-screen.home--answer .home-action-hero::after,
+.home-screen.home--console .home-action-hero::after,
+.home-screen.home--composer .home-action-hero::after { display: none; }
+.home-screen.home--answer .priority-kicker,
+.home-screen.home--console .priority-kicker,
+.home-screen.home--composer .priority-kicker { color: #7b8299; }
+.home-screen.home--answer .time-chip,
+.home-screen.home--console .time-chip,
+.home-screen.home--composer .time-chip { color: #8d92a8; }
+.home-screen.home--answer .priority-company small,
+.home-screen.home--console .priority-company small,
+.home-screen.home--composer .priority-company small { color: var(--ab-color-muted); }
+.home-screen.home--answer .home-action-hero > p,
+.home-screen.home--console .home-action-hero > p,
+.home-screen.home--composer .home-action-hero > p { max-width: 26em; color: var(--ab-color-muted); font-size: var(--h-body); line-height: 1.55; }
+.home-screen.home--answer .priority-facts span,
+.home-screen.home--console .priority-facts span,
+.home-screen.home--composer .priority-facts span { color: #495071; background: #eef1f8; }
+.home-screen.home--answer .home-why,
+.home-screen.home--console .home-why,
+.home-screen.home--composer .home-why { border-top-color: #e4e8f3; }
+.home-screen.home--answer .home-why small,
+.home-screen.home--console .home-why small,
+.home-screen.home--composer .home-why small { color: #8a90a6; }
+.home-screen.home--answer .home-why b,
+.home-screen.home--console .home-why b,
+.home-screen.home--composer .home-why b { color: #4a5270; }
+.home-screen.home--answer .home-why > svg,
+.home-screen.home--console .home-why > svg,
+.home-screen.home--composer .home-why > svg { color: #aab1c4; }
+.home-screen.home--answer .home-action-hero .light-button,
+.home-screen.home--console .home-action-hero .light-button,
+.home-screen.home--composer .home-action-hero .light-button {
+  color: #fff; background: var(--ab-color-primary); box-shadow: 0 12px 26px rgba(63,92,251,.26);
+}
+
+/* ==========================================================================
+   A · THE ANSWER — reference MOB-ONB-014 (Places)
+   A stated question, a prose verdict, a rule, the authored answer, then the
+   scope it was drawn from. The verdict is the only display type on the screen.
+   ========================================================================== */
+
+.home--answer .answer-question { padding-top: var(--h-6); padding-bottom: var(--h-4); }
+.answer-asked {
+  margin: var(--h-3) 0 0; padding: var(--h-3) var(--h-4); border-radius: 18px 18px 18px 6px;
+  display: inline-block; max-width: 100%;
+  background: #e9ecf5; color: #414963; font-size: var(--h-lead); line-height: 1.45;
+}
+
+/* The greeting opens the reply; the verdict below owns the display weight. */
+.home--answer .answer-reply { padding-bottom: var(--h-6); }
+.home--answer .answer-reply h1 { margin: 0 0 var(--h-3); font-size: var(--h-action); letter-spacing: -.025em; }
+.answer-prose { margin: 0; color: #3f465f; font-size: var(--h-lead); line-height: 1.62; }
+.answer-link {
+  padding: 0; border: 0; background: none; color: var(--ab-color-primary);
+  font: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 4px; cursor: pointer;
+}
+
+/* The live-email row stops being a card and becomes a source line under the prose. */
+.home-screen.home--answer .home-live-summary {
+  min-height: 44px; margin-top: var(--h-4); padding: 0;
+  border: 0; border-radius: 0; background: none;
+}
+.home-screen.home--answer .home-live-summary strong { color: #5a6180; font-size: var(--h-small); }
+.home-screen.home--answer .home-live-summary > svg { color: #aab1c4; }
+
+/* No surface at all: the verdict sits on the page under a rule. */
+.home-screen.home--answer .answer-block { padding-top: 0; }
+.home-screen.home--answer .home-action-hero,
+.home-screen.home--answer .home-action-hero.priority-card--connect,
+.home-screen.home--answer .home-action-hero.priority-card--juspay,
+.home-screen.home--answer .home-action-hero.priority-card--offer,
+.home-screen.home--answer .home-action-hero.priority-card--interview {
+  min-height: 0; padding: var(--h-6) 0 0; border-radius: 0;
+  border-top: 1px solid var(--h-line);
+  color: var(--ab-color-ink); background: none; box-shadow: none;
+}
+.home-screen.home--answer .home-action-hero h2 {
+  margin: var(--h-5) 0 var(--h-3); max-width: none;
+  font-size: 30px; line-height: 1.16; letter-spacing: -.038em;
+}
+
+/* The email recommendation drops its card so it reads as another part of the reply. */
+.home-screen.home--answer .home-connect-note {
+  margin-top: var(--h-6); padding: var(--h-6) 0 0; border: 0; border-top: 1px solid var(--h-line); border-radius: 0; background: none;
+}
+.home-screen.home--answer .home-connect-icon { display: none; }
+
+/* The rail is the answer's footnote: what was weighed and set aside. */
+.home-screen.home--answer .answer-scope { padding-top: var(--h-8); }
+.home-screen.home--answer .setaside-head { padding-top: var(--h-6); border-top: 1px solid var(--h-line); }
+.home-screen.home--answer .setaside-head h2 { font-size: var(--h-action); }
+.home-screen.home--answer .setaside-list { margin-top: var(--h-2); border: 0; border-radius: 0; background: none; }
+.home-screen.home--answer .setaside-list > button { padding: var(--h-4) 0; background: none; }
+
+.home-screen.home--answer .answer-followup { padding-top: var(--h-8); }
+
+/* ==========================================================================
+   B · THE CONSOLE — references MOB-ONB-011 / 013 / 010 (Lovi, Quizlet, Oportun)
+   Greeting, progress meter, one promoted task, then grouped surfaces.
+   ========================================================================== */
+
+.home--console .console-head { padding-top: var(--h-6); padding-bottom: var(--h-1); }
+.home--console .console-head h1 { margin: var(--h-2) 0 var(--h-2); font-size: var(--h-display); letter-spacing: -.04em; }
+.console-intro { margin: 0; max-width: 22em; color: var(--ab-color-muted); font-size: var(--h-body); line-height: 1.5; }
+
+/* The short visible path. Deliberately unlabelled — the search group below
+   carries the stage names, and repeating them here would be two pipelines. */
+.console-meter { margin-top: var(--h-5); display: flex; gap: var(--h-2); }
+.console-meter i { height: 8px; flex: 1; border-radius: 4px; background: #dfe3ee; }
+.console-meter i.is-on { background: var(--ab-color-primary); }
+.console-meter-caption { display: block; margin-top: var(--h-3); color: var(--h-quiet); font-size: var(--h-meta); font-weight: 750; }
+
+.home--console .console-group { padding-top: var(--h-8); }
+.console-group-label { margin: 0 0 var(--h-3); color: var(--h-quiet); font-size: var(--h-meta); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+
+/* The promoted task is a light card, not a saturated hero. */
+.home-screen.home--console .home-action-hero,
+.home-screen.home--console .home-action-hero.priority-card--connect,
+.home-screen.home--console .home-action-hero.priority-card--juspay,
+.home-screen.home--console .home-action-hero.priority-card--offer,
+.home-screen.home--console .home-action-hero.priority-card--interview {
+  min-height: 0; padding: var(--h-5); border: 1px solid #e0e5f0; border-radius: 22px;
+  color: var(--ab-color-ink); background: var(--ab-color-white); box-shadow: 0 12px 30px rgba(33,39,79,.07);
+}
+.home-screen.home--console .home-action-hero h2 { max-width: none; }
+
+/* One grouped surface holds the four stages, and the missing item gets its
+   action inside that same surface rather than competing above it. */
+.home-screen.home--console .console-surface .home-connect-note {
+  margin: 0; padding: var(--h-5); border: 0; border-top: 1px solid #e9ecf4; border-radius: 0;
+}
+
+/* ==========================================================================
+   C · THE COMPOSER — reference MOB-ONB-012 (Natural AI)
+   Input-first, with concrete pre-baked actions beneath it. The capability list
+   is the argument: the nav covers places, these have no tab.
+   ========================================================================== */
+
+.home--composer .composer-head { padding-top: var(--h-6); padding-bottom: var(--h-2); }
+.home--composer .composer-head h1 { margin: var(--h-2) 0 var(--h-2); font-size: var(--h-display); letter-spacing: -.04em; }
+.composer-intro { margin: 0; max-width: 22em; color: var(--ab-color-muted); font-size: var(--h-body); line-height: 1.5; }
+
+.home--composer .composer-input { padding-top: var(--h-6); }
+.composer-label { margin: 0 0 var(--h-3); color: var(--h-quiet); font-size: var(--h-meta); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+
+/* The input is the dominant element rather than a row under the fold. */
+.home-screen.home--composer .home-composer {
+  min-height: 108px; padding: var(--h-5); border-radius: 24px; align-items: flex-start;
+  box-shadow: 0 14px 34px rgba(36,43,79,.10);
+}
+.home-screen.home--composer .home-composer-orb { width: 52px; height: 52px; border-radius: 16px; }
+.home-screen.home--composer .home-composer-label { padding-top: 2px; }
+.home-screen.home--composer .home-composer-label strong { font-size: var(--h-title); line-height: 1.24; letter-spacing: -.035em; }
+.home-screen.home--composer .home-composer-label small { margin-top: var(--h-2); font-size: var(--h-small); }
+.home-screen.home--composer .home-composer > svg {
+  width: 40px; height: 40px; padding: var(--h-3); border-radius: 50%;
+  color: #fff; background: var(--ab-color-ink);
+}
+
+/* The ranked action is presented as the first suggestion, not as a hero. It uses
+   the same light card as the capability rows so the input genuinely leads — a
+   saturated card here would beat the composer on sight and rig the direction's bet. */
+.home--composer .composer-suggested { padding-top: var(--h-8); }
+.home-screen.home--composer .home-action-hero,
+.home-screen.home--composer .home-action-hero.priority-card--connect,
+.home-screen.home--composer .home-action-hero.priority-card--juspay,
+.home-screen.home--composer .home-action-hero.priority-card--offer,
+.home-screen.home--composer .home-action-hero.priority-card--interview {
+  min-height: 0; padding: var(--h-5); border: 1px solid #e0e5f0; border-radius: 22px;
+  color: var(--ab-color-ink); background: var(--ab-color-white); box-shadow: 0 12px 30px rgba(33,39,79,.07);
+}
+.home-screen.home--composer .home-action-hero h2 { max-width: none; }
+
+.capability-index { margin-top: var(--h-5); }
+.capability-index .composer-label { display: block; }
+.capability-list { border: 1px solid #dfe3ed; border-radius: 22px; overflow: hidden; background: var(--ab-color-white); }
+.capability-list button {
+  width: 100%; min-height: 80px; padding: var(--h-4); border: 0;
+  display: flex; align-items: center; gap: var(--h-4);
+  background: var(--ab-color-white); text-align: left; cursor: pointer;
+}
+.capability-list button + button { border-top: 1px solid #eef0f6; }
+.capability-list button:hover { background: #fafbff; }
+.capability-icon {
+  width: 44px; height: 44px; flex: 0 0 auto; border-radius: 14px;
+  display: grid; place-items: center; color: var(--ab-color-primary); background: #eef1ff;
+}
+.capability-copy { min-width: 0; flex: 1; }
+.capability-copy strong, .capability-copy small { display: block; }
+.capability-copy strong { font-size: var(--h-action); letter-spacing: -.02em; }
+.capability-copy small { margin-top: 5px; color: #70788f; font-size: var(--h-small); line-height: 1.4; }
+.capability-list button > svg { flex: 0 0 auto; color: #b3bacb; }
+
+.home--composer .composer-search { padding-top: var(--h-8); }
+
+/* ---------- The actionable carousel ----------
+   References: MOB-HOME-003 (Bond) for the material — white rounded cards floating
+   on the quiet canvas, a small grey eyebrow above a bold plain-language claim,
+   evidence beneath, exactly one pill action. MOB-HOME-006 (Klarna) for the peeking
+   mechanic and the elongated active dot. MOB-HOME-005 (Monzo) for dismissal being a
+   property of the card. Their gradient fields are deliberately not brought across:
+   atmosphere here comes from the canvas and the type, which is what context/UI.md
+   allows and what those two references would have violated.
+
+   Every card is the same width. Priority is expressed by position in the sequence,
+   which is why nothing here scales the first card. */
+
+.home-carousel-section { padding-top: var(--h-2); }
+
+/* The section is already full-bleed, so the old -20px margin cancelled the padding and
+   the first card sat flush against the screen edge instead of on the page margin.
+   `scroll-padding` is what stops snapping from scrolling that margin away again. */
+.action-carousel {
+  margin: 0; padding: var(--h-2) var(--h-5) var(--h-4);
+  display: flex; gap: var(--h-3);
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--h-5); scroll-padding-right: var(--h-5);
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.action-carousel::-webkit-scrollbar { display: none; }
+
+.action-card {
+  position: relative; flex: 0 0 min(82vw, 310px); box-sizing: border-box;
+  min-height: 292px; padding: var(--h-4) var(--h-5) var(--h-5);
+  display: flex; flex-direction: column;
+  border-radius: 28px; background: var(--ab-color-white);
+  scroll-snap-align: start;
+  box-shadow: 0 12px 30px rgba(26,33,66,.07), 0 1px 3px rgba(26,33,66,.05), 0 0 0 1px rgba(26,33,66,.035);
+}
+
+.action-card-top { display: flex; align-items: center; gap: var(--h-2); padding-right: 40px; min-height: 28px; }
+
+/* Restrained category colour, kept inside the tile per context/UI.md. The split carries
+   meaning rather than decorating: a coloured mark is something happening to you — a
+   person waiting, a date booked, money on the table — and a slate mark is something
+   sitting there for you to choose. That is why roles and the email connection stay grey. */
+.action-card-mark {
+  width: 28px; height: 28px; flex: 0 0 auto; border-radius: 9px;
+  display: grid; place-items: center; color: #6b7390; background: #eef0f6;
+}
+.action-card--reply .action-card-mark { color: #3f5cfb; background: #eaeefe; }
+.action-card--interview .action-card-mark { color: #5a3fa8; background: #efebfa; }
+.action-card--offer .action-card-mark { color: #0e6a55; background: #e1f1ea; }
+.action-card--update .action-card-mark { color: #b96a12; background: #fbf0e0; }
+.action-card-kicker {
+  min-width: 0; flex: 1;
+  color: var(--h-quiet); font-size: 10px; font-weight: 800; letter-spacing: .085em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* .time-chip is authored white-on-dark for the hero field; on a white card it needs
+   its own ink rather than a second class name. */
+.action-card .time-chip { flex: 0 0 auto; color: var(--h-quiet); font-size: 10px; font-weight: 700; white-space: nowrap; }
+.action-card .pulse-dot { background: var(--ab-color-primary); box-shadow: 0 0 0 4px rgba(63,92,251,.14); }
+
+.action-card-entity { margin-top: var(--h-3); display: flex; align-items: center; gap: var(--h-3); }
+.action-card-entity > span { min-width: 0; }
+.action-card-entity strong, .action-card-entity small { display: block; }
+.action-card-entity strong { font-size: var(--h-small); letter-spacing: -.01em; }
+.action-card-entity small { margin-top: 1px; color: var(--h-quiet); font-size: 10px; line-height: 1.35; }
+
+/* Action-title step from context/UI.md rather than a display step: the card holds a
+   claim, not a headline, and at 20px a three-line quote crowded everything under it. */
+.action-card h2 {
+  margin: var(--h-3) 0 6px;
+  font-size: 17px; font-weight: 800; line-height: 1.3; letter-spacing: -.026em;
+  color: var(--ab-color-ink);
+}
+.action-card > p { margin: 0; color: #5a6178; font-size: 12.5px; line-height: 1.5; }
+
+.action-card-facts {
+  margin-top: var(--h-3); padding-top: var(--h-3); border-top: 1px solid #eef0f6;
+  display: flex; flex-wrap: wrap; gap: 6px var(--h-3);
+}
+.action-card-facts span { color: #5a6178; font-size: 10.5px; font-weight: 700; }
+.action-card-facts span:first-child { color: var(--ab-color-primary); }
+
+.action-card-note { margin-top: var(--h-3); display: flex; align-items: center; gap: 6px; color: var(--h-quiet); font-size: var(--h-meta); line-height: 1.35; }
+
+/* Pushed to the floor of the card so the actions line up across a sequence whose
+   cards hold different amounts of evidence. */
+/* The action is pinned to the floor of the card so a sequence of cards holding
+   different amounts of evidence still lines its buttons up. The wrapper keeps a
+   real gap above it even when the card is full. */
+.action-card-foot { margin-top: auto; padding-top: var(--h-4); }
+.action-card-cta {
+  padding: 0 var(--h-4); min-height: 46px; width: 100%;
+  border: 0; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: var(--h-2);
+  color: #fff; background: var(--ab-color-ink);
+  font-size: 12.5px; font-weight: 750; letter-spacing: -.005em; cursor: pointer;
+}
+.action-card-cta > svg { flex: 0 0 auto; }
+.action-card--pick .action-card-cta { background: var(--ab-color-primary); }
+/* A queued role has nobody waiting on it, so its action is quiet rather than solid. */
+.action-card--queued.action-card--role .action-card-cta { color: #262d46; background: #f0f3fa; }
+
+.action-card-dismiss {
+  position: absolute; top: var(--h-2); right: var(--h-2);
+  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  display: grid; place-items: center;
+  color: #a3aabd; background: transparent; cursor: pointer;
+}
+.action-card-dismiss:hover { color: #5f6782; background: #f2f4f9; }
+
+/* Covers the viewport, not the card, so a tap anywhere outside closes the menu. */
+.action-card-scrim { position: fixed; z-index: 2; inset: 0; border: 0; padding: 0; background: transparent; cursor: default; }
+
+.action-card-menu {
+  position: absolute; z-index: 3; top: 48px; right: var(--h-3); width: 218px;
+  padding: var(--h-1); border-radius: 18px; background: var(--ab-color-white);
+  box-shadow: 0 16px 34px rgba(24,31,62,.18), 0 0 0 1px rgba(24,31,62,.06);
+  display: flex; flex-direction: column;
+}
+.action-card-menu button {
+  min-height: 44px; padding: 0 var(--h-3); border: 0; border-radius: 14px;
+  color: #333a54; background: none; font-size: var(--h-small); font-weight: 700; text-align: left; cursor: pointer;
+}
+.action-card-menu button:hover { background: #f3f5fb; }
+
+.carousel-empty { margin: 0; padding-top: var(--h-5); padding-bottom: var(--h-5); color: var(--h-quiet); font-size: var(--h-body); line-height: 1.5; }
+
+.home-carousel-section .home-timejump { margin-top: var(--h-4); }
+
+/* ---------- Quote of the day ----------
+   Not a card, and deliberately so. Home already stacks white surfaces; another one
+   would read as a fifth thing needing attention. This is the opposite — the screen
+   exhaling after the work — so its weight comes from the mark, the measure and the
+   whitespace around it rather than from a container.
+
+   The mark is set large and very pale and sits behind the first line, which is what
+   makes the block read as considered rather than as another label. */
+
+.home-quote { position: relative; margin: 0; padding-top: var(--h-8); padding-bottom: var(--h-2); }
+/* A hairline the width of the text column, so the section reads as the page's footer
+   rather than as one more thing in the stack. */
+.home-quote::before { content: ''; position: absolute; top: 0; left: 20px; right: 20px; height: 1px; background: #e5e9f2; }
+.home-quote-label {
+  display: block; margin-bottom: 42px;
+  color: #9aa2b8; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+}
+/* One glyph, set in a serif because Figtree's quote mark is two flat slabs and reads as
+   an artifact at this size rather than as a mark. The typeface rule still governs text;
+   this is a piece of punctuation used as ornament, and it is the only place it appears. */
+.home-quote-mark {
+  position: absolute; top: 40px; left: 17px;
+  font-family: Georgia, 'Times New Roman', 'Iowan Old Style', serif;
+  font-size: 62px; line-height: 1; font-weight: 400;
+  color: #dfe4f1; user-select: none;
+}
+/* Set in a serif, like the mark above it. A quotation is editorial content and the one
+   place on Home where the voice is not AmbitionBox's, so it is allowed to look that way.
+   The deviation is contained to this block — revert by deleting the font-family line. */
+.home-quote blockquote {
+  position: relative; margin: 0; max-width: 18em;
+  font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  color: #2b3149; font-size: 19px; font-weight: 400; line-height: 1.5; letter-spacing: -.004em;
+  text-wrap: pretty;
+}
+.home-quote figcaption {
+  margin-top: var(--h-3); display: flex; align-items: center; gap: var(--h-2);
+  color: #949bb1; font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase;
+}
+.home-quote figcaption::before { content: ''; width: 20px; height: 1px; flex: 0 0 auto; background: #cdd3e2; }
+
+/* ---------- The bottom cluster ----------
+   MOB-HOME-001 (Cleo): suggested questions, the ask pill and the tabs read as one
+   quiet group sitting on the canvas, not as an input buried under the fold above a
+   heavy white shelf. The cluster fades into the canvas rather than being fenced off
+   by a border, so content passes under it instead of stopping at a line.
+
+   The tab bar inside is the same shared `BottomNav` every other screen renders; Home
+   only takes it out of fixed positioning so the group can own the bottom together. */
+
+/* MOB-HOME-001 (Cleo): the cluster reads as a sheet resting over the canvas — white,
+   rounded at the top, lifted by a shadow, with a grab handle. Solid, so nothing shows
+   through the tabs, and the raised edge is what says "there is more here". */
+.home-dock {
+  position: fixed; z-index: 30; bottom: 0; width: 100%; max-width: 430px;
+  box-sizing: border-box; padding: 0 0 0;
+  display: flex; flex-direction: column; gap: var(--h-3);
+  border-radius: 28px 28px 0 0;
+  background: var(--ab-color-white);
+  box-shadow: 0 -14px 38px rgba(26,33,66,.10), 0 -1px 0 rgba(26,33,66,.05);
+}
+
+/* Full width and 44px tall: the handle is the swipe target, so the whole strip above
+   the chips has to be grabbable, not just the 4px bar drawn in it. */
+.home-dock-handle {
+  width: 100%; min-height: 44px; padding: var(--h-3) 0 var(--h-2);
+  border: 0; background: none; display: grid; place-items: center; cursor: pointer;
+}
+.home-dock-handle > i { width: 38px; height: 4px; border-radius: 2px; background: #dde2ee; }
+.home-dock-handle:hover > i { background: #ccd3e3; }
+
+/* The chips scroll inside the cluster; the bleed keeps them starting on the page
+   margin while still running to the edge, the same mechanic the in-page row used. */
+/* Without scroll-padding the snap scrolled straight past the left inset on load and
+   the first chip touched the screen edge. */
+.home-dock-chips { margin: 0; padding: 0 var(--h-5) 2px; display: flex; gap: var(--h-2); overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-left: var(--h-5); scrollbar-width: none; }
+.home-dock-chips::-webkit-scrollbar { display: none; }
+/* On a white sheet a white chip disappears, so the chips take a hairline instead of a
+   shadow — the same move Cleo makes on its own sheet. */
+.home-dock-chips button {
+  min-height: 44px; padding: 0 var(--h-4); border: 1px solid #e4e8f2; border-radius: 999px;
+  flex: 0 0 auto; color: #414a67; background: var(--ab-color-white);
+  font-size: var(--h-small); font-weight: 700; white-space: nowrap; cursor: pointer; scroll-snap-align: start;
+}
+
+/* The ask takes a recessed field rather than a raised button, so on the sheet it reads
+   as the thing you type into — which is what it opens. */
+.home-dock-ask {
+  margin: 0 var(--h-5); min-height: 56px; padding: 0 6px 0 var(--h-3);
+  border: 1px solid #e4e8f2; border-radius: 999px;
+  display: flex; align-items: center; gap: var(--h-2);
+  background: #f5f7fc; color: #202641;
+  font-size: var(--h-small); font-weight: 700; text-align: left; cursor: pointer;
+}
+.home-dock-ask > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-dock-mark { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 8px; display: block; }
+
+/* The typed line is a placeholder, so it takes placeholder ink and weight — it must not
+   read as a label the user already chose. */
+.home-dock-typed { color: #5c6480; font-weight: 600; }
+.home-dock-typed > i {
+  display: inline-block; width: 1.5px; height: 13px; margin-left: 2px; vertical-align: -2px;
+  background: var(--ab-color-primary); animation: home-caret 1.05s steps(1) infinite;
+}
+@keyframes home-caret { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .home-dock-typed > i { animation: none; } }
+.home-dock-ask > svg:last-child {
+  flex: 0 0 auto; box-sizing: content-box; width: 16px; height: 16px; padding: 11px;
+  border-radius: 50%; color: #fff; background: var(--ab-color-ink);
+}
+
+/* Inside the cluster the tab bar is no longer the thing pinned to the bottom — the
+   cluster is — so it drops its own positioning, field and blur and just lays out. */
+.home-dock .bottom-nav {
+  position: static; width: auto; max-width: none; height: auto;
+  padding: 0 13px calc(var(--h-2) + env(safe-area-inset-bottom));
+  background: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+
+/* The three legacy directions still render their own in-page composer. */
+.home-dock--nav-only { padding-top: var(--h-4); }
+
+/* ---------- Design switcher (review only) ---------- */
+
+/* Appears only once a ?design= has been seen this session. Sits above the bottom
+   nav so all four directions can be compared on a phone without retyping URLs. */
+/* The wrapper only positions; each row carries its own pill chrome, so the control
+   still floats rather than becoming a full-width bar. */
+.home-design-switcher {
+  position: fixed; z-index: 40; bottom: 236px; width: 100%; max-width: 430px;
+  display: flex; flex-direction: column; align-items: center; gap: var(--h-1);
+  pointer-events: none;
+}
+.home-design-switcher > div {
+  padding: var(--h-1); border: 1px solid #d7dcea; border-radius: 14px;
+  display: flex; gap: 2px; pointer-events: auto;
+  background: rgba(255,255,255,.95); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px rgba(28,35,70,.14);
+}
+.home-design-switcher button {
+  min-height: 34px; padding: 0 var(--h-3); border: 0; border-radius: var(--h-3);
+  color: var(--ab-color-muted); background: none; font-size: var(--h-meta); font-weight: 800; white-space: nowrap; cursor: pointer;
+}
+.home-design-switcher button.is-active { color: #fff; background: var(--ab-color-ink); }
+.home-design-switcher > div + div button.is-active { background: var(--ab-color-primary); }
+
+/* ---------- Assistant sheet ---------- */
+
+.home-assistant-mark { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--ab-color-white); box-shadow: 0 0 0 1px #e3e7f3; }
+.home-assistant-mark-img { width: 32px; height: 32px; display: block; }
+.home-assistant-sheet h2 { margin-top: var(--h-4); }
+.home-assistant-suggestions { margin: var(--h-5) 0 var(--h-4); display: flex; flex-wrap: wrap; gap: var(--h-2); }
+.home-assistant-suggestions button { min-height: 48px; padding: 0 var(--h-4); border: 1px solid #d7defb; border-radius: 14px; color: #4054c7; background: #f2f4ff; font-size: var(--h-small); font-weight: 700; text-align: left; cursor: pointer; }
+.home-assistant-composer { min-height: 62px; padding: var(--h-2) var(--h-2) var(--h-2) var(--h-4); border: 1px solid #dce1ec; border-radius: 18px; display: flex; align-items: center; gap: var(--h-3); background: #fafbfe; }
+.home-assistant-composer input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font-size: var(--h-body); }
+.home-assistant-composer button { width: 46px; height: 46px; border: 0; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--ab-color-primary); cursor: pointer; }
+.home-assistant-composer button:disabled { color: #a7adbd; background: #e5e8ef; }
+.home-assistant-answer { margin-top: var(--h-4); padding: var(--h-5); border: 1px solid #dce2f5; border-radius: 18px; background: #f5f7ff; }
+.home-assistant-answer > span { color: var(--ab-color-primary); font-size: var(--h-meta); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.home-assistant-answer p { margin: var(--h-3) 0 var(--h-4); color: #4f5872; font-size: var(--h-body); line-height: 1.6; }
+.home-assistant-answer small { display: flex; align-items: center; gap: 7px; color: #6e7690; font-size: var(--h-meta); }
+
+/* ---------- 360px ----------
+   Only the display step comes down; body, action and metadata hold their size
+   so the smallest screen stays legible rather than merely smaller. */
+
+@media (max-width: 370px) {
+  .home-screen { --h-display: 27px; --h-title: 20px; }
+  /* The composer label is a fixed contract string, so at 360 the pill gives up
+     padding and a type step rather than truncating the one thing it says. */
+  .home-dock-ask { padding-left: 10px; gap: 6px; font-size: 12px; }
+  .home-dock-ask > svg:first-child { width: 15px; height: 15px; }
+  .home-question-row { margin-left: -16px; margin-right: -16px; padding-left: var(--h-4); padding-right: var(--h-4); }
+  .home-screen.home--answer .home-action-hero h2 { font-size: 25px; }
+  .capability-list button { padding: var(--h-3); gap: var(--h-3); }
+}

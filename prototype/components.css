@@ -1,0 +1,260 @@
+/* AmbitionBox Design System — component classes (prototype starter kit)
+   Generated to accompany tokens.css (v3.127). Every value is a var(--token) from tokens.css.
+   COPY these classes instead of rebuilding components from scratch — they carry the correct
+   construction, weights, and interaction states so prototypes stay on-system.
+   Requires: tokens.css loaded, and Figtree as the page font (see starter.html). */
+
+/* ---------- Button ---------- pill; label SemiBold; icon+label share colour */
+.ab-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-4);
+  border-radius:var(--border-radius-full);border:0;cursor:pointer;font-family:inherit;
+  font-weight:var(--typography-font-weight-semibold);line-height:1;white-space:nowrap;
+  padding:0 var(--spacing-16);transition:background-color .12s ease,color .12s ease;}
+.ab-btn .ab-icon{width:var(--icon-size-m);height:var(--icon-size-m)}
+.ab-btn--lg{height:var(--button-size-large-height);font-size:var(--control-text-font-size-l)}
+.ab-btn--md{height:var(--button-size-medium-height);font-size:var(--control-text-font-size-m)}
+.ab-btn--sm{height:var(--button-size-small-height);font-size:var(--control-text-font-size-s)}
+.ab-btn--primary{background:var(--button-primary-bg-default);color:var(--button-primary-text-default)}
+.ab-btn--primary:hover{background:var(--button-primary-bg-hover)}
+.ab-btn--secondary{background:var(--button-secondary-bg-default);color:var(--button-secondary-text-default);
+  border:var(--stroke-weight-regular) solid var(--button-secondary-border-default)}
+.ab-btn--secondary:hover{background:var(--button-secondary-bg-hover)}
+.ab-btn--tertiary{background:transparent;color:var(--button-tertiary-text-default)}
+.ab-btn--tertiary:hover{background:var(--button-tertiary-bg-hover)}
+.ab-btn--destructive{background:var(--button-destructive-bg-default);color:var(--button-destructive-text-default)}
+.ab-btn--destructive:hover{background:var(--button-destructive-bg-hover)}
+.ab-btn:disabled{background:var(--surface-disabled);color:var(--text-color-disabled);cursor:not-allowed;border-color:var(--border-color-field-disabled)}
+
+/* ---------- Link ---------- inline text action; SemiBold */
+.ab-link{display:inline-flex;align-items:center;gap:var(--spacing-2);cursor:pointer;
+  font-weight:var(--typography-font-weight-semibold);text-decoration:none;
+  color:var(--link-primary-text-default)}
+.ab-link:hover{color:var(--link-primary-text-hover)}
+.ab-link--secondary{color:var(--link-secondary-text-default)}
+.ab-link--secondary:hover{color:var(--link-secondary-text-hover)}
+.ab-link--sm{font-size:var(--control-text-font-size-s)}
+.ab-link--underline{text-decoration:underline;text-underline-offset:2px}
+
+/* ---------- Chip ---------- filter/select pill, 32; Primary=filter(yellow), Secondary=select(blue) */
+.ab-chip{display:inline-flex;align-items:center;gap:var(--spacing-4);height:var(--chip-height);
+  padding:0 var(--spacing-12);border-radius:var(--border-radius-full);cursor:pointer;
+  white-space:nowrap;flex:0 0 auto;
+  font-size:var(--control-text-font-size-m);font-weight:var(--typography-font-weight-semibold);
+  background:var(--chip-primary-bg-default);color:var(--chip-primary-text-default);
+  border:var(--stroke-weight-regular) solid var(--chip-primary-border-default);
+  transition:background-color .12s ease,border-color .12s ease}
+.ab-chip .ab-icon{width:var(--icon-size-s);height:var(--icon-size-s)}
+.ab-chip[aria-selected="true"]{background:var(--chip-primary-bg-selected);border-color:var(--chip-primary-border-selected)}
+.ab-chip--secondary[aria-selected="true"]{background:var(--chip-secondary-bg-selected);
+  border-color:var(--chip-secondary-border-selected);color:var(--chip-secondary-text-selected)}
+
+/* ---------- Tag ---------- static badge, 24, 12px; non-clickable grey / clickable bordered */
+.ab-tag{display:inline-flex;align-items:center;gap:var(--spacing-4);height:var(--tag-height);
+  padding:0 var(--spacing-8);border-radius:var(--tag-corner-radius);
+  font-size:var(--control-text-font-size-s);font-weight:var(--typography-font-weight-regular);
+  background:var(--tag-non-clickable-bg);color:var(--tag-non-clickable-text)}
+.ab-tag--clickable{background:var(--tag-clickable-bg-default);color:var(--tag-clickable-text-default);
+  border:var(--stroke-weight-regular) solid var(--tag-clickable-border-default);cursor:pointer}
+.ab-tag--clickable:hover{background:var(--tag-clickable-bg-hover);color:var(--tag-clickable-text-hover)}
+
+/* ---------- Card ---------- shell, radius 8, NO built-in padding (content brings its own) */
+.ab-card{background:var(--surface-default);border-radius:var(--border-radius-8);overflow:hidden}
+.ab-card--outline{border:var(--stroke-weight-regular) solid var(--border-color-container-light)}
+.ab-card--shadow{box-shadow:var(--elevation-level-1)}
+.ab-card__pad{padding:var(--card-padding-vertical) var(--card-padding-horizontal)}
+
+/* ---------- Search ---------- Page type (soft blue, r12) shown; Global Mobile = pill */
+.ab-search{display:flex;align-items:center;gap:var(--spacing-8);height:44px;
+  padding:0 var(--spacing-16);border-radius:var(--border-radius-12);
+  background:var(--surface-search-page);border:var(--stroke-weight-regular) solid var(--border-color-search-page);
+  color:var(--text-color-tertiary);font-size:var(--control-text-font-size-m)}
+.ab-search .ab-icon{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-brand)}
+.ab-search--global{height:40px;border-radius:var(--border-radius-full);
+  background:var(--surface-default);border-color:var(--border-color-container-light)}
+.ab-search input{border:0;background:transparent;outline:0;flex:1;font:inherit;color:var(--text-color-primary)}
+.ab-search input::placeholder{color:var(--text-color-tertiary)}
+
+/* ---------- RatingTag ---------- coloured rating pill; Category = Surface tint + Rating text/star.
+   NOTE: for a company's overall rating AmbitionBox uses a plain yellow star + number, NOT this pill
+   (see .ab-starrating). This pill is for scored contexts that want the colour band. */
+.ab-ratingtag{display:inline-flex;align-items:center;gap:var(--spacing-2);
+  padding:var(--spacing-2) var(--spacing-8);border-radius:var(--border-radius-4);
+  font-weight:var(--typography-font-weight-bold);font-size:var(--ratingtag-font-size-tag-16)}
+.ab-ratingtag .ab-icon{width:var(--icon-size-s);height:var(--icon-size-s)}
+.ab-ratingtag--excellent{background:var(--surface-excellent);color:var(--rating-excellent)}
+.ab-ratingtag--good{background:var(--surface-good);color:var(--rating-good)}
+.ab-ratingtag--average{background:var(--surface-average);color:var(--rating-average)}
+.ab-ratingtag--poor{background:var(--surface-poor);color:var(--rating-poor)}
+.ab-ratingtag--bad{background:var(--surface-bad);color:var(--rating-bad)}
+.ab-ratingtag__denom{font-weight:var(--typography-font-weight-regular);opacity:.7;font-size:var(--ratingtag-font-size-denominator-12)}
+
+/* ---------- Star rating ---------- the plain yellow-star + number used in company headers */
+.ab-starrating{display:inline-flex;align-items:center;gap:var(--spacing-4);
+  font-weight:var(--typography-font-weight-bold);color:var(--text-color-primary)}
+.ab-starrating .ab-icon{width:var(--icon-size-s);height:var(--icon-size-s);color:var(--rating-average)}
+
+/* ---------- Tabs ---------- active = Bold + 3px brand indicator; inactive grey SemiBold */
+.ab-tabbar{display:flex;gap:var(--spacing-24);border-bottom:var(--stroke-weight-regular) solid var(--border-color-container-light)}
+.ab-tab{display:inline-flex;flex-direction:column;align-items:center;gap:var(--spacing-2);
+  padding:var(--spacing-8) 0;cursor:pointer;color:var(--text-color-tertiary);
+  font-weight:var(--typography-font-weight-semibold);border-bottom:3px solid transparent;margin-bottom:-1px}
+.ab-tab[aria-selected="true"]{color:var(--text-color-primary);font-weight:var(--typography-font-weight-bold);
+  border-bottom-color:var(--tabs-indicator)}
+
+/* ---------- FAB ---------- one primary action; brand gradient pill, elevation 3 */
+.ab-fab{position:fixed;right:var(--spacing-16);bottom:var(--spacing-24);z-index:10;
+  display:inline-flex;align-items:center;gap:var(--spacing-8);height:var(--fab-height);
+  padding:0 var(--spacing-20);border:0;border-radius:var(--border-radius-full);cursor:pointer;
+  background:var(--fab-gradient);color:var(--text-color-inverse-primary);
+  font-weight:var(--typography-font-weight-bold);font-size:var(--control-text-font-size-l);
+  box-shadow:var(--elevation-level-3)}
+.ab-fab .ab-icon{width:var(--icon-size-m);height:var(--icon-size-m)}
+
+/* ---------- helpers ---------- inline SVG icons should use currentColor so they match text */
+.ab-icon{display:inline-block;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;color:inherit}
+.ab-icon--filled{fill:currentColor;stroke:none}  /* for solid glyphs (star, verified badge) */
+.ab-divider{height:var(--stroke-weight-regular);background:var(--border-color-container-light);border:0}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+/* ---------- InputBox ---------- 44 tall, radius 4; label above, states on the field */
+.ab-input{display:flex;flex-direction:column;gap:var(--spacing-4)}
+.ab-input__label{font-size:var(--control-text-font-size-s);color:var(--text-color-tertiary)}
+.ab-input__field{display:flex;align-items:center;gap:var(--spacing-8);height:var(--input-height);
+  padding:0 var(--spacing-12);border-radius:var(--border-radius-4);background:var(--input-bg-default);
+  border:var(--stroke-weight-regular) solid var(--input-border-color-default);
+  font-size:var(--control-text-font-size-m);color:var(--text-color-primary)}
+.ab-input__field input{border:0;outline:0;background:transparent;flex:1;font:inherit;color:inherit}
+.ab-input__field input::placeholder{color:var(--text-color-tertiary)}
+.ab-input__field:focus-within{border-color:var(--border-color-field-active)}
+.ab-input__field .ab-icon{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-tertiary)}
+.ab-input--error .ab-input__field{border-color:var(--border-color-field-error)}
+.ab-input--error .ab-input__help{color:var(--text-color-error)}
+.ab-input--disabled .ab-input__field{background:var(--input-bg-disabled);color:var(--text-color-disabled)}
+.ab-input__help{font-size:var(--control-text-font-size-s);color:var(--text-color-tertiary)}
+
+/* ---------- Textarea ---------- multi-line, starts 132 tall */
+.ab-textarea__field{min-height:var(--textarea-height);align-items:stretch;padding:var(--spacing-12)}
+.ab-textarea__field textarea{border:0;outline:0;background:transparent;flex:1;font:inherit;color:inherit;resize:vertical}
+
+/* ---------- Radio ---------- 16 circle, bare control */
+.ab-radio{display:inline-flex;align-items:center;gap:var(--spacing-8);cursor:pointer}
+.ab-radio input{position:absolute;opacity:0;width:0;height:0}
+.ab-radio__box{width:var(--radio-size);height:var(--radio-size);border-radius:var(--border-radius-full);
+  border:2px solid var(--radio-border-default);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.ab-radio input:checked + .ab-radio__box{border-color:var(--radio-border-checked)}
+.ab-radio input:checked + .ab-radio__box::after{content:"";width:var(--radio-dot-size);height:var(--radio-dot-size);
+  border-radius:var(--border-radius-full);background:var(--radio-dot-default)}
+.ab-radio--disabled{cursor:not-allowed}
+.ab-radio--disabled .ab-radio__box{border-color:var(--radio-border-disabled)}
+
+/* ---------- Checkbox ---------- 16, radius 2, bare control */
+.ab-check{display:inline-flex;align-items:center;gap:var(--spacing-8);cursor:pointer}
+.ab-check input{position:absolute;opacity:0;width:0;height:0}
+.ab-check__box{width:var(--checkbox-size);height:var(--checkbox-size);border-radius:var(--checkbox-radius);
+  border:2px solid var(--checkbox-border-default);background:var(--checkbox-bg-default);color:var(--checkbox-check);
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.ab-check__box .ab-icon{width:12px;height:12px;opacity:0}
+.ab-check input:checked + .ab-check__box{background:var(--checkbox-bg-checked);border-color:var(--checkbox-bg-checked)}
+.ab-check input:checked + .ab-check__box .ab-icon{opacity:1}
+.ab-check--disabled .ab-check__box{background:var(--checkbox-bg-disabled);border-color:var(--checkbox-border-disabled)}
+
+/* ---------- Toggle ---------- 36x20, instant on/off */
+.ab-toggle{display:inline-flex;align-items:center;gap:var(--spacing-8);cursor:pointer}
+.ab-toggle input{position:absolute;opacity:0;width:0;height:0}
+.ab-toggle__track{width:var(--toggle-track-width);height:var(--toggle-track-height);border-radius:var(--border-radius-full);
+  background:var(--toggle-off-track);position:relative;flex:0 0 auto;transition:background-color .15s ease}
+.ab-toggle__thumb{position:absolute;top:2px;left:2px;width:var(--toggle-thumb-size);height:var(--toggle-thumb-size);
+  border-radius:var(--border-radius-full);background:var(--toggle-off-thumb);box-shadow:var(--toggle-thumb-shadow);transition:transform .15s ease}
+.ab-toggle input:checked + .ab-toggle__track{background:var(--toggle-on-track)}
+.ab-toggle input:checked + .ab-toggle__track .ab-toggle__thumb{transform:translateX(calc(var(--toggle-track-width) - var(--toggle-thumb-size) - 4px))}
+
+/* ============================================================
+   FEEDBACK
+   ============================================================ */
+
+/* ---------- Toast ---------- 328 wide, radius 8, status icon left; message wraps */
+.ab-toast{display:flex;align-items:flex-start;gap:var(--spacing-8);width:328px;max-width:100%;
+  padding:var(--spacing-12) var(--spacing-16);border-radius:var(--border-radius-8);background:var(--surface-default);
+  border:var(--stroke-weight-regular) solid var(--border-color-container-light);box-shadow:var(--elevation-level-2)}
+.ab-toast .ab-icon{width:var(--icon-size-m);height:var(--icon-size-m);flex:0 0 auto}
+.ab-toast__msg{flex:1;font-size:var(--typography-font-size-body-s);color:var(--text-color-primary)}
+.ab-toast--info .ab-icon{color:var(--icon-color-tertiary)}
+.ab-toast--success .ab-icon{color:var(--icon-color-success)}
+.ab-toast--error .ab-icon{color:var(--icon-color-error)}
+.ab-toast--warning .ab-icon{color:var(--icon-color-warning)}
+
+/* ---------- Tooltip ---------- navy box, radius 8, white 12px text */
+.ab-tooltip{display:inline-block;max-width:220px;padding:var(--spacing-8) var(--spacing-12);
+  border-radius:var(--border-radius-8);background:var(--background-tooltip);color:var(--text-color-inverse-primary);
+  font-size:var(--typography-font-size-body-xs)}
+
+/* ---------- Loader ---------- brand arc on grey track; S16/M24/L48 */
+@keyframes ab-spin{to{transform:rotate(360deg)}}
+.ab-loader{display:inline-block;border-radius:var(--border-radius-full);border-style:solid;
+  border-color:var(--colors-grey-20);border-top-color:var(--colors-brand-60);animation:ab-spin 1s linear infinite}
+.ab-loader--sm{width:var(--icon-size-s);height:var(--icon-size-s);border-width:2px}
+.ab-loader--md{width:var(--icon-size-l);height:var(--icon-size-l);border-width:3px}
+.ab-loader--lg{width:48px;height:48px;border-width:4px}
+
+/* ---------- Skeleton ---------- grey blocks, gentle pulse */
+@keyframes ab-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ab-skeleton{background:var(--background-skeleton);animation:ab-pulse 2s ease-in-out infinite}
+.ab-skeleton--line{height:var(--spacing-12);border-radius:var(--border-radius-4)}
+.ab-skeleton--circle{border-radius:var(--border-radius-full)}
+.ab-skeleton--rect{border-radius:var(--border-radius-8)}
+
+/* ============================================================
+   MENUS
+   ============================================================ */
+
+/* ---------- Menu Item ---------- one row; leading slot, hover tint, selected semibold */
+.ab-menuitem{display:flex;align-items:center;gap:var(--spacing-12);padding:var(--spacing-12) var(--spacing-16);
+  cursor:pointer;color:var(--text-color-primary);font-size:var(--control-text-font-size-m)}
+.ab-menuitem:hover{background:var(--background-row-hover)}
+.ab-menuitem .ab-icon{width:var(--icon-size-l);height:var(--icon-size-l);color:var(--icon-color-tertiary)}
+.ab-menuitem__label{flex:1}
+.ab-menuitem__count{color:var(--text-color-tertiary)}
+.ab-menuitem--selected{font-weight:var(--typography-font-weight-semibold)}
+.ab-menuitem--destructive{color:var(--text-color-error)}
+.ab-menuitem--destructive .ab-icon{color:var(--icon-color-error)}
+
+/* ---------- Menu / Kebab container ---------- holds Menu Items */
+.ab-menu{background:var(--surface-default);border-radius:var(--border-radius-8);
+  border:var(--stroke-weight-regular) solid var(--border-color-container-light);
+  box-shadow:var(--elevation-level-2);overflow:hidden;min-width:180px}
+
+/* ============================================================
+   OVERLAYS
+   ============================================================ */
+
+/* ---------- Scrim ---------- behind Modal / Bottom Sheet */
+.ab-scrim{position:fixed;inset:0;z-index:20;background:var(--background-scrim);opacity:calc(var(--opacity-dense) / 100)}
+
+/* ---------- Modal ---------- desktop dialog, 502 wide, centred */
+.ab-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:21;width:502px;max-width:calc(100% - 32px);
+  max-height:90vh;overflow:auto;background:var(--surface-modal);border-radius:var(--modal-radius);box-shadow:var(--elevation-level-3)}
+
+/* ---------- Bottom Sheet ---------- mobile, docked bottom, top radius 16 */
+.ab-sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface-default);
+  border-radius:var(--bottom-sheet-radius) var(--bottom-sheet-radius) 0 0;box-shadow:var(--elevation-level-3);max-height:90vh;overflow:auto}
+
+/* ---------- Sheet Header ---------- title + close/back; shared by Modal + Bottom Sheet */
+.ab-sheethead{display:flex;align-items:center;gap:var(--spacing-12);padding:var(--spacing-16);
+  border-bottom:var(--stroke-weight-regular) solid var(--border-color-container-light)}
+.ab-sheethead__title{flex:1;font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold)}
+.ab-sheethead__btn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--icon-color-primary);background:transparent;border:0}
+
+/* ---------- Sheet Footer ---------- Primary Only / Cancel+Primary */
+.ab-sheetfoot{display:flex;gap:var(--spacing-12);justify-content:flex-end;padding:var(--spacing-16);
+  border-top:var(--stroke-weight-regular) solid var(--border-color-container-light)}
+
+/* ---------- Content Placeholder ---------- swap-me slot filler */
+.ab-placeholder{border:1px dashed var(--border-color-container-dark);border-radius:var(--border-radius-8);
+  min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--text-color-tertiary)}
+
+/* ---------- Sheet Filter Strip ---------- row of removable filter chips */
+.ab-filterstrip{display:flex;gap:var(--spacing-8);overflow-x:auto;padding:var(--spacing-12) var(--spacing-16)}

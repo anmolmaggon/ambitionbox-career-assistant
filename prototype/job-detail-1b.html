@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<!--
+  AmbitionBox Career Assistant — Checkpoint 1B  (Design-review revision)
+  "Profile gaps → tailored résumé" · Canonical scenario: Arjun Mehta → Senior Backend Engineer @ Juspay.
+
+  Separate 1B prototype built on the LOCKED Checkpoint 1A Direction B v2 screen
+  (prototype/job-detail-1a-direction-b.html). The 1A file is NOT edited.
+
+  This revision (against the approved product logic, kept intact):
+    §1  Opening is a brief staged analysis → compact, scannable findings card (no wall of text).
+    §2  Each question sits in one contained card with normal typography (no display heading).
+    §3  Composer: mic voice-answer PREVIEW (no recording/permission), quiet "Use Arjun's demo answer".
+    §4  Adaptive classification — complete / partial / explicit-no / off-topic. Negation is checked
+        BEFORE positive keywords, so a "never used it" answer can never become confirmed evidence.
+    §5  Evidence receipts are compact (don't dominate the viewport).
+    §6  "Add or correct Java context" flow, available before AND after generation. Java starts as a
+        confirmed gap and stays off unless the user explicitly confirms production Java via the
+        one-question-at-a-time branch: production use + 3+ years + personal ownership (no negation).
+        Only then does readiness move to 15/15 and the corrected Java résumé PDF get served; any
+        negative / non-production / under-3-years / unclear answer keeps Java as the gap at 14/15.
+    §7  Completion: one contained résumé card (Download = the only primary), quiet Review/Apply row.
+    §8  Separate "Continue with the Agent" card — prepares for review, never auto-submits.
+
+  Determinism & honesty rules honoured:
+    • The user's submitted text appears unchanged as Arjun's message; it is never replaced.
+    • Java is never added or implied on its own; it is added ONLY after an explicit, user-confirmed
+      production-Java correction, and the corrected PDF then states only the evidence the flow
+      collects ("built and owned Java services in production for 3+ years") — no invented specifics.
+    • Kubernetes wording never claims cluster administration or control-plane ownership.
+-->
+<html lang="en" data-device="mobile">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>AmbitionBox — Career Assistant · Tailor your résumé (1B)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:Figtree,system-ui,sans-serif;
+    color:var(--text-color-primary);
+    background:var(--background-pagenew);
+    font-size:var(--typography-font-size-body-m);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;
+  }
+  button,a,summary,textarea{touch-action:manipulation}
+  .tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  .skip{position:absolute;left:var(--spacing-8);top:-48px;z-index:60;background:var(--surface-default);
+    color:var(--text-color-brand);padding:var(--spacing-8) var(--spacing-12);border-radius:var(--border-radius-8);
+    font-weight:var(--typography-font-weight-semibold);box-shadow:var(--elevation-level-2);transition:top .16s ease}
+  .skip:focus{top:var(--spacing-8)}
+
+  .iconbtn{width:40px;height:40px;border-radius:var(--border-radius-full);border:0;background:transparent;
+    color:var(--icon-color-primary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .iconbtn:hover{background:var(--background-row-hover)}
+
+  /* AmbitionBox intelligence spark mark (shared with 1A) */
+  .spark{display:inline-flex;flex:0 0 auto;color:var(--icon-color-brand)}
+  .spark svg{width:16px;height:16px}
+
+  :focus-visible{outline:var(--stroke-weight-medium) solid var(--border-color-focus-ring);outline-offset:2px;border-radius:var(--border-radius-8)}
+  [tabindex="-1"]:focus{outline:none}
+
+  .c-mt8{margin-top:var(--spacing-8)}
+
+  /* ============================================================================
+     VIEW A · JOB DETAIL 1B  — reproduces the LOCKED Direction B v2 composition.
+     Only Profile Readiness content is dynamic (10/15 → 14/15 after tailoring).
+     ============================================================================ */
+  .screen{max-width:430px;min-width:360px;margin:0 auto;background:var(--surface-default);
+    min-height:100vh;position:relative;padding-bottom:100px}
+  .gutter{padding-left:var(--layout-page-gutter);padding-right:var(--layout-page-gutter)}
+
+  .topbar{position:sticky;top:0;z-index:15;background:var(--surface-default);
+    display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 var(--spacing-8)}
+
+  .identity{padding-top:var(--spacing-8);padding-bottom:var(--spacing-16)}
+  .id-row{display:flex;gap:var(--spacing-12);align-items:flex-start}
+  .id-logo{width:48px;height:48px;border-radius:var(--border-radius-12);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-weight:var(--typography-font-weight-bold);
+    font-size:var(--typography-font-size-heading-m);color:var(--text-color-inverse-primary);
+    background:var(--colors-brand-neutral-80)}
+  .id-titlewrap{flex:1;min-width:0}
+  .id-title{font-size:var(--typography-font-size-heading-l);font-weight:var(--typography-font-weight-bold);
+    line-height:var(--typography-line-height-heading-l);letter-spacing:-.3px;margin:0}
+  .id-companyline{display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-6) var(--spacing-8);margin-top:var(--spacing-6)}
+  .id-company{display:inline-flex;align-items:center;gap:var(--spacing-4);
+    font-size:var(--typography-font-size-body-m);color:var(--text-color-primary);font-weight:var(--typography-font-weight-bold)}
+  .ic-verified{width:16px;height:16px;color:var(--icon-color-brand)}
+  .ic-verified__tick{fill:none;stroke:var(--surface-default);stroke-width:2}
+  .rating{display:inline-flex;align-items:center;gap:var(--spacing-6);white-space:nowrap}
+  .rating__tile{width:22px;height:22px;border-radius:var(--border-radius-4);flex:0 0 auto;
+    display:inline-flex;align-items:center;justify-content:center;background:var(--rating-good)}
+  .rating__tile .ab-icon{width:13px;height:13px;color:var(--text-color-inverse-primary)}
+  .rating__num{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .rating__meta{font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+  .id-meta{margin-top:var(--spacing-12);font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+  .id-meta .src{color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold)}
+
+  .actions{display:flex;gap:var(--spacing-8);margin:0 var(--layout-page-gutter)}
+  .act-save{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-6);
+    height:44px;padding:0 var(--spacing-16);border-radius:var(--border-radius-full);cursor:pointer;
+    background:var(--surface-default);border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);
+    color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold);font-size:var(--control-text-font-size-m)}
+  .act-save:hover{background:var(--colors-brand-neutral-5)}
+  .act-save .ab-icon{width:18px;height:18px}
+  .act-apply{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-6);
+    height:44px;border-radius:var(--border-radius-full);text-decoration:none;
+    background:var(--surface-default);border:var(--stroke-weight-medium) solid var(--colors-brand-20);
+    color:var(--text-color-brand);font-weight:var(--typography-font-weight-bold);font-size:var(--control-text-font-size-m)}
+  .act-apply:hover{background:var(--colors-brand-10)}
+  .act-apply .ab-icon{width:16px;height:16px}
+
+  .b-pref{position:relative;overflow:hidden;margin:var(--spacing-16) var(--layout-page-gutter) 0;
+    padding:var(--spacing-16);border-radius:var(--border-radius-16);
+    background:var(--surface-default);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-20);
+    box-shadow:0 0 0 3px rgba(63,92,251,.05), 0 14px 36px -16px rgba(63,92,251,.45)}
+  .b-pref::before{content:"";position:absolute;top:-70px;left:50%;transform:translateX(-50%);
+    width:150%;height:150px;background:radial-gradient(ellipse at center,rgba(63,92,251,.14),transparent 68%);
+    pointer-events:none}
+  .b-pref__head{position:relative;display:flex;align-items:center;gap:var(--spacing-8)}
+  .b-pref__title{flex:1;min-width:0;display:flex;align-items:center;gap:var(--spacing-6);
+    font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold);letter-spacing:-.2px}
+  .b-pref__score{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--spacing-4);
+    height:30px;padding:0 var(--spacing-12);border-radius:var(--border-radius-full);
+    background:var(--colors-brand-10);color:var(--text-color-brand);
+    font-weight:var(--typography-font-weight-bold);font-size:var(--typography-font-size-body-m)}
+  .b-pref__score .ab-icon{width:15px;height:15px}
+  .b-chips{position:relative;display:flex;flex-wrap:wrap;gap:var(--spacing-8);margin-top:var(--spacing-16)}
+  .b-chip{display:inline-flex;align-items:center;gap:var(--spacing-6);height:34px;padding:0 var(--spacing-12);
+    border-radius:var(--border-radius-full);font-size:var(--typography-font-size-body-s);
+    font-weight:var(--typography-font-weight-semibold);white-space:nowrap}
+  .b-chip .ab-icon{width:15px;height:15px;flex:0 0 auto}
+  .b-chip--ok{background:var(--surface-good);color:var(--rating-good)}
+  .b-chip--warn{background:var(--surface-average);color:var(--text-color-warning)}
+  .b-chip--neutral{background:var(--colors-brand-neutral-5);color:var(--text-color-secondary)}
+  .b-cta{position:relative;display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);
+    margin-top:var(--spacing-12);padding-top:var(--spacing-12);
+    border-top:var(--stroke-weight-regular) solid var(--colors-brand-neutral-15);
+    font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-brand)}
+  .b-cta .ab-icon{width:18px;height:18px;color:var(--icon-color-brand)}
+
+  .b-ready{position:relative;overflow:hidden;margin:var(--spacing-24) var(--layout-page-gutter) 0;
+    border-radius:var(--border-radius-16);background:var(--surface-default);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);
+    box-shadow:0 10px 26px -18px rgba(63,92,251,.4);scroll-margin-top:60px}
+  .b-ready__top{position:relative;padding:var(--spacing-16) var(--spacing-16) var(--spacing-12)}
+  .b-ready__head{position:relative;display:flex;align-items:center;gap:var(--spacing-6)}
+  .ready__title{font-size:var(--typography-font-size-heading-m);line-height:1.2;
+    font-weight:var(--typography-font-weight-bold);letter-spacing:-.2px;margin:0}
+  .ready__count{position:relative;margin-top:var(--spacing-4);font-size:var(--typography-font-size-body-m);color:var(--text-color-secondary)}
+  .ready__count b{color:var(--text-color-primary)}
+  .seg{position:relative;display:flex;gap:var(--spacing-4);margin-top:var(--spacing-12)}
+  .seg__b{flex:1 1 0;height:10px;border-radius:var(--border-radius-full);transform-origin:left center}
+  .seg__b--ok{background:var(--colors-green-50)}
+  .seg__b--need{background:var(--colors-yellow-50)}
+  .seg__b--miss{background:var(--colors-red-50)}
+
+  .b-groups{padding:0 var(--spacing-12) var(--spacing-12);display:flex;flex-direction:column;gap:var(--spacing-8)}
+  .b-grp{border-radius:var(--border-radius-12);overflow:hidden}
+  .b-grp__head{display:flex;align-items:center;gap:var(--spacing-12);width:100%;text-align:left;
+    padding:var(--spacing-12) var(--spacing-12);background:transparent;border:0;cursor:pointer;color:inherit;font:inherit}
+  .b-grp--ok  .b-grp__head{background:var(--surface-good)}
+  .b-grp--need .b-grp__head{background:var(--surface-average)}
+  .b-grp--miss .b-grp__head{background:var(--colors-red-10)}
+  .b-grp--ok:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--surface-good),transparent 92%)}
+  .b-grp--need:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--surface-average),transparent 92%)}
+  .b-grp--miss:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--colors-red-10),transparent 92%)}
+  .b-grp:has(.b-grp__head[aria-expanded="true"]) .b-grp__head{background:transparent}
+  .b-grp__count{width:26px;text-align:center;flex:0 0 auto;
+    font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold)}
+  .b-grp--ok  .b-grp__count{color:var(--colors-green-50)}
+  .b-grp--need .b-grp__count{color:var(--text-color-warning)}
+  .b-grp--miss .b-grp__count{color:var(--colors-red-60)}
+  .b-grp__title{flex:1;min-width:0}
+  .b-grp__name{display:block;font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .b-grp__sub{display:block;font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary);margin-top:1px}
+  .b-grp__chev{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-tertiary);flex:0 0 auto;
+    transition:transform .28s cubic-bezier(.34,1.2,.64,1)}
+  .b-grp__head[aria-expanded="true"] .b-grp__chev{transform:rotate(180deg)}
+  .b-grp__head[disabled]{cursor:default}
+  .b-grp__head[disabled] .b-grp__chev{opacity:.4}
+  .b-grp__panel{display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .32s cubic-bezier(.34,1.2,.64,1),opacity .24s ease}
+  .b-grp__head[aria-expanded="true"] + .b-grp__panel{grid-template-rows:1fr;opacity:1}
+  .b-grp__panelin{overflow:hidden;min-height:0}
+
+  .rows{padding:var(--spacing-4) var(--spacing-12) var(--spacing-8) var(--spacing-16)}
+  .row{padding:var(--spacing-8) 0}
+  .row + .row{border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .row__head{display:flex;align-items:center;gap:var(--spacing-8)}
+  .row__ind{width:8px;height:8px;border-radius:var(--border-radius-full);flex:0 0 auto}
+  .row__ind--ok{background:var(--colors-green-50)}
+  .row__ind--need{background:var(--colors-yellow-50)}
+  .row__ind--miss{background:var(--colors-red-50)}
+  .row__title{flex:1;min-width:0;font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .b-ready__cta{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);width:100%;
+    padding:var(--spacing-12) var(--spacing-16);background:transparent;border:0;cursor:pointer;font:inherit;text-align:left;
+    border-top:var(--stroke-weight-regular) solid var(--colors-brand-neutral-15);
+    font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-brand)}
+  .b-ready__cta:hover{background:var(--colors-brand-10)}
+  .b-ready__cta-lead{display:inline-flex;align-items:center;gap:var(--spacing-6);min-width:0}
+  .b-ready__cta .ab-icon{width:18px;height:18px;color:var(--icon-color-brand);flex:0 0 auto}
+
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:20;max-width:430px;margin:0 auto;
+    background:var(--surface-default);border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light);
+    padding:var(--spacing-8) var(--layout-page-gutter);
+    padding-bottom:calc(var(--spacing-8) + env(safe-area-inset-bottom,0px));
+    display:flex;flex-direction:column;gap:var(--spacing-6);box-shadow:var(--elevation-level-2)}
+  .dock__ask{position:relative;display:flex;align-items:center;gap:var(--spacing-12);width:100%;
+    height:56px;padding:0 var(--spacing-8) 0 var(--spacing-16);border-radius:var(--border-radius-full);cursor:pointer;
+    background:var(--surface-default);border:var(--stroke-weight-medium) solid var(--colors-brand-20);
+    box-shadow:0 0 0 4px rgba(63,92,251,.06), 0 12px 28px -12px rgba(63,92,251,.5);font:inherit;text-align:left}
+  .dock__ask__ph{flex:1;min-width:0;color:var(--text-color-tertiary);font-size:var(--typography-font-size-body-m);
+    font-weight:var(--typography-font-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dock__ask.typing .dock__ask__type::after{content:"|";margin-left:1px;color:var(--text-color-brand);
+    animation:caretBlink 1s steps(1) infinite}
+  @keyframes caretBlink{50%{opacity:0}}
+  .dock__ask__send{width:40px;height:40px;flex:0 0 auto;border-radius:var(--border-radius-full);
+    display:inline-flex;align-items:center;justify-content:center;background:var(--fab-gradient);
+    color:var(--text-color-inverse-primary);box-shadow:0 4px 12px -2px rgba(63,92,251,.5)}
+  .dock__ask__send .ab-icon{width:18px;height:18px}
+
+  /* ===== Career Assistant AI mark — official AmbitionBox AI icon (assets/ai-icon.svg).
+     Rendered as an <img> (its Figma conic-gradient petals render reliably that way). Ambient
+     "breathe" for life; a "spin" of the whole pinwheel signals the assistant working. ===== */
+  .ai-orb,.c-top__orb,.c-mini-orb{display:block;flex:0 0 auto;object-fit:contain;
+    filter:drop-shadow(0 1px 4px rgba(63,92,251,.28));animation:aiBreathe 3.4s ease-in-out infinite;will-change:transform,opacity}
+  .ai-orb{position:relative;z-index:1;width:26px;height:26px}
+  @keyframes aiBreathe{0%,100%{transform:scale(1);opacity:.94}50%{transform:scale(1.05);opacity:1}}
+  @keyframes aiSpin{to{transform:rotate(360deg)}}
+
+  /* ============================================================================
+     VIEW B · CAREER-ASSISTANT CHAT  (new, local/experimental)
+     ============================================================================ */
+  .chatview{display:none;flex-direction:column;height:100vh;height:100dvh;max-width:430px;margin:0 auto;
+    background:var(--surface-default);position:relative}
+  body.route-chat .chatview{display:flex}
+  body.route-chat .screen,body.route-chat .dock{display:none}
+  body.route-chat{overflow:hidden}
+
+  .c-top{flex:0 0 auto;position:relative;z-index:5;display:flex;align-items:center;gap:var(--spacing-8);
+    height:52px;padding:0 var(--spacing-8);background:var(--surface-default);
+    border-bottom:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .c-top__id{flex:1;min-width:0;display:flex;align-items:center;gap:var(--spacing-8)}
+  .c-top__orb{width:28px;height:28px}
+  body.phase-generating .c-top__orb{animation:aiSpin 1.5s linear infinite}
+  .c-top__txt{min-width:0}
+  .c-top__name{display:block;font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold);line-height:1.15}
+  .c-top__sub{display:block;font-size:var(--typography-font-size-meta-m);color:var(--text-color-tertiary);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* quiet progress (KOHO): thin 4-segment bar + "Question N of 4"; only during Q&A, not correction */
+  .c-prog{flex:0 0 auto;display:none;align-items:center;gap:var(--spacing-8);
+    padding:var(--spacing-8) var(--layout-page-gutter);background:var(--surface-default)}
+  body.phase-qa:not(.mode-correction) .c-prog{display:flex}
+  .c-prog__bar{flex:1;display:flex;gap:var(--spacing-4)}
+  .c-prog__seg{flex:1 1 0;height:4px;border-radius:var(--border-radius-full);background:var(--colors-brand-neutral-15)}
+  .c-prog__seg.is-done{background:var(--colors-brand-60)}
+  .c-prog__seg.is-current{background:var(--colors-brand-30)}
+  .c-prog__label{flex:0 0 auto;font-size:var(--typography-font-size-meta-m);color:var(--text-color-tertiary);font-weight:var(--typography-font-weight-semibold)}
+
+  .c-thread{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+    padding:var(--spacing-16) var(--layout-page-gutter) var(--spacing-24)}
+  .c-thread__in{display:flex;flex-direction:column;gap:var(--spacing-16);max-width:430px;margin:0 auto}
+
+  /* Assistant turns are editorial text blocks (Journal), NOT heavy bubbles. */
+  .c-asst{display:flex;flex-direction:column;gap:var(--spacing-8)}
+  .c-asst__ident{display:flex;align-items:center;gap:var(--spacing-8);margin-bottom:var(--spacing-2)}
+  .c-asst__ident .c-mini-orb{width:22px;height:22px}
+  .c-asst__ident b{font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-bold)}
+  .c-asst p{margin:0;font-size:var(--typography-font-size-body-m);line-height:1.5;color:var(--text-color-secondary)}
+  .c-asst p + p{margin-top:var(--spacing-8)}
+  .c-asst p strong{color:var(--text-color-primary);font-weight:var(--typography-font-weight-semibold)}
+
+  /* §1 Compact findings card — scannable, status colour only for status. No percentage. */
+  .c-findings{border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);border-radius:var(--border-radius-16);
+    background:var(--surface-default);padding:var(--spacing-16) var(--spacing-16) var(--spacing-12);
+    box-shadow:0 8px 22px -18px rgba(63,92,251,.4)}
+  .c-findings__hd{font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-bold);
+    letter-spacing:.3px;text-transform:uppercase;color:var(--text-color-tertiary)}
+  .c-findings__score{margin-top:var(--spacing-4);font-size:var(--typography-font-size-heading-m);letter-spacing:-.2px;
+    color:var(--text-color-secondary)}
+  .c-findings__score b{color:var(--text-color-primary);font-weight:var(--typography-font-weight-bold)}
+  .c-fgrp{margin-top:var(--spacing-12);padding-top:var(--spacing-12);
+    border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .c-fgrp__hd{display:flex;align-items:center;gap:var(--spacing-8);
+    font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-bold);color:var(--text-color-primary)}
+  .c-fdot{width:8px;height:8px;border-radius:var(--border-radius-full);flex:0 0 auto}
+  .c-fdot--need{background:var(--colors-yellow-50)}
+  .c-fdot--miss{background:var(--colors-red-50)}
+  /* §3 compact summary rows: dot · label · inline values */
+  .c-fsum{list-style:none;margin:var(--spacing-12) 0 0;padding:var(--spacing-12) 0 0;display:flex;flex-direction:column;
+    gap:var(--spacing-8);border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .c-fsum li{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--spacing-4) var(--spacing-8);
+    font-size:var(--typography-font-size-body-s);line-height:1.4}
+  .c-fsum li .c-fdot{align-self:flex-start;transform:translateY(6px)}
+  .c-fsum li b{color:var(--text-color-primary);font-weight:var(--typography-font-weight-bold);white-space:nowrap}
+  .c-fsum__v{color:var(--text-color-secondary);flex:1 1 auto;min-width:0}
+
+  /* §1 intro staged-analysis line */
+  .c-analyzing{display:flex;align-items:center;gap:var(--spacing-8);color:var(--text-color-secondary)}
+  .c-analyzing__ic{width:18px;height:18px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center}
+  .c-analyzing__ic.is-done{color:var(--colors-green-50)}
+  .c-analyzing__ic .ab-icon{width:18px;height:18px;stroke-width:2.4}
+
+  /* §4 assistant "thinking" indicator */
+  .c-think{display:flex;align-items:center;gap:var(--spacing-8)}
+  .c-think .c-mini-orb{width:22px;height:22px}
+  .c-think__dots{display:inline-flex;gap:var(--spacing-4)}
+  .c-think__dots span{width:6px;height:6px;border-radius:50%;background:var(--colors-brand-40);
+    animation:thinkPulse 1s ease-in-out infinite}
+  .c-think__dots span:nth-child(2){animation-delay:.16s}
+  .c-think__dots span:nth-child(3){animation-delay:.32s}
+  @keyframes thinkPulse{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+
+  /* §2 contained question card — normal typography, calm border, restrained status */
+  .c-qblock{display:flex;flex-direction:column;gap:var(--spacing-8)}
+  .c-qcard{border:var(--stroke-weight-regular) solid var(--colors-brand-20);border-radius:var(--border-radius-16);
+    background:linear-gradient(180deg,var(--colors-brand-10),var(--surface-default) 60%);
+    padding:var(--spacing-16)}
+  .c-qcard__label{display:block;font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-bold);
+    letter-spacing:.4px;text-transform:uppercase;color:var(--text-color-brand)}
+  .c-qcard__q{margin:var(--spacing-6) 0 0;font-size:var(--typography-font-size-heading-m);line-height:1.32;
+    font-weight:var(--typography-font-weight-semibold);letter-spacing:-.2px;color:var(--text-color-primary)}
+  .c-qcard__hint{margin:var(--spacing-8) 0 0;font-size:var(--typography-font-size-body-s);
+    color:var(--text-color-tertiary);line-height:1.45}
+  .c-qguide{margin:0;padding-left:var(--spacing-2);font-size:var(--typography-font-size-meta-m);
+    color:var(--text-color-tertiary);line-height:1.45}
+
+  /* User turn — the one restrained bubble, so the exact words are attributable to Arjun */
+  .c-user{align-self:flex-end;max-width:88%;padding:var(--spacing-10) var(--spacing-16);
+    border-radius:var(--border-radius-16) var(--border-radius-16) var(--spacing-4) var(--border-radius-16);
+    background:var(--colors-brand-10);color:var(--text-color-primary);
+    font-size:var(--typography-font-size-body-m);line-height:1.45;
+    border:var(--stroke-weight-regular) solid var(--colors-brand-20);white-space:pre-wrap;overflow-wrap:anywhere}
+
+  /* §5 Evidence receipt — compact: small icon, title, state→Confirmed, one summary, count */
+  .c-receipt{border:var(--stroke-weight-regular) solid var(--colors-green-20);border-radius:var(--border-radius-12);
+    background:linear-gradient(180deg,var(--surface-good),var(--surface-default) 70%);overflow:hidden}
+  .c-receipt__top{display:flex;align-items:flex-start;gap:var(--spacing-10);padding:var(--spacing-12) var(--spacing-12) var(--spacing-8)}
+  .c-receipt__check{width:24px;height:24px;flex:0 0 auto;border-radius:var(--border-radius-full);
+    background:var(--colors-green-50);color:var(--text-color-inverse-primary);
+    display:inline-flex;align-items:center;justify-content:center}
+  .c-receipt__check .ab-icon{width:15px;height:15px;stroke-width:2.6}
+  .c-receipt__hd{flex:1;min-width:0}
+  .c-receipt__title{display:block;font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-bold);
+    color:var(--text-color-primary);line-height:1.3}
+  .c-flip{display:flex;align-items:center;gap:var(--spacing-6);margin-top:var(--spacing-6);flex-wrap:wrap}
+  .c-flip__from{display:inline-flex;align-items:center;height:20px;padding:0 var(--spacing-6);border-radius:var(--border-radius-full);
+    font-size:var(--typography-font-size-meta-s);font-weight:var(--typography-font-weight-semibold);
+    background:var(--surface-average);color:var(--text-color-warning);opacity:.85;text-decoration:line-through;text-decoration-thickness:1px}
+  .c-flip__arrow{width:15px;height:15px;color:var(--icon-color-tertiary);flex:0 0 auto}
+  .c-flip__to{display:inline-flex;align-items:center;gap:var(--spacing-4);height:20px;padding:0 var(--spacing-6);border-radius:var(--border-radius-full);
+    font-size:var(--typography-font-size-meta-s);font-weight:var(--typography-font-weight-bold);
+    background:var(--colors-green-50);color:var(--text-color-inverse-primary)}
+  .c-flip__to .ab-icon{width:11px;height:11px;stroke-width:2.8}
+  .c-receipt__detail{margin:0;padding:0 var(--spacing-12) var(--spacing-8) calc(var(--spacing-12) + 24px + var(--spacing-10));
+    font-size:var(--typography-font-size-meta-m);line-height:1.45;color:var(--text-color-secondary)}
+  .c-receipt__foot{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);
+    padding:var(--spacing-8) var(--spacing-12);border-top:var(--stroke-weight-regular) solid var(--colors-green-20);
+    background:rgba(255,255,255,.4)}
+  .c-receipt__footlead{font-size:var(--typography-font-size-meta-s);color:var(--text-color-tertiary);font-weight:var(--typography-font-weight-semibold)}
+  .c-receipt__count{font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-bold);color:var(--colors-green-50)}
+
+  /* Review + change list */
+  .c-review{display:flex;flex-direction:column;gap:var(--spacing-12)}
+  .c-reviewactions{display:flex;flex-direction:column;gap:var(--spacing-8)}
+  .c-panelcard{border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);border-radius:var(--border-radius-16);
+    background:var(--surface-default);overflow:hidden}
+  .c-panelcard__hd{padding:var(--spacing-12) var(--spacing-16) var(--spacing-6);
+    font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-bold);
+    color:var(--text-color-tertiary);letter-spacing:.3px;text-transform:uppercase}
+  .c-panelcard__foot{padding:var(--spacing-6) var(--spacing-12) var(--spacing-10);display:flex;justify-content:flex-start;
+    border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .c-changelist{list-style:none;margin:0;padding:0 var(--spacing-16) var(--spacing-8)}
+  .c-changelist li{display:flex;align-items:flex-start;gap:var(--spacing-10);padding:var(--spacing-10) 0;
+    font-size:var(--typography-font-size-body-m);color:var(--text-color-primary);line-height:1.4}
+  .c-changelist li + li{border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .c-changelist .ci{width:18px;height:18px;flex:0 0 auto;margin-top:1px}
+  .c-changelist .ci--add{color:var(--colors-green-50)}
+  .c-changelist .ci--hold{color:var(--text-color-tertiary)}
+  .c-changelist li.is-hold{color:var(--text-color-tertiary)}
+
+  /* Buttons */
+  .c-primary{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-8);width:100%;height:52px;
+    border:0;border-radius:var(--border-radius-full);cursor:pointer;background:var(--fab-gradient);text-decoration:none;
+    color:var(--text-color-inverse-primary);font-weight:var(--typography-font-weight-bold);font-size:var(--control-text-font-size-l);
+    box-shadow:0 10px 24px -8px rgba(63,92,251,.55)}
+  .c-primary:hover{filter:saturate(1.05) brightness(1.02)}
+  .c-primary .ab-icon{width:20px;height:20px}
+  .c-secondary{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-8);width:100%;height:48px;
+    border-radius:var(--border-radius-full);cursor:pointer;background:var(--surface-default);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);color:var(--text-color-secondary);
+    font-weight:var(--typography-font-weight-semibold);font-size:var(--control-text-font-size-m);text-decoration:none}
+  .c-secondary:hover{background:var(--colors-brand-neutral-5)}
+  .c-secondary .ab-icon{width:18px;height:18px}
+  .c-secondary--brand{border-color:var(--colors-brand-30);color:var(--text-color-brand)}
+  .c-secondary--brand:hover{background:var(--colors-brand-10)}
+  /* quiet tertiary action (Add or correct / Make another change) */
+  .c-quiet{align-self:center;background:transparent;border:0;cursor:pointer;font:inherit;
+    font-size:var(--control-text-font-size-m);font-weight:var(--typography-font-weight-semibold);
+    color:var(--text-color-secondary);padding:var(--spacing-8) var(--spacing-12);border-radius:var(--border-radius-8)}
+  .c-quiet:hover{color:var(--text-color-brand);background:var(--colors-brand-neutral-5)}
+
+  /* Generating status (Manus completed-vs-active rows) */
+  .c-gen{border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);border-radius:var(--border-radius-16);
+    background:var(--surface-default);padding:var(--spacing-8) var(--spacing-4)}
+  .c-gen__head{display:flex;align-items:center;gap:var(--spacing-10);padding:var(--spacing-8) var(--spacing-12) var(--spacing-6);
+    font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold);color:var(--text-color-primary)}
+  .c-gen__mark{width:22px;height:22px;flex:0 0 auto;filter:drop-shadow(0 1px 4px rgba(63,92,251,.28))}
+  /* §4: the generating mark spins ONLY while generating; it freezes once complete (in history). */
+  body.phase-generating .c-gen__mark{animation:aiSpin 1.5s linear infinite}
+  .c-gen__row{display:flex;align-items:center;gap:var(--spacing-12);padding:var(--spacing-10) var(--spacing-12)}
+  .c-gen__ic{width:20px;height:20px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center}
+  .c-gen__label{font-size:var(--typography-font-size-body-m);color:var(--text-color-tertiary);font-weight:var(--typography-font-weight-semibold)}
+  .c-gen__row.is-done .c-gen__label{color:var(--text-color-primary)}
+  .c-gen__row.is-done .c-gen__ic{color:var(--colors-green-50)}
+  .c-gen__row.is-active .c-gen__ic{color:var(--icon-color-brand)}
+  .c-gen__spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--colors-brand-20);
+    border-top-color:var(--colors-brand-60);animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .c-gen__ic .ab-icon{width:18px;height:18px;stroke-width:2.4}
+  .c-gen__dot{width:8px;height:8px;border-radius:50%;background:var(--colors-brand-neutral-20)}
+
+  /* §7 Completion — small inline success mark on the heading */
+  .c-done__title{margin:0;font-size:var(--typography-font-size-heading-m);line-height:1.28;letter-spacing:-.2px;
+    font-weight:var(--typography-font-weight-bold);color:var(--text-color-primary)}
+  .c-done__tick{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:var(--border-radius-full);background:var(--colors-green-50);color:var(--text-color-inverse-primary);
+    vertical-align:-4px;margin-right:var(--spacing-6)}
+  .c-done__tick .ab-icon{width:14px;height:14px;stroke-width:2.8}
+  .c-done__body{margin:var(--spacing-8) 0 0;font-size:var(--typography-font-size-body-m);line-height:1.5;color:var(--text-color-secondary)}
+
+  /* §7 contained résumé card — Download is the only primary action */
+  .c-rcard{border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);border-radius:var(--border-radius-16);
+    background:var(--surface-default);padding:var(--spacing-12);display:flex;flex-direction:column;gap:var(--spacing-12);
+    box-shadow:0 8px 22px -18px rgba(63,92,251,.4)}
+  .c-rcard__top{display:flex;align-items:center;gap:var(--spacing-12)}
+  .c-rcard__ic{width:44px;height:44px;flex:0 0 auto;border-radius:var(--border-radius-8);
+    background:var(--colors-red-50);color:var(--text-color-inverse-primary);
+    display:inline-flex;align-items:center;justify-content:center;position:relative}
+  .c-rcard__ic .ab-icon{width:22px;height:22px}
+  .c-rcard__tag{position:absolute;bottom:4px;font-size:7px;font-weight:700;letter-spacing:.5px}
+  .c-rcard__meta{min-width:0;display:flex;flex-direction:column;gap:1px}
+  .c-rcard__title{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold);color:var(--text-color-primary)}
+  .c-rcard__sub{font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary)}
+  .c-rcard__mm{font-size:var(--typography-font-size-meta-m);color:var(--text-color-tertiary)}
+
+  /* §7 quiet action row: Review changes (disclosure) · Apply on Naukri (text link) */
+  .c-quietrow{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);flex-wrap:wrap}
+  .c-disclosure{display:inline-flex;align-items:center;gap:var(--spacing-6);background:transparent;border:0;cursor:pointer;font:inherit;
+    font-size:var(--control-text-font-size-m);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-secondary);
+    padding:var(--spacing-8) var(--spacing-8);border-radius:var(--border-radius-8)}
+  .c-disclosure:hover{color:var(--text-color-brand);background:var(--colors-brand-neutral-5)}
+  .c-disclosure .chev{width:16px;height:16px;transition:transform .28s cubic-bezier(.34,1.2,.64,1)}
+  .c-disclosure[aria-expanded="true"] .chev{transform:rotate(180deg)}
+  .c-textlink{display:inline-flex;align-items:center;gap:var(--spacing-4);color:var(--text-color-brand);text-decoration:none;
+    font-weight:var(--typography-font-weight-semibold);font-size:var(--control-text-font-size-m);padding:var(--spacing-8);border-radius:var(--border-radius-8)}
+  .c-textlink:hover{text-decoration:underline}
+  .c-textlink .ab-icon{width:15px;height:15px}
+  .c-changes-panel{display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .32s cubic-bezier(.34,1.2,.64,1),opacity .24s ease}
+  .c-changes-panel.is-open{grid-template-rows:1fr;opacity:1}
+  .c-changes-panel__in{overflow:hidden;min-height:0}
+
+  /* §8 Agent next-step card — separate from the résumé card/actions */
+  .c-agentcard{position:relative;border:var(--stroke-weight-regular) solid var(--colors-brand-20);border-radius:var(--border-radius-16);
+    background:linear-gradient(180deg,var(--colors-brand-10),var(--surface-default) 72%);
+    padding:var(--spacing-16);display:flex;flex-direction:column;gap:var(--spacing-10);
+    box-shadow:0 10px 26px -18px rgba(63,92,251,.4)}
+  .c-agentcard__hd{display:flex;align-items:center;gap:var(--spacing-8);font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .c-agentcard__hd .c-mini-orb{width:22px;height:22px}
+  .c-agentcard__body{margin:0;font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary);line-height:1.5}
+  .c-agent-list{margin:var(--spacing-2) 0 0;padding-left:var(--spacing-20)}
+  .c-agent-list li{font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary);line-height:1.5;margin-bottom:var(--spacing-4)}
+
+  /* §3 Composer */
+  .c-composer{flex:0 0 auto;display:none;flex-direction:column;gap:var(--spacing-6);
+    padding:var(--spacing-10) var(--layout-page-gutter);
+    padding-bottom:calc(var(--spacing-10) + env(safe-area-inset-bottom,0px));
+    background:var(--surface-default);border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  body.phase-qa .c-composer,body.mode-correction .c-composer{display:flex}
+  .c-composer__field{display:flex;align-items:flex-end;gap:var(--spacing-6);
+    border:var(--stroke-weight-medium) solid var(--colors-brand-neutral-20);border-radius:var(--border-radius-20);
+    padding:var(--spacing-6);background:var(--surface-default);transition:border-color .14s ease}
+  .c-composer__field:focus-within{border-color:var(--colors-brand-40)}
+  .c-mic{width:40px;height:40px;flex:0 0 auto;border:0;border-radius:var(--border-radius-full);cursor:pointer;
+    background:transparent;color:var(--text-color-tertiary);display:inline-flex;align-items:center;justify-content:center}
+  .c-mic:hover{background:var(--colors-brand-neutral-5);color:var(--text-color-secondary)}
+  .c-mic .ab-icon{width:20px;height:20px}
+  .c-composer textarea{flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;font:inherit;
+    font-size:var(--typography-font-size-body-m);line-height:1.4;color:var(--text-color-primary);
+    max-height:132px;padding:var(--spacing-8) 0}
+  .c-composer textarea::placeholder{color:var(--text-color-tertiary)}
+  .c-send{width:40px;height:40px;flex:0 0 auto;border:0;border-radius:var(--border-radius-full);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;background:var(--fab-gradient);
+    color:var(--text-color-inverse-primary);box-shadow:0 4px 12px -2px rgba(63,92,251,.5);transition:opacity .14s ease}
+  .c-send .ab-icon{width:18px;height:18px}
+  .c-send:disabled{background:var(--surface-disabled);color:var(--text-color-disabled);box-shadow:none;cursor:not-allowed}
+  .c-composer__foot{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);padding:0 var(--spacing-4)}
+  .c-composer__note{font-size:var(--typography-font-size-meta-s);color:var(--text-color-tertiary);min-width:0}
+  /* Demo utility — clearly a prototype helper, visually separated from the real composer */
+  .c-demohint{display:inline-flex;align-items:center;gap:var(--spacing-6);flex:0 0 auto;
+    background:transparent;border:var(--stroke-weight-regular) dashed var(--colors-brand-neutral-20);cursor:pointer;font:inherit;
+    font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-tertiary);
+    padding:var(--spacing-4) var(--spacing-8);border-radius:var(--border-radius-full)}
+  .c-demohint:hover{color:var(--text-color-brand);border-color:var(--colors-brand-20)}
+  .c-demohint__tag{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-color-brand);
+    background:var(--colors-brand-10);padding:1px 5px;border-radius:var(--border-radius-full)}
+  body.mode-correction .c-demohint{display:none}
+
+  /* ---------- entrance motion (restrained; disabled for reduced-motion & flat) ---------- */
+  @keyframes cIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes cPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  .anim-in{animation:cIn .42s cubic-bezier(.22,.61,.36,1) both}
+  .anim-pop{animation:cPop .46s cubic-bezier(.34,1.2,.64,1) both}
+
+  @media (prefers-reduced-motion:reduce){
+    .ai-orb,.c-top__orb,.c-asst__ident .c-mini-orb,body.phase-generating .c-top__orb,.c-gen__mark,
+    .c-think__dots span{animation:none}
+    .anim-in,.anim-pop{animation:none}
+    .c-gen__spin{animation:none;border-top-color:var(--colors-brand-20)}
+    .b-grp__chev,.b-grp__panel,.c-changes-panel,.c-disclosure .chev,.skip{transition:none}
+  }
+
+  /* ---------- flat capture mode (inert without ?flat=) : static, full-height, no motion ---------- */
+  body.flat{overflow:visible}
+  body.flat .ai-orb,body.flat .c-top__orb,body.flat .c-asst__ident .c-mini-orb,body.flat.phase-generating .c-top__orb,body.flat .c-gen__mark,
+  body.flat .c-think__dots span,body.flat .anim-in,body.flat .anim-pop,body.flat .c-gen__spin{animation:none}
+  body.flat .screen{padding-bottom:0;min-height:0}
+  body.flat .dock{position:static;box-shadow:none}
+  body.flat .chatview{height:auto}
+  body.flat .c-top{position:static}
+  body.flat .c-thread{overflow:visible;flex:0 0 auto}
+  /* ---------- shot capture mode: real 390x844 viewport, motion off ---------- */
+  body.shot .ai-orb,body.shot .c-top__orb,body.shot .c-asst__ident .c-mini-orb,body.shot.phase-generating .c-top__orb,
+  body.shot .c-gen__mark,body.shot .c-think__dots span,body.shot .anim-in,body.shot .anim-pop,body.shot .c-gen__spin{animation:none}
+</style>
+</head>
+<body class="route-job phase-qa">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ========================================================================
+       VIEW A · JOB DETAIL 1B
+       ======================================================================== -->
+  <div class="screen">
+    <div class="topbar">
+      <button type="button" class="iconbtn" id="job-back" aria-label="Back to Matches">
+        <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <main id="main" tabindex="-1">
+      <section class="identity gutter" aria-label="Job and company">
+        <div class="id-row">
+          <div class="id-logo" aria-hidden="true">J</div>
+          <div class="id-titlewrap">
+            <h1 class="id-title">Senior Backend Engineer</h1>
+            <div class="id-companyline">
+              <span class="id-company">Juspay
+                <svg class="ab-icon ab-icon--filled ic-verified" viewBox="0 0 24 24" aria-label="Verified employer"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5z"/><path class="ic-verified__tick" d="m9 12 2 2 4-4"/></svg>
+              </span>
+              <span class="rating" aria-label="AmbitionBox rating 4.0 out of 5, based on 847 reviews">
+                <span class="rating__tile" aria-hidden="true"><svg class="ab-icon ab-icon--filled" viewBox="0 0 24 24"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8-4.3-4.1 5.9-.9z"/></svg></span>
+                <span class="rating__num tnum">4.0</span>
+                <span class="rating__meta">· <span class="tnum">847</span> reviews</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="id-meta"><span class="src">via Naukri</span> · Posted 2 days ago</p>
+      </section>
+
+      <div class="actions">
+        <button type="button" class="act-save">
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+          Save
+        </button>
+        <a class="act-apply" href="https://www.naukri.com" target="_blank" rel="noopener">
+          Apply on Naukri
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+
+      <section class="b-pref" aria-label="Preference match 89 percent. Salary 24 to 30 lakhs, above your 22 lakh target; Bengaluru, Fintech, Senior level match; Hybrid 3 office days is a caveat; Full-time.">
+        <div class="b-pref__head">
+          <span class="b-pref__title">
+            <span class="spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity=".5"/><path d="m12 7 1.7 2.8L16.5 12l-2.8 1.7L12 17l-1.7-2.8L7.5 12l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>
+            Preference match
+          </span>
+          <span class="b-pref__score" aria-hidden="true">
+            <svg class="ab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
+            <span class="tnum">89%</span>
+          </span>
+        </div>
+        <div class="b-chips">
+          <span class="b-chip b-chip--ok tnum"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>₹24–30L · above ₹22L target</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Bengaluru</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Fintech</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Senior</span>
+          <span class="b-chip b-chip--warn"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>Hybrid · 3 days</span>
+          <span class="b-chip b-chip--neutral">Full-time</span>
+        </div>
+        <div class="b-cta">
+          See match breakdown
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+      </section>
+
+      <!-- Profile Readiness — inner content rendered by JS (renderReadiness): 10/15 → 14/15 after tailoring. -->
+      <section class="b-ready" id="readiness" aria-label="Profile readiness"></section>
+    </main>
+  </div>
+
+  <!-- Persistent assistant dock (locked structure) — an entry point into the chat -->
+  <nav class="dock" aria-label="Career Assistant">
+    <button type="button" class="dock__ask" id="dock-ask" aria-label="Ask the Career Assistant to close your gaps or tailor your résumé for this role">
+      <img class="ai-orb" src="assets/ai-icon.svg" alt="" aria-hidden="true">
+      <span class="dock__ask__ph"><span class="dock__ask__type">Close gaps · tailor your résumé</span></span>
+      <span class="dock__ask__send" aria-hidden="true">
+        <svg class="ab-icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       VIEW B · CAREER-ASSISTANT CHAT
+       ======================================================================== -->
+  <section class="chatview" id="chatview" aria-label="Career Assistant conversation">
+    <div class="c-top">
+      <button type="button" class="iconbtn" id="chat-back" aria-label="Back to job detail">
+        <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="c-top__id">
+        <img class="c-top__orb" src="assets/ai-icon.svg" alt="" aria-hidden="true">
+        <span class="c-top__txt">
+          <span class="c-top__name">Career Assistant</span>
+          <span class="c-top__sub">Senior Backend Engineer · Juspay</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="c-prog" aria-hidden="true">
+      <div class="c-prog__bar" id="prog-bar">
+        <span class="c-prog__seg"></span><span class="c-prog__seg"></span><span class="c-prog__seg"></span><span class="c-prog__seg"></span>
+      </div>
+      <span class="c-prog__label" id="prog-label">Question 1 of 4</span>
+    </div>
+
+    <div class="c-thread" id="thread" tabindex="-1" role="log" aria-live="polite" aria-label="Conversation">
+      <div class="c-thread__in" id="thread-in"></div>
+    </div>
+
+    <form class="c-composer" id="composer" autocomplete="off">
+      <div class="c-composer__field">
+        <button type="button" class="c-mic" id="mic" aria-label="Voice answer — preview only in this prototype; please type your answer">
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+        <label class="visually-hidden" for="answer">Type your answer</label>
+        <textarea id="answer" name="answer" rows="1" placeholder="Type your answer…"></textarea>
+        <button type="submit" class="c-send" id="send" disabled aria-label="Send answer">
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+        </button>
+      </div>
+      <div class="c-composer__foot">
+        <span class="c-composer__note" id="composer-note">One question at a time · I only use details you confirm</span>
+        <!-- Prototype utility: fills the current canonical answer. Never auto-sends; you still press Send. -->
+        <button type="button" class="c-demohint" id="demohint">
+          <span class="c-demohint__tag">Demo</span> Use Arjun’s demo answer
+        </button>
+      </div>
+    </form>
+  </section>
+
+<script>
+/* ============================================================================
+   Career Assistant 1B — deterministic conversation state machine + persistence
+   ============================================================================ */
+(function(){
+  "use strict";
+
+  var STORE_KEY = "ab-career-1b";
+  var BASE = 10, TOTAL = 15;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SHOT = false, SHOT_PRESET = null, flatMode = false;
+
+  /* ---- SVG snippets ---- */
+  var SPARK = '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity=".55"/><path d="m12 7 1.7 2.8L16.5 12l-2.8 1.7L12 17l-1.7-2.8L7.5 12l2.8-1.7z" fill="currentColor" stroke="none"/></svg>';
+  var IC = {
+    check: '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>',
+    arrow: '<svg class="ab-icon c-flip__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    chevronDown: '<svg class="ab-icon chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+    download: '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>',
+    external: '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>',
+    doc: '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+    hold: '<svg class="ab-icon ci ci--hold" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>'
+  };
+
+  /* ---- Negation detection (§1). Explicit negatives are checked BEFORE positive keywords, for
+         all four requirements. FIRST-PERSON denial always wins. A third-party "someone/the
+         platform team owned/handled it" clause only counts as a negative when there is NO clear
+         first-person ownership claim — so the canonical answer ("I owned … deployments …; the
+         platform team owned the control plane") still passes, while "the platform team handled
+         deployments" (with no I-ownership) does not create evidence. ---- */
+  var FP_NEG = /\b(i|we)\s+never\b|\b(i|we)\s+(did|do|does|had|have|was|were|am|are)\s*n[o’']?t\b|\b(i|we)\s+(did|do|does|had|have|was|were|am|are)\s+not\b|\b(i|we)\s+(have|had)\s+no\b|\b(did|do|does|had|have)\s*n[o’']?t\s+(own|use|used|build|built|manage|managed|run|ran|handle|handled|operate|operated|work|worked|deploy|deployed)\b|\b(did|do|does|had|have)\s+not\s+(own|use|used|build|built|manage|managed|run|ran|handle|handled|operate|operated|work|worked|deploy|deployed)\b|\bno\s+(?:\w+\s+){0,2}(experience|exposure|background|involvement|ownership)\b|\bnot\s+(really\s+)?(hands[-\s]?on|responsible|the\s+owner|an?\s+owner|involved|mine)\b|\b(only|just)\s+(observed|watched|assisted|helped|supported|shadowed|monitored|reviewed|saw)\b|\bnever\s+(used|owned|worked|touched|ran|managed|operated|deployed|built)\b/i;
+  var THIRDPARTY = /\b(someone|somebody|another|other|the\s+platform|platform|the\s+ops|ops|devops|sre|infra|infrastructure|a\s+different|the\s+other)\s+(team\s+|person\s+|engineer\s+|people\s+)?(owned|handled|managed|ran|did|maintained|took\s+care|was\s+responsible|were\s+responsible|looked\s+after|set\s+up)\b/i;
+  var FP_OWN = /\bi\s+(owned|built|wrote|maintained|configured|ran|debugged|deployed|operated|managed|led|designed|architected|drove|implemented|created|delivered|set\s+up|handled)\b|\bi\s+was\s+responsible\b|\bi\s+personally\b/i;
+  function isNegative(s){
+    if (FP_NEG.test(s)) return true;                 // explicit first-person denial
+    if (THIRDPARTY.test(s) && !FP_OWN.test(s)) return true;  // someone else owned it, no I-ownership
+    return false;
+  }
+
+  /* ---- Canonical conversation (approved 1B logic; compact question copy per §2) ---- */
+  var QUESTIONS = [
+    {
+      id: "system-design",
+      requirement: "System-design ownership",
+      ask: "What backend system did you personally own from design through production?",
+      hint: "Tell me what it was, which design decisions were yours, and how far you took it.",
+      fromLabel: "Evidence needed",
+      receiptTitle: "System-design ownership evidenced",
+      receiptDetail: "End-to-end ownership is now clear: RFC, architecture decisions, cross-team alignment, and production rollout.",
+      sample: "At Razorpay, I led the end-to-end redesign of our payment webhook delivery platform. I wrote the design RFC, chose the service boundaries and Kafka-based retry model, aligned the rollout plan with dependent teams, and owned the production rollout.",
+      counter: "Which design decision was personally yours, and did you own the production rollout?",
+      restate: "I don’t think that covers this one yet. I’m asking about a backend system you owned from design through production — what was it, and which decisions were yours?",
+      no: "Understood — I won’t claim end-to-end system ownership you didn’t have. If there’s a smaller piece you did own from design to production, tell me and I’ll use only that.",
+      topic: /(system|service|platform|backend|design|architect|rebuild|redesign|rewrote|rewrite|api|pipeline|feature|module|rfc|built|build|migration|infrastructure)/i,
+      complete: function(s){
+        var design = /(design|redesign|architect|rfc|boundaries|retry model|data model|owned|own\b|built|led|drove|chose|defined|wrote)/.test(s);
+        var production = /(production|rollout|roll out|launch|deploy|shipped|went live|in prod|end.?to.?end|end to end)/.test(s);
+        return wordCount(s) >= 12 && design && production;
+      }
+    },
+    {
+      id: "scale",
+      requirement: "Scale & throughput metrics",
+      ask: "What scale did that system run at, and what changed after your work?",
+      hint: "Volume it handled, plus any change in delivery success, latency, or reliability — with numbers.",
+      fromLabel: "Evidence needed",
+      receiptTitle: "Scale and throughput evidenced",
+      receiptDetail: "I’ll use the volume, delivery-success, and latency figures exactly as you provided them.",
+      sample: "It handled about 12 million webhook events a day. The redesign improved successful delivery from 98.8% to 99.95% and cut p99 processing latency from 420 ms to 240 ms.",
+      counter: "What changed after the redesign — delivery success, latency, or reliability?",
+      restate: "That doesn’t give me the scale yet. Roughly what volume did it handle, and did delivery, latency, or reliability change — with numbers?",
+      no: "Understood — I won’t invent scale or reliability numbers. If you have figures you can stand behind, share them; otherwise I’ll leave this unquantified.",
+      topic: /(\d|scale|volume|throughput|traffic|latenc|reliab|uptime|users?|requests?|events?|per day|a day|per second|rps|qps|million|thousand|percent|%|\bms\b|p9|delivery|success)/i,
+      complete: function(s){
+        var nums = s.match(/\d[\d,\.]*/g) || [];
+        var metric = /(%|percent|\bms\b|millisecond|latenc|p99|p95|throughput|volume|million|thousand|per day|a day|per second|requests|events|rps|qps|uptime|reliab|deliver|success)/.test(s);
+        return nums.length >= 2 && metric;
+      }
+    },
+    {
+      id: "leadership",
+      requirement: "Cross-team technical leadership",
+      ask: "Who did you lead beyond your own team to make it happen?",
+      hint: "The teams outside yours you aligned, and the decision or rollout you drove.",
+      fromLabel: "Evidence needed",
+      receiptTitle: "Cross-team technical leadership evidenced",
+      receiptDetail: "Your evidence covers four teams, design and migration leadership, and mentoring three engineers.",
+      sample: "I coordinated the rollout across Payments, Risk, Reconciliation, and Developer Experience. I ran design reviews, tracked migration risks with the tech leads, and mentored three engineers who implemented the new services.",
+      counter: "Which teams outside your own did you align, and what technical decision or rollout did you drive?",
+      restate: "I still need the cross-team picture. Which teams beyond your own did you lead, and what did you coordinate across them?",
+      no: "Understood — I won’t imply cross-team leadership you didn’t have. If you led even one team beyond your own, tell me and I’ll use just that.",
+      topic: /(team|teams|led|lead|coordinat|mentor|align|stakeholder|engineers?|people|rollout|cross|manage|guided|drove|ran|reviews?)/i,
+      complete: function(s){
+        var lead = /(led|lead|coordinat|mentor|drove|ran|aligned|managed|guided|owned)/.test(s);
+        var named = (s.match(/payments|risk|reconciliation|developer experience|devex|platform|infrastructure|infra|sre|frontend|data|qa|security/g) || []);
+        var multi = named.length >= 2 || /(cross.?team|several teams|multiple teams|other teams|two teams|three teams|four teams|five teams|other engineering teams|across .* teams|\bteams\b)/.test(s);
+        return wordCount(s) >= 10 && lead && multi;
+      }
+    },
+    {
+      id: "kubernetes",
+      requirement: "Hands-on Kubernetes ownership",
+      ask: "How hands-on were you with Kubernetes in production?",
+      hint: "What you personally operated — and what stayed with the platform team.",
+      fromLabel: "Needs confirmation",
+      receiptTitle: "Hands-on Kubernetes ownership evidenced",
+      receiptDetail: "I’ll describe your service-workload ownership precisely — not cluster administration or the control plane.",
+      sample: "I owned Kubernetes deployment and runtime operations for six payment services on EKS. I maintained Helm charts, configured probes, resource limits and autoscaling, ran rollouts and rollbacks, and debugged pods during incidents. The platform team owned control-plane upgrades and cluster networking.",
+      counter: "What did you personally handle — Helm, rollouts, scaling, or incident debugging?",
+      restate: "I want to be precise about Kubernetes. What did you personally operate in production, versus what the platform team owned?",
+      no: "Understood. I won’t add Kubernetes ownership to your résumé or imply experience you don’t have.",
+      topic: /(kubernetes|k8s|eks|helm|kubectl|pod|container|cluster|deploy|orchestrat|docker|node|namespace|autoscal|rollout)/i,
+      complete: function(s){
+        var k8s = /(kubernetes|k8s|eks|helm|kubectl)/.test(s);
+        var ops = /(deploy|rollout|roll out|rollback|roll back|probe|autoscal|scaling|resource limit|resource control|\bpod|runtime|operat|incident|debug|helm chart)/.test(s);
+        return wordCount(s) >= 10 && k8s && ops;
+      }
+    }
+  ];
+
+  /* classify(text) → 'complete' | 'partial' | 'no' | 'offtopic'  (§1). Negation first. */
+  function classify(q, text){
+    var s = text.toLowerCase();
+    if (isNegative(s)) return "no";            // explicit negative → stay on requirement, don't claim
+    if (q.complete(s)) return "complete";      // clear personal evidence → receipt + advance
+    if (q.topic.test(s)) return "partial";     // mixed / unclear ownership → one counter-question
+    return "offtopic";
+  }
+
+  var REVIEW_INTRO = "I can strengthen four areas in your résumé:";
+  var REVIEW_ITEMS = [
+    "End-to-end system-design ownership",
+    "Scale, reliability, and latency impact",
+    "Leadership across four engineering teams",
+    "Kubernetes workload ownership in production"
+  ];
+  var CHANGES = [
+    { text: "System-design bullet strengthened", hold: false },
+    { text: "Exact scale and reliability metrics added", hold: false },
+    { text: "Cross-team leadership scope added", hold: false },
+    { text: "Precise Kubernetes workload ownership added", hold: false },
+    { text: "Java deliberately not added", hold: true }
+  ];
+  // After a valid user-confirmed Java correction (§2): Java is added instead of held.
+  var CHANGES_JAVA = [
+    { text: "System-design bullet strengthened", hold: false },
+    { text: "Exact scale and reliability metrics added", hold: false },
+    { text: "Cross-team leadership scope added", hold: false },
+    { text: "Precise Kubernetes workload ownership added", hold: false },
+    { text: "Production Java experience added — user-confirmed", hold: false }
+  ];
+  var DOWNLOAD_NAME = "Arjun-Mehta_Juspay-Senior-Backend-Engineer.pdf";
+  var PDF_HREF = "assets/Arjun-Mehta_Juspay-Senior-Backend-Engineer.pdf";          // canonical, no Java (14/15)
+  var PDF_JAVA_HREF = "assets/Arjun-Mehta_Juspay-Senior-Backend-Engineer-Java.pdf"; // corrected, +Java (15/15)
+  var NAUKRI_HREF = "https://www.naukri.com";
+  var NOTE_DEFAULT = "One question at a time · I only use details you confirm";
+
+  /* ---- Readiness fixtures ---- */
+  var FITS_BASE = [
+    "6 years backend engineering","Payments & fintech systems","REST & gRPC API design",
+    "Microservices architecture","PostgreSQL & data modelling","Redis & caching",
+    "Kafka & event-driven systems","AWS production systems","Monitoring & incident response",
+    "Code reviews & mentoring"
+  ];
+  var FITS_ADDED = [
+    "System-design ownership","Scale & throughput metrics","Cross-team technical leadership","Hands-on Kubernetes ownership"
+  ];
+  var STRENGTHEN = [
+    "System-design ownership","Scale & throughput metrics","Cross-team technical leadership","Hands-on Kubernetes ownership"
+  ];
+
+  /* ---- State (persisted) + runtime-only correction sub-state ---- */
+  var state = load();
+  var fromMatches = /(?:\?|&)from=matches(?:&|$)/.test(location.search);
+  if (fromMatches) {
+    state.route = "job";
+    save();
+  }
+  var rt = { correcting:false, from:null, stage:null, java:null };
+
+  function defaultState(){ return { answers: [], phase: "qa", reviewOpen: false, route: "job", introShown: false, javaConfirmed: false }; }
+  function load(){
+    try {
+      var raw = sessionStorage.getItem(STORE_KEY);
+      if (!raw) return defaultState();
+      var s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.answers)) return defaultState();
+      if (s.phase === "generating") s.phase = "complete";   // transient → resolved
+      if (["qa","review","complete"].indexOf(s.phase) === -1) s.phase = "qa";
+      if (typeof s.reviewOpen !== "boolean") s.reviewOpen = false;
+      if (["job","chat"].indexOf(s.route) === -1) s.route = "job";
+      if (typeof s.introShown !== "boolean") s.introShown = (s.answers.length > 0 || s.phase !== "qa");
+      if (typeof s.javaConfirmed !== "boolean") s.javaConfirmed = false;
+      return s;
+    } catch(e){ return defaultState(); }
+  }
+  function save(){ try { sessionStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+
+  function wordCount(t){ return (t.trim().split(/\s+/).filter(Boolean)).length; }
+  function el(tag, cls, html){ var n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; }
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function len(){ return QUESTIONS.length; }
+  function currentIndex(){ return state.answers.length; }
+
+  /* ---- DOM refs ---- */
+  var body = document.body;
+  var threadEl = document.getElementById("thread");
+  var threadIn = document.getElementById("thread-in");
+  var composer = document.getElementById("composer");
+  var answer = document.getElementById("answer");
+  var sendBtn = document.getElementById("send");
+  var micBtn = document.getElementById("mic");
+  var noteEl = document.getElementById("composer-note");
+  var progBar = document.getElementById("prog-bar");
+  var progLabel = document.getElementById("prog-label");
+  var demohintBtn = document.getElementById("demohint");
+
+  /* ===================== Node builders ===================== */
+  function identRow(){
+    return '<div class="c-asst__ident"><img class="c-mini-orb" src="assets/ai-icon.svg" alt="" aria-hidden="true"><b>Career Assistant</b></div>';
+  }
+  function nodeIntro(){
+    var n = el("div", "c-asst anim-in"); n.id = "intro";
+    n.innerHTML = identRow() +
+      '<p class="c-analyzing"><span class="c-analyzing__ic"><span class="c-gen__spin"></span></span>' +
+      '<span class="c-analyzing__txt">Reviewing your résumé against this role…</span></p>';
+    return n;
+  }
+  function nodeFindings(){
+    // §3 compact overview — one card, inline values, a single sentence below.
+    var n = el("div", "c-asst anim-in");
+    n.innerHTML = identRow() +
+      '<div class="c-findings">' +
+        '<div class="c-findings__hd">Here’s what I found</div>' +
+        '<div class="c-findings__score"><b class="tnum">10 of 15</b> evidenced</div>' +
+        '<ul class="c-fsum">' +
+          '<li><span class="c-fdot c-fdot--need" aria-hidden="true"></span><b>3 need proof</b><span class="c-fsum__v">System design · Scale · Cross-team leadership</span></li>' +
+          '<li><span class="c-fdot c-fdot--need" aria-hidden="true"></span><b>1 to confirm</b><span class="c-fsum__v">Kubernetes ownership</span></li>' +
+          '<li><span class="c-fdot c-fdot--miss" aria-hidden="true"></span><b>1 confirmed gap</b><span class="c-fsum__v">Production Java</span></li>' +
+        '</ul>' +
+      '</div>' +
+      '<p>I can strengthen the first four from what you tell me. I’ll keep Java off unless you correct it with production evidence.</p>';
+    return n;
+  }
+  function nodeQuestion(i, active){
+    var q = QUESTIONS[i];
+    var n = el("div", "c-qblock anim-in");
+    n.innerHTML =
+      '<div class="c-qcard">' +
+        '<span class="c-qcard__label">Question ' + (i+1) + ' of 4</span>' +
+        '<h2 class="c-qcard__q">' + esc(q.ask) + '</h2>' +
+        '<p class="c-qcard__hint">' + esc(q.hint) + '</p>' +
+      '</div>' +
+      (active ? '<p class="c-qguide">Explain it in your own words — rough is fine. I’ll refine it and ask a follow-up if anything important is missing.</p>' : '');
+    return n;
+  }
+  function nodeUser(text){ var n = el("div", "c-user anim-in"); n.textContent = text; return n; }
+  function nodeThinking(){
+    var n = el("div", "c-think anim-in");
+    n.setAttribute("aria-label","Assistant is thinking");
+    n.innerHTML = '<img class="c-mini-orb" src="assets/ai-icon.svg" alt="" aria-hidden="true">' +
+      '<span class="c-think__dots"><span></span><span></span><span></span></span>';
+    return n;
+  }
+  function nodeAsst(html){ var n = el("div", "c-asst anim-in"); n.innerHTML = '<p>' + html + '</p>'; return n; }
+  function nodeReceipt(i){
+    var q = QUESTIONS[i];
+    var newCount = BASE + i + 1;
+    var n = el("div", "c-receipt anim-pop");
+    n.innerHTML =
+      '<div class="c-receipt__top">' +
+        '<span class="c-receipt__check" aria-hidden="true">' + IC.check + '</span>' +
+        '<div class="c-receipt__hd">' +
+          '<span class="c-receipt__title">' + esc(q.receiptTitle) + '</span>' +
+          '<div class="c-flip">' +
+            '<span class="c-flip__from">' + esc(q.fromLabel) + '</span>' + IC.arrow +
+            '<span class="c-flip__to">' + IC.check + 'Confirmed match</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="c-receipt__detail">' + esc(q.receiptDetail) + '</p>' +
+      '<div class="c-receipt__foot">' +
+        '<span class="c-receipt__footlead">Profile readiness</span>' +
+        '<span class="c-receipt__count tnum">' + newCount + ' of ' + TOTAL + ' evidenced</span>' +
+      '</div>';
+    return n;
+  }
+  function nodeReview(){
+    var n = el("div", "c-review anim-in");
+    var items = REVIEW_ITEMS.map(function(t){
+      return '<li>' + IC.check.replace('class="ab-icon"','class="ab-icon ci ci--add"') + '<span>' + esc(t) + '</span></li>';
+    }).join("");
+    n.innerHTML =
+      '<div class="c-asst">' +
+        '<p>You’re now evidenced for <strong>14 of 15 requirements</strong>.</p>' +
+        '<p>' + esc(REVIEW_INTRO) + '</p>' +
+      '</div>' +
+      '<div class="c-panelcard"><div class="c-panelcard__hd">Ready to strengthen</div><ul class="c-changelist">' + items + '</ul></div>' +
+      '<div class="c-asst"><p>Based on what you’ve told me, production Java remains a confirmed gap. I’ll leave it off your résumé unless you want to correct or add context.</p></div>' +
+      '<div class="c-reviewactions">' +
+        '<button type="button" class="c-primary js-tailor">' + SPARK + 'Tailor my résumé</button>' +
+        '<button type="button" class="c-quiet js-addjava">Add or correct Java context</button>' +
+      '</div>';
+    return n;
+  }
+  function nodeReviewActions(){
+    var n = el("div", "c-reviewactions anim-in");
+    n.innerHTML =
+      '<button type="button" class="c-primary js-tailor">' + SPARK + 'Tailor my résumé</button>' +
+      '<button type="button" class="c-quiet js-addjava">Add or correct Java context</button>';
+    return n;
+  }
+  function nodeGenerating(update){
+    var steps = ["Using confirmed evidence","Preserving accurate scope","Preparing PDF"];
+    var n = el("div", "c-gen anim-in"); n.id = "gen-card";
+    n.innerHTML = '<div class="c-gen__head"><img class="c-gen__mark" src="assets/ai-icon.svg" alt="" aria-hidden="true"><span>' + (update ? 'Updating your résumé…' : 'Tailoring your résumé…') + '</span></div>' +
+      steps.map(function(s,idx){
+        return '<div class="c-gen__row" data-step="'+idx+'">' +
+          '<span class="c-gen__ic">' + (idx===0 ? '<span class="c-gen__spin"></span>' : '<span class="c-gen__dot"></span>') + '</span>' +
+          '<span class="c-gen__label">' + esc(s) + '</span></div>';
+      }).join("");
+    return n;
+  }
+  function nodeCompletion(){
+    var jc = !!state.javaConfirmed;
+    var pdf = jc ? PDF_JAVA_HREF : PDF_HREF;
+    var title = jc
+      ? "Your résumé is tailored for Senior Backend Engineer at Juspay, with your confirmed Java experience."
+      : "Your résumé is tailored for Senior Backend Engineer at Juspay.";
+    var bodyCopy = jc
+      ? "I strengthened four areas and added your user-confirmed production Java experience — you’re now evidenced for all 15 requirements."
+      : "I strengthened four areas using the details you confirmed and left Java off.";
+    var changes = jc ? CHANGES_JAVA : CHANGES;
+    var n = el("div", "c-review anim-in"); n.id = "completion";
+    n.innerHTML =
+      '<div class="c-asst">' +
+        '<h2 class="c-done__title"><span class="c-done__tick" aria-hidden="true">' + IC.check + '</span>' + esc(title) + '</h2>' +
+        '<p class="c-done__body">' + esc(bodyCopy) + '</p>' +
+      '</div>' +
+      '<div class="c-rcard">' +
+        '<div class="c-rcard__top">' +
+          '<span class="c-rcard__ic" aria-hidden="true">' + IC.doc + '<span class="c-rcard__tag">PDF</span></span>' +
+          '<span class="c-rcard__meta">' +
+            '<span class="c-rcard__title">Tailored résumé</span>' +
+            '<span class="c-rcard__sub">Senior Backend Engineer · Juspay</span>' +
+            '<span class="c-rcard__mm tnum">PDF · 1 page</span>' +
+          '</span>' +
+        '</div>' +
+        '<a class="c-primary js-download" href="' + pdf + '" download="' + DOWNLOAD_NAME + '">' + IC.download + 'Download résumé</a>' +
+      '</div>' +
+      '<div class="c-quietrow">' +
+        '<button type="button" class="c-disclosure js-review-toggle" id="review-toggle" aria-expanded="false" aria-controls="changes-panel"><span>Review changes</span>' + IC.chevronDown + '</button>' +
+        '<a class="c-textlink" href="' + NAUKRI_HREF + '" target="_blank" rel="noopener">Apply on Naukri' + IC.external + '</a>' +
+      '</div>' +
+      '<div class="c-changes-panel" id="changes-panel"><div class="c-changes-panel__in">' +
+        '<div class="c-panelcard c-mt8">' +
+          '<div class="c-panelcard__hd">Changes in this version</div>' +
+          '<ul class="c-changelist">' + changes.map(function(c){
+              var icon = c.hold ? IC.hold : IC.check.replace('class="ab-icon"','class="ab-icon ci ci--add"');
+              return '<li class="' + (c.hold ? "is-hold" : "") + '">' + icon + '<span>' + esc(c.text) + '</span></li>';
+            }).join("") +
+          '</ul>' +
+          (jc ? '' : '<div class="c-panelcard__foot"><button type="button" class="c-quiet js-addjava">Add or correct Java context</button></div>') +
+        '</div>' +
+      '</div></div>' +
+      '<div class="c-agentcard">' +
+        '<div class="c-agentcard__hd"><img class="c-mini-orb" src="assets/ai-icon.svg" alt="" aria-hidden="true"><span>Continue with the Agent</span></div>' +
+        '<p class="c-agentcard__body">I can prepare this application and draft role-specific answers for you to review. Nothing is submitted without your approval.</p>' +
+        '<button type="button" class="c-secondary c-secondary--brand js-prepare">' + SPARK + 'Prepare application</button>' +
+      '</div>';
+    return n;
+  }
+  function nodeAgentPreview(){
+    var n = el("div", "c-asst anim-in");
+    n.innerHTML = identRow() +
+      '<p>Here’s what I’d prepare for your Juspay application:</p>' +
+      '<ul class="c-agent-list">' +
+        '<li>Draft answers to the role’s application questions, grounded in your confirmed evidence</li>' +
+        '<li>A short note on why you fit this Senior Backend Engineer role</li>' +
+        '<li>A review step so you can edit everything before anything is sent</li>' +
+      '</ul>' +
+      '<p><strong>Nothing is submitted without your approval.</strong></p>';
+    return n;
+  }
+  function nodeCompleteReoffer(){
+    var pdf = state.javaConfirmed ? PDF_JAVA_HREF : PDF_HREF;
+    var n = el("div", "anim-in");
+    n.innerHTML =
+      '<div class="c-asst"><p>Your tailored résumé above is unchanged and ready.</p></div>' +
+      '<div class="c-quietrow c-mt8">' +
+        '<a class="c-textlink" href="' + pdf + '" download="' + DOWNLOAD_NAME + '">' + IC.download + 'Download résumé</a>' +
+        (state.javaConfirmed ? '' : '<button type="button" class="c-quiet js-addjava">Add or correct Java context</button>') +
+      '</div>';
+    return n;
+  }
+
+  /* ===================== Hydrate thread from persisted state ===================== */
+  function hydrate(){
+    threadIn.innerHTML = "";
+    threadIn.appendChild(nodeFindings());
+    var answered = state.answers.length;
+    for (var i = 0; i < answered; i++){
+      threadIn.appendChild(nodeQuestion(i, false));
+      threadIn.appendChild(nodeUser(state.answers[i]));
+      threadIn.appendChild(nodeReceipt(i));
+    }
+    if (state.phase === "qa"){
+      if (answered < len()) threadIn.appendChild(nodeQuestion(answered, true));
+    } else if (state.phase === "review"){
+      var rv = nodeReview(); threadIn.appendChild(rv); wireReview(rv);
+    } else if (state.phase === "complete"){
+      var done = nodeCompletion(); threadIn.appendChild(done); wireCompletion(done);
+      if (state.reviewOpen) setReviewOpen(true, true);
+    }
+    updatePhaseUI();
+  }
+
+  /* ===================== Phase / progress UI ===================== */
+  function updatePhaseUI(){
+    // §4: clear phase-generating too, so the working spin never persists into complete/return.
+    body.classList.remove("phase-qa","phase-review","phase-complete","phase-generating");
+    body.classList.add("phase-" + state.phase);
+    var answered = state.answers.length;
+    var segs = progBar.children;
+    for (var i = 0; i < segs.length; i++){
+      segs[i].classList.remove("is-done","is-current");
+      if (i < answered) segs[i].classList.add("is-done");
+      else if (i === answered) segs[i].classList.add("is-current");
+    }
+    progLabel.textContent = "Question " + Math.min(answered + 1, len()) + " of " + len();
+    refreshSend();
+  }
+
+  function composerActive(){
+    return (state.phase === "qa" && currentIndex() < len()) || rt.correcting;
+  }
+  function refreshSend(){ sendBtn.disabled = !answer.value.trim() || !composerActive(); }
+  function clearComposer(){ answer.value = ""; autosize(); refreshSend(); }
+
+  /* Brief assistant "thinking" before each response (§4). <600ms; off for reduced motion/shot. */
+  function thinkThen(cb){
+    if (reduceMotion || SHOT){ cb(); return; }
+    var t = nodeThinking(); threadIn.appendChild(t); scrollThread();
+    sendBtn.disabled = true;
+    setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); cb(); }, 450);
+  }
+
+  /* ===================== Runtime: answering (§4) ===================== */
+  function submitAnswer(text){
+    var i = currentIndex();
+    if (state.phase !== "qa" || i >= len()) return;
+    var q = QUESTIONS[i];
+    threadIn.appendChild(nodeUser(text));   // exact words, always attributed to Arjun
+    clearComposer();
+    scrollThread();
+
+    thinkThen(function(){
+      var cls = classify(q, text);
+      if (cls === "complete"){
+        state.answers.push(text); save();
+        stripActiveGuide();   // remove the guidance line under the just-answered question
+        threadIn.appendChild(nodeReceipt(i));
+        if (state.answers.length < len()){
+          threadIn.appendChild(nodeQuestion(state.answers.length, true));
+        } else {
+          state.phase = "review"; save();
+          var rv = nodeReview(); threadIn.appendChild(rv); wireReview(rv);
+        }
+      } else if (cls === "no"){
+        threadIn.appendChild(nodeAsst(esc(q.no)));       // never becomes evidence; stays on this question
+      } else if (cls === "partial"){
+        threadIn.appendChild(nodeAsst(esc(q.counter)));  // requirement-specific counter-question
+      } else {
+        threadIn.appendChild(nodeAsst(esc(q.restate)));  // off-topic: restate what's missing
+      }
+      updatePhaseUI();
+      scrollThread();
+    });
+  }
+  function stripActiveGuide(){
+    var g = threadIn.querySelectorAll(".c-qguide");
+    for (var k = 0; k < g.length; k++){ g[k].parentNode && g[k].parentNode.removeChild(g[k]); }
+  }
+
+  /* ===================== Runtime: tailoring / generation ===================== */
+  function wireReview(node){
+    var tailor = node.querySelector(".js-tailor");
+    var addj = node.querySelector(".js-addjava");
+    if (tailor) tailor.addEventListener("click", function(){
+      if (state.phase !== "review" || rt.correcting) return;
+      tailor.disabled = true; tailor.style.opacity = ".55"; tailor.style.pointerEvents = "none";
+      if (addj){ addj.disabled = true; addj.style.opacity = ".55"; addj.style.pointerEvents = "none"; }
+      startGeneration();
+    });
+    if (addj) addj.addEventListener("click", function(){
+      if (state.phase !== "review" || rt.correcting) return;
+      // Retire this action group; a fresh one is re-offered after the correction resolves.
+      if (tailor){ tailor.disabled = true; tailor.style.opacity = ".55"; tailor.style.pointerEvents = "none"; }
+      addj.disabled = true; addj.style.opacity = ".55"; addj.style.pointerEvents = "none";
+      startCorrection("review");
+    });
+  }
+  function startGeneration(update){
+    if (!update && state.phase !== "review") return;
+    if (update){ var oldc = document.getElementById("completion"); if (oldc && oldc.parentNode) oldc.parentNode.removeChild(oldc); }
+    state.phase = "generating"; save();
+    updatePhaseUI();
+    var gen = nodeGenerating(update); threadIn.appendChild(gen); scrollThread();
+    var rows = gen.querySelectorAll(".c-gen__row");
+    function finish(){
+      rows.forEach(function(r){ setDone(r); });
+      state.phase = "complete"; save();
+      var done = nodeCompletion(); threadIn.appendChild(done); wireCompletion(done);
+      updatePhaseUI(); scrollThread();
+    }
+    if (reduceMotion || SHOT){ finish(); return; }
+    setDone(rows[0]);
+    var step = 0;
+    var t = setInterval(function(){
+      step++;
+      if (step < rows.length){ setActive(rows[step]); setDone(rows[step-1]); }
+      if (step >= rows.length){ clearInterval(t); setDone(rows[rows.length-1]); setTimeout(finish, 260); }
+    }, 520);
+  }
+  function setActive(row){ row.classList.add("is-active"); row.classList.remove("is-done");
+    row.querySelector(".c-gen__ic").innerHTML = '<span class="c-gen__spin"></span>'; }
+  function setDone(row){ row.classList.add("is-done"); row.classList.remove("is-active");
+    row.querySelector(".c-gen__ic").innerHTML = IC.check; }
+
+  /* ===================== Completion actions ===================== */
+  function wireCompletion(node){
+    var toggle = node.querySelector(".js-review-toggle");
+    if (toggle) toggle.addEventListener("click", function(){ setReviewOpen(!state.reviewOpen); });
+    var addj = node.querySelector(".js-addjava");
+    if (addj) addj.addEventListener("click", function(){ if (!rt.correcting) startCorrection("complete"); });
+    var prep = node.querySelector(".js-prepare");
+    if (prep) prep.addEventListener("click", function(){
+      if (prep.disabled) return;
+      prep.disabled = true; prep.style.opacity = ".55"; prep.style.pointerEvents = "none";
+      threadIn.appendChild(nodeAgentPreview()); scrollThread();
+    });
+  }
+  function setReviewOpen(open, silent){
+    state.reviewOpen = open;
+    if (!silent) save();
+    var panel = document.getElementById("changes-panel");
+    var toggle = document.getElementById("review-toggle");
+    if (panel) panel.classList.toggle("is-open", open);
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  /* ===================== Add / correct Java context (§2) — one question at a time =====================
+     A focused, deterministic Java flow that actually uses what the user confirms:
+       jq0 Was Java used in production?  jq1 For how long?  jq2 What did you build/own?
+     Only a clear, user-confirmed 3+ years of production Java OWNERSHIP flips Java in (→ 15/15 +
+     corrected PDF). Negative / non-production / <3y / unclear → Java stays a confirmed gap (14/15),
+     no résumé change, with a precise reason. No generic résumé editor. */
+  var JAVA_Q = {
+    jq0: "Let’s check your Java context. Was Java used in a production environment?",
+    jq1: "For approximately how long did you work with production Java?",
+    jq2: "What did you personally build or own in Java?"
+  };
+  function javaProdAffirmative(s){
+    if (isNegative(s)) return false;
+    if (/\b(no|nope|not|non[-\s]?prod|only\s+(local|dev|development|test|testing|staging|a\s+side|side|personal|hobby|internal|poc|prototype))\b/.test(s)) return false;
+    return /\b(yes|yeah|yep|yup|correct|production|prod\b|in\s+prod|live|customers?|users?|real\s+traffic|processed|processing|handled)\b/.test(s);
+  }
+  function javaYears(s){
+    var m = s.match(/(\d+(?:\.\d+)?)\s*(?:\+|plus)?\s*(?:years?|yrs?)/);
+    if (m) return parseFloat(m[1]);
+    var words = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};
+    var wm = s.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\s+(?:\+\s*)?(?:years?|yrs?)\b/);
+    if (wm) return words[wm[1]];
+    var range = s.match(/\b(20\d\d)\D{1,4}(20\d\d)\b/);   // e.g. 2019–2023
+    if (range) return parseInt(range[2],10) - parseInt(range[1],10);
+    return null;
+  }
+  function javaOwnership(s){
+    if (isNegative(s)) return false;
+    return /\bi\s+(built|owned|wrote|developed|shipped|maintained|led|designed|architected|created|implemented|delivered)\b/.test(s)
+        || /\bi\s+was\s+responsible\b/.test(s)
+        || /\bmy\s+(service|module|system|code|work|team’s)\b/.test(s);
+  }
+  function startCorrection(from){
+    rt.correcting = true; rt.from = from; rt.stage = "jq0"; rt.java = {};
+    body.classList.add("mode-correction");
+    threadIn.appendChild(nodeAsst(esc(JAVA_Q.jq0)));
+    answer.placeholder = "Type your answer…";
+    refreshSend(); scrollThread();
+    if (!SHOT) answer.focus();
+  }
+  function submitCorrection(text){
+    threadIn.appendChild(nodeUser(text));
+    clearComposer();
+    scrollThread();
+    thinkThen(function(){
+      var s = text.toLowerCase();
+      if (rt.stage === "jq0"){
+        if (!javaProdAffirmative(s)) javaGapOutcome("You’ve told me Java wasn’t used in production, so it stays a confirmed gap — I won’t imply production experience you don’t have.");
+        else { rt.java.prod = true; rt.stage = "jq1"; threadIn.appendChild(nodeAsst(esc(JAVA_Q.jq1))); refreshSend(); }
+      } else if (rt.stage === "jq1"){
+        var y = javaYears(s);
+        if (y == null) threadIn.appendChild(nodeAsst("I need an approximate duration — roughly how many years of production Java?"));
+        else if (y < 3) javaGapOutcome("That’s under the 3+ years of production Java this role asks for, so it stays a confirmed gap.");
+        else { rt.java.years = y; rt.stage = "jq2"; threadIn.appendChild(nodeAsst(esc(JAVA_Q.jq2))); refreshSend(); }
+      } else if (rt.stage === "jq2"){
+        if (!javaOwnership(s)) javaGapOutcome("I couldn’t confirm what you personally built or owned in Java, so it stays a confirmed gap rather than an implied one.");
+        else { rt.java.own = true; javaValidOutcome(); }
+      }
+      scrollThread();
+    });
+  }
+  function javaGapOutcome(msg){
+    // Java stays the confirmed mismatch; readiness unchanged; no résumé change.
+    threadIn.appendChild(nodeAsst(esc(msg) + " Your résumé is unchanged — you remain evidenced for 14 of 15."));
+    endCorrection();
+  }
+  function javaValidOutcome(){
+    var wasComplete = document.getElementById("completion") !== null;
+    state.javaConfirmed = true; save();
+    // clear the correction sub-state WITHOUT re-offering the old actions (we regenerate instead)
+    rt.correcting = false; rt.from = null; rt.stage = null; rt.java = null;
+    body.classList.remove("mode-correction");
+    answer.placeholder = "Type your answer…"; refreshSend();
+    threadIn.appendChild(nodeAsst("Thanks — that’s user-confirmed <strong>3+ years of production Java ownership</strong>. I’ll treat it as a correction and rebuild your résumé to include only that Java evidence. You’re now evidenced for <strong>15 of 15</strong>."));
+    startGeneration(wasComplete);   // serves the corrected (Java) PDF; never the old file
+  }
+  function endCorrection(){
+    var from = rt.from;
+    rt.correcting = false; rt.from = null; rt.stage = null; rt.java = null;
+    body.classList.remove("mode-correction");
+    answer.placeholder = "Type your answer…";
+    if (from === "review"){ var a = nodeReviewActions(); threadIn.appendChild(a); wireReview(a); }
+    else { var c = nodeCompleteReoffer(); threadIn.appendChild(c); wireReoffer(c); }
+    refreshSend();
+  }
+  function wireReoffer(node){
+    var addj = node.querySelector(".js-addjava");
+    if (addj) addj.addEventListener("click", function(){ if (!rt.correcting) startCorrection("complete"); });
+  }
+
+  /* ===================== Scrolling ===================== */
+  function scrollThread(){
+    if (body.classList.contains("flat")) return;
+    requestAnimationFrame(function(){ threadEl.scrollTop = threadEl.scrollHeight; });
+  }
+  function scrollToActiveQuestion(){
+    if (body.classList.contains("flat")) return;
+    var qs = threadIn.querySelectorAll(".c-qcard");
+    var last = qs[qs.length - 1];
+    requestAnimationFrame(function(){
+      if (last && state.phase === "qa") last.scrollIntoView({block:"start"});
+      else threadEl.scrollTop = threadEl.scrollHeight;
+    });
+  }
+
+  /* ===================== Composer behaviour (§3) ===================== */
+  function autosize(){ answer.style.height = "auto"; answer.style.height = Math.min(answer.scrollHeight, 132) + "px"; }
+  answer.addEventListener("input", function(){ autosize(); refreshSend(); });
+  answer.addEventListener("keydown", function(e){
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !sendBtn.disabled){
+      e.preventDefault(); composer.requestSubmit ? composer.requestSubmit() : dispatchSubmit();
+    }
+  });
+  composer.addEventListener("submit", function(e){
+    e.preventDefault();
+    var text = answer.value.trim();
+    if (!text || sendBtn.disabled) return;
+    if (rt.correcting) submitCorrection(text); else submitAnswer(text);
+  });
+  function dispatchSubmit(){
+    var text = answer.value.trim(); if (!text) return;
+    if (rt.correcting) submitCorrection(text); else submitAnswer(text);
+  }
+  // Mic = voice-answer PREVIEW only. No permission, no recording — just an honest note.
+  micBtn.addEventListener("click", function(){
+    noteEl.textContent = "Voice answers are a preview in this prototype — please type your answer.";
+    clearTimeout(micBtn._t);
+    micBtn._t = setTimeout(function(){ noteEl.textContent = NOTE_DEFAULT; }, 3400);
+  });
+  // Demo utility — fills the canonical answer, never sends.
+  demohintBtn.addEventListener("click", function(){
+    if (rt.correcting) return;
+    var i = currentIndex();
+    if (state.phase !== "qa" || i >= len()) return;
+    answer.value = QUESTIONS[i].sample; autosize(); refreshSend(); answer.focus();
+  });
+
+  /* ===================== Navigation ===================== */
+  function goChat(){
+    state.route = "chat"; save();
+    body.classList.remove("route-job"); body.classList.add("route-chat");
+    updateSkip();
+    var fresh = state.answers.length === 0 && state.phase === "qa" && !rt.correcting;
+    if (fresh && !state.introShown && !SHOT && !flatMode && !reduceMotion){
+      playIntro();
+    } else {
+      if (fresh){ state.introShown = true; save(); scrollToActiveQuestion(); }
+      else if (state.phase === "qa") scrollToActiveQuestion();
+      else scrollThread();
+    }
+    updatePhaseUI();
+    var back = document.getElementById("chat-back"); if (back) back.focus();
+  }
+  function goJob(){
+    state.route = "job"; save();
+    body.classList.remove("route-chat"); body.classList.add("route-job");
+    body.classList.remove("phase-generating");   // §4: never carry the working spin back to Job Detail
+    updateSkip();
+    renderReadiness();
+    // §4: after tailoring, return directly to Profile Readiness (sticky header accounted for).
+    if (state.phase === "complete") scrollToReadiness(); else window.scrollTo(0, 0);
+  }
+  function scrollToReadiness(){
+    var r = document.getElementById("readiness");
+    requestAnimationFrame(function(){
+      if (!r){ window.scrollTo(0,0); return; }
+      var y = r.getBoundingClientRect().top + (window.pageYOffset || window.scrollY || 0) - 60; // 52px sticky + 8
+      window.scrollTo(0, Math.max(0, y));
+    });
+  }
+  document.getElementById("dock-ask").addEventListener("click", goChat);
+  document.getElementById("chat-back").addEventListener("click", goJob);
+  document.getElementById("job-back").addEventListener("click", function(){
+    if (/\/matches-2b\.html(?:[?#]|$)/.test(document.referrer)) history.back();
+    else location.href = "matches-2b.html?card=juspay";
+  });
+
+  function updateSkip(){
+    var skip = document.querySelector(".skip");
+    if (body.classList.contains("route-chat")){ skip.setAttribute("href","#thread"); skip.textContent = "Skip to conversation"; }
+    else { skip.setAttribute("href","#main"); skip.textContent = "Skip to content"; }
+  }
+
+  /* §1 first-entry staged analysis (~2s). Reopening/reduced-motion skip it. */
+  function playIntro(){
+    threadIn.innerHTML = "";
+    var intro = nodeIntro(); threadIn.appendChild(intro);
+    threadEl.scrollTop = 0;
+    var txt = intro.querySelector(".c-analyzing__txt");
+    var ic = intro.querySelector(".c-analyzing__ic");
+    setTimeout(function(){
+      if (txt) txt.textContent = "Checked 15 requirements";
+      if (ic){ ic.innerHTML = IC.check; ic.classList.add("is-done"); }
+    }, 780);
+    setTimeout(function(){
+      if (intro.parentNode) intro.parentNode.removeChild(intro);
+      threadIn.appendChild(nodeFindings());
+      setTimeout(function(){
+        threadIn.appendChild(nodeQuestion(0, true));
+        state.introShown = true; save();
+        updatePhaseUI();
+        // §3: position Q1 near the top — full question card + guidance above the composer,
+        // not half a findings card hanging above it.
+        scrollToActiveQuestion();
+      }, 260);
+    }, 1560);
+  }
+
+  /* ===================== Typewriter dock placeholder (locked behaviour) ===================== */
+  function initTypewriter(){
+    var bar = document.querySelector(".dock__ask"), type = document.querySelector(".dock__ask__type");
+    if (!bar || !type) return;
+    if (body.classList.contains("flat") || SHOT || reduceMotion) return;
+    var phrases = ["Close gaps · tailor your résumé","Get insights on Juspay","What does this role involve?","How do I stand out here?"];
+    bar.classList.add("typing");
+    var pi = 0, ci = 0, del = false;
+    function tick(){
+      var full = phrases[pi];
+      ci += del ? -1 : 1;
+      type.textContent = full.slice(0, ci);
+      if (!del && ci === full.length){ del = true; return setTimeout(tick, 1500); }
+      if (del && ci === 0){ del = false; pi = (pi + 1) % phrases.length; return setTimeout(tick, 350); }
+      setTimeout(tick, del ? 28 : 55);
+    }
+    type.textContent = ""; setTimeout(tick, 900);
+  }
+
+  /* ===================== Job Detail · Profile Readiness (dynamic) ===================== */
+  function renderReadiness(){
+    var host = document.getElementById("readiness");
+    var jc = state.phase === "complete" && state.javaConfirmed;   // §4 valid Java correction → 15/15
+    var done = state.phase === "complete";                        // tailored → 14/15 (or 15/15 if jc)
+    var fits = jc ? FITS_BASE.concat(FITS_ADDED, ["Production Java ownership"])
+                  : (done ? FITS_BASE.concat(FITS_ADDED) : FITS_BASE);
+    var fitsCount = fits.length;                       // 15 / 14 / 10
+    var strengthenCount = done ? 0 : STRENGTHEN.length; // 0 / 0 / 4
+    var missCount = jc ? 0 : 1;                         // 0 / 1 / 1
+    var evidenced = jc ? 15 : (done ? 14 : 10);
+
+    var meter = "";
+    for (var i = 0; i < evidenced; i++) meter += '<span class="seg__b seg__b--ok"></span>';
+    if (!done) for (var j = 0; j < 4; j++) meter += '<span class="seg__b seg__b--need"></span>';
+    if (missCount) meter += '<span class="seg__b seg__b--miss"></span>';
+
+    var fitsRows = fits.map(function(t){
+      return '<div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">' + t + '</span></div></div>';
+    }).join("");
+    var strengthenRows = done ? "" : STRENGTHEN.map(function(t){
+      return '<div class="row"><div class="row__head"><span class="row__ind row__ind--need" aria-hidden="true"></span><span class="row__title">' + t + '</span></div></div>';
+    }).join("");
+    var missRows = jc ? "" :
+      '<div class="row" data-detail="The role asks for 3+ years of production Java; you confirmed you haven\'t used Java in production."><div class="row__head"><span class="row__ind row__ind--miss" aria-hidden="true"></span><span class="row__title">Java production experience</span></div></div>';
+
+    var strengthenSub = done ? "No unresolved evidence" : "3 need stronger proof · 1 needs confirmation";
+    var strengthenExpanded = done ? "false" : "true";
+    var missSub = jc ? "No confirmed gaps" : "A confirmed gap against the role";
+    var missExpanded = jc ? "false" : "true";
+    var ctaLabel = done ? "View tailored résumé in chat" : "Close gaps · tailor your résumé";
+    var meterAria = jc
+      ? "Of 15 requirements: 15 confirmed matches"
+      : (done ? "Of 15 requirements: 14 confirmed matches, 1 mismatch"
+              : "Of 15 requirements: 10 confirmed matches, 4 need evidence, 1 mismatch");
+
+    host.innerHTML =
+      '<div class="b-ready__top">' +
+        '<div class="b-ready__head">' +
+          '<span class="spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity=".5"/><path d="m12 7 1.7 2.8L16.5 12l-2.8 1.7L12 17l-1.7-2.8L7.5 12l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>' +
+          '<h2 class="ready__title">Profile Readiness</h2>' +
+        '</div>' +
+        '<p class="ready__count"><b class="tnum">' + evidenced + ' of ' + TOTAL + '</b> requirements evidenced</p>' +
+        '<div class="seg" role="img" aria-label="' + meterAria + '">' + meter + '</div>' +
+      '</div>' +
+      '<div class="b-groups">' +
+        '<div class="b-grp b-grp--ok">' +
+          '<button type="button" class="b-grp__head" aria-expanded="false" aria-controls="grp-fits">' +
+            '<span class="b-grp__count tnum">' + fitsCount + '</span>' +
+            '<span class="b-grp__title"><span class="b-grp__name">What already fits</span><span class="b-grp__sub">Clear, relevant evidence</span></span>' +
+            '<svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</button>' +
+          '<div class="b-grp__panel" id="grp-fits"><div class="b-grp__panelin"><div class="rows">' + fitsRows + '</div></div></div>' +
+        '</div>' +
+        '<div class="b-grp b-grp--need">' +
+          '<button type="button" class="b-grp__head" aria-expanded="' + strengthenExpanded + '"' + (done ? ' disabled' : '') + ' aria-controls="grp-strengthen">' +
+            '<span class="b-grp__count tnum">' + strengthenCount + '</span>' +
+            '<span class="b-grp__title"><span class="b-grp__name">What to strengthen</span><span class="b-grp__sub">' + strengthenSub + '</span></span>' +
+            '<svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</button>' +
+          '<div class="b-grp__panel" id="grp-strengthen"><div class="b-grp__panelin"><div class="rows">' + strengthenRows + '</div></div></div>' +
+        '</div>' +
+        '<div class="b-grp b-grp--miss">' +
+          '<button type="button" class="b-grp__head" aria-expanded="' + missExpanded + '"' + (jc ? ' disabled' : '') + ' aria-controls="grp-miss">' +
+            '<span class="b-grp__count tnum">' + missCount + '</span>' +
+            '<span class="b-grp__title"><span class="b-grp__name">What may hold you back</span><span class="b-grp__sub">' + missSub + '</span></span>' +
+            '<svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</button>' +
+          '<div class="b-grp__panel" id="grp-miss"><div class="b-grp__panelin"><div class="rows">' + missRows + '</div></div></div>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="b-ready__cta" id="ready-cta">' +
+        '<span class="b-ready__cta-lead">' + ctaLabel + '</span>' +
+        '<svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>' +
+      '</button>';
+
+    host.querySelectorAll(".b-grp__head").forEach(function(btn){
+      if (btn.hasAttribute("disabled")) return;
+      btn.addEventListener("click", function(){
+        btn.setAttribute("aria-expanded", btn.getAttribute("aria-expanded") !== "true");
+      });
+    });
+    document.getElementById("ready-cta").addEventListener("click", goChat);
+  }
+
+  /* ===================== Capture harness ===================== */
+  function seed(preset){
+    var samples = QUESTIONS.map(function(q){ return q.sample; });
+    var m = {
+      analyzing:{answers:[],route:"chat",phase:"qa"},   // staged analyzing/loading state
+      opening:  {answers:[],route:"chat",phase:"qa"},
+      question: {answers:[],route:"chat",phase:"qa"},
+      counter:  {answers:[],route:"chat",phase:"qa"},
+      receipt:  {answers:samples.slice(0,1),route:"chat",phase:"qa"},
+      review:   {answers:samples.slice(0,4),route:"chat",phase:"review"},
+      complete: {answers:samples.slice(0,4),route:"chat",phase:"complete",reviewOpen:false},
+      changes:  {answers:samples.slice(0,4),route:"chat",phase:"complete",reviewOpen:true},
+      agent:    {answers:samples.slice(0,4),route:"chat",phase:"complete",reviewOpen:false},
+      jobreturn:{answers:samples.slice(0,4),route:"job",phase:"complete",reviewOpen:false},
+      // §2 Java-context correction proof states
+      javacontext:  {answers:samples.slice(0,4),route:"chat",phase:"complete",reviewOpen:false},
+      javacomplete: {answers:samples.slice(0,4),route:"chat",phase:"complete",reviewOpen:true,javaConfirmed:true},
+      javajobreturn:{answers:samples.slice(0,4),route:"job",phase:"complete",reviewOpen:false,javaConfirmed:true}
+    };
+    var s = m[preset] || m.opening;
+    state = { answers:s.answers.slice(), phase:s.phase, reviewOpen:!!s.reviewOpen, route:s.route, introShown:true, javaConfirmed:!!s.javaConfirmed };
+  }
+  function applyCapture(){
+    var s = location.search;
+    var mCap = s.match(/[?&]cap=([a-z-]+)/);
+    var mFlat = s.match(/[?&]flat=(\d+)/);
+    var mShot = /[?&]shot=1/.test(s);
+    if (!mCap && !mFlat && !mShot) return false;
+    if (mCap){ SHOT_PRESET = mCap[1]; seed(mCap[1]); }
+    if (mFlat){ flatMode = true; reduceMotion = true; body.classList.add("flat"); pin(parseInt(mFlat[1], 10)); }
+    if (mShot){ SHOT = true; reduceMotion = true; body.classList.add("shot"); pin(390); }
+    return true;
+  }
+  function pin(w){
+    if (!w) return;
+    var cv = document.getElementById("chatview");
+    var sc = document.querySelector(".screen");
+    var dk = document.querySelector(".dock");
+    [cv, sc].forEach(function(x){ if (x){ x.style.width = w+"px"; x.style.maxWidth = w+"px"; x.style.minWidth = w+"px"; x.style.marginLeft = "0"; x.style.marginRight = "0"; } });
+    if (dk){ dk.style.width = w+"px"; dk.style.maxWidth = w+"px"; dk.style.left = "0"; dk.style.right = "auto"; dk.style.marginLeft = "0"; dk.style.marginRight = "0"; }
+    document.documentElement.style.width = w+"px";
+    body.style.width = w+"px";
+  }
+  // Shot mode: inject the transient states that aren't part of persisted history, then anchor scroll.
+  function applyShotInjections(){
+    if (SHOT_PRESET === "counter"){
+      threadIn.appendChild(nodeUser("I contributed to the design."));
+      threadIn.appendChild(nodeAsst(esc(QUESTIONS[0].counter)));
+    } else if (SHOT_PRESET === "agent"){
+      threadIn.appendChild(nodeAgentPreview());
+    } else if (SHOT_PRESET === "javacontext"){
+      // Show the first Java-context question with the composer (mid add/correct flow).
+      startCorrection("complete");
+    } else if (SHOT_PRESET === "analyzing"){
+      // Show the staged analyzing/loading state (the intro card), not the resolved findings.
+      threadIn.innerHTML = "";
+      threadIn.appendChild(nodeIntro());
+    }
+  }
+  function applyShotScroll(){
+    // Run synchronously (no rAF): under headless virtual-time the compositor can draw before a
+    // deferred rAF fires, which left the job-route window scroll unapplied (blank band, §4).
+    if (state.route === "job"){
+      // §4: land on Profile Readiness. Headless window-scroll on a normal document doesn't survive
+      // into the screenshot compositor (blank band), but an internal overflow container does — the
+      // same mechanism the chat thread uses. So (shot-only) turn .screen into a fixed 390x844 scroll
+      // box and scroll it to Profile Readiness with the sticky header (60px) accounted for.
+      var sc = document.querySelector(".screen");
+      var r = document.getElementById("readiness");
+      document.documentElement.style.height = "844px";
+      body.style.height = "844px"; body.style.overflow = "hidden";
+      if (sc){ sc.style.height = "844px"; sc.style.minHeight = "0"; sc.style.overflowY = "auto"; sc.style.paddingBottom = "24px"; }
+      if (sc && r){ var y = r.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 60; sc.scrollTop = Math.max(0, y); }
+      document.title = "SHOT-READY"; return;
+    }
+    var t = threadEl, e;
+    if (SHOT_PRESET === "analyzing"){ t.scrollTop = 0; }
+    else if (SHOT_PRESET === "opening"){ t.scrollTop = 0; }
+    else if (SHOT_PRESET === "question"){ var qs = threadIn.querySelectorAll(".c-qcard"); if (qs.length) qs[qs.length-1].scrollIntoView({block:"start"}); }
+    else if (SHOT_PRESET === "counter"){ t.scrollTop = t.scrollHeight; }
+    else if (SHOT_PRESET === "receipt"){ e = threadIn.querySelector(".c-receipt"); if (e) e.scrollIntoView({block:"center"}); }
+    else if (SHOT_PRESET === "review"){ t.scrollTop = t.scrollHeight; }
+    else if (SHOT_PRESET === "complete"){ e = document.getElementById("completion"); if (e) e.scrollIntoView({block:"start"}); }
+    else if (SHOT_PRESET === "changes"){ e = document.getElementById("changes-panel"); if (e) e.scrollIntoView({block:"end"}); }
+    else if (SHOT_PRESET === "agent"){ t.scrollTop = t.scrollHeight; }
+    else if (SHOT_PRESET === "javacontext"){ t.scrollTop = t.scrollHeight; }
+    else if (SHOT_PRESET === "javacomplete"){ e = document.getElementById("completion"); if (e) e.scrollIntoView({block:"start"}); }
+    document.title = "SHOT-READY";
+  }
+
+  /* ===================== Boot ===================== */
+  var captured = applyCapture();
+
+  renderReadiness();
+  hydrate();
+  if (SHOT) applyShotInjections();
+
+  body.classList.remove("route-job","route-chat");
+  body.classList.add(state.route === "chat" ? "route-chat" : "route-job");
+  updateSkip();
+
+  initTypewriter();
+
+  if (flatMode){
+    window.addEventListener("load", function(){
+      requestAnimationFrame(function(){
+        var h = document.documentElement.scrollHeight;
+        if (state.route === "chat"){ var cv = document.getElementById("chatview"); h = Math.max(h, cv.scrollHeight); }
+        document.title = "H=" + h;
+      });
+    });
+  } else if (SHOT){
+    window.addEventListener("load", applyShotScroll);
+    applyShotScroll();
+  } else {
+    // Fresh chat route at boot with no intro yet → play it; otherwise scroll into place.
+    if (state.route === "chat"){
+      var fresh = state.answers.length === 0 && state.phase === "qa";
+      if (fresh && !state.introShown && !reduceMotion){ playIntro(); }
+      else if (fresh){ threadEl.scrollTop = 0; }
+      else if (state.phase === "qa") scrollToActiveQuestion();
+      else scrollThread();
+    }
+  }
+})();
+</script>
+</body>
+</html>

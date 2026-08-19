@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<!--
+  AmbitionBox Career Assistant — Job Detail, Checkpoint 1A (Revision 1A.1)
+  Canonical scenario: Arjun Mehta (SWE @ Razorpay, 6y, ₹15L→₹22L target) viewing
+  Senior Backend Engineer @ Juspay (via Naukri, Bengaluru, Hybrid, 6–9y, ₹24–30L, 4.0/847).
+  Visual references: Journal iOS (editorial hierarchy) + Lovi iOS (calm rows, spring motion).
+  Built on the AmbitionBox AI kit (tokens.css + components.css). Figtree via Google Fonts.
+  Scope: identity · AmbitionBox rating strip · Preference Match hero · Profile Readiness · assistant invite · action dock.
+  Deferred (NOT built): lower intelligence modules, bottom sheets, assistant chat, résumé, application flow, 1B, React port.
+-->
+<html lang="en" data-device="mobile">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>AmbitionBox — Senior Backend Engineer @ Juspay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:Figtree,system-ui,sans-serif;
+    color:var(--text-color-primary);
+    background:var(--background-pagenew);
+    font-size:var(--typography-font-size-body-m);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  button,a,summary{touch-action:manipulation}
+  .tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+  /* skip link */
+  .skip{position:absolute;left:var(--spacing-8);top:-48px;z-index:60;
+    background:var(--surface-default);color:var(--text-color-brand);
+    padding:var(--spacing-8) var(--spacing-12);border-radius:var(--border-radius-8);
+    font-weight:var(--typography-font-weight-semibold);box-shadow:var(--elevation-level-2);
+    transition:top .16s ease}
+  .skip:focus{top:var(--spacing-8)}
+
+  /* phone surface: one continuous white sheet */
+  .screen{
+    max-width:430px;min-width:360px;margin:0 auto;
+    background:var(--surface-default);
+    min-height:100vh;position:relative;
+    padding-bottom:132px; /* room for the persistent dock */
+  }
+  .gutter{padding-left:var(--layout-page-gutter);padding-right:var(--layout-page-gutter)}
+  .muted{color:var(--text-color-tertiary)}
+
+  /* ---- minimal top chrome (uncluttered opening, Journal) ---- */
+  .topbar{position:sticky;top:0;z-index:15;background:var(--surface-default);
+    display:flex;align-items:center;justify-content:space-between;
+    height:52px;padding:0 var(--spacing-8)}
+  .iconbtn{width:40px;height:40px;border-radius:var(--border-radius-full);border:0;background:transparent;
+    color:var(--icon-color-primary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .iconbtn:hover{background:var(--background-row-hover)}
+
+  /* ============ 1 · Job & company identity (editorial, posting info only) ============ */
+  .identity{padding-top:var(--spacing-8);padding-bottom:var(--spacing-16)}
+  .id-row{display:flex;gap:var(--spacing-12);align-items:flex-start}
+  .id-logo{width:48px;height:48px;border-radius:var(--border-radius-12);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-weight:var(--typography-font-weight-bold);
+    font-size:var(--typography-font-size-heading-m);color:var(--text-color-inverse-primary);
+    background:var(--colors-brand-neutral-80)}
+  .id-title{font-size:var(--typography-font-size-heading-l);font-weight:var(--typography-font-weight-bold);
+    line-height:var(--typography-line-height-heading-l);letter-spacing:-.3px;margin:0}
+  .id-company{display:flex;align-items:center;gap:var(--spacing-6);margin-top:var(--spacing-4);
+    font-size:var(--typography-font-size-body-m);color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold)}
+  .id-meta{margin-top:var(--spacing-12);font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+  .id-meta .src{color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold)}
+  .id-facts{margin-top:var(--spacing-4);font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+
+  /* ============ 2 · AmbitionBox rating strip (quiet, attributed intelligence) ============ */
+  .abx{display:flex;align-items:center;gap:var(--spacing-8);
+    margin:0 var(--layout-page-gutter);padding:var(--spacing-12) var(--spacing-12);
+    background:var(--colors-brand-neutral-5);border-radius:var(--border-radius-12)}
+  .abx__star{width:var(--icon-size-s);height:var(--icon-size-s);color:var(--rating-average);flex:0 0 auto}
+  .abx__num{font-weight:var(--typography-font-weight-bold)}
+  .abx__txt{flex:1;font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary)}
+  .abx__on{color:var(--text-color-brand);font-weight:var(--typography-font-weight-semibold)}
+  .abx__chev{width:var(--icon-size-s);height:var(--icon-size-s);color:var(--icon-color-tertiary);flex:0 0 auto}
+
+  /* ============ 3 · Preference Match hero (compressed, non-interactive preview) ============ */
+  .pref{margin:var(--spacing-16) var(--layout-page-gutter) 0;
+    padding:var(--spacing-16);
+    background:var(--colors-brand-10);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-20);
+    border-radius:var(--border-radius-16)}
+  .pref__top{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8)}
+  .eyebrow{font-size:var(--typography-font-size-meta-s-caps);letter-spacing:.6px;text-transform:uppercase;
+    font-weight:var(--typography-font-weight-bold);color:var(--text-color-brand)}
+  .pref__chev{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-brand)}
+  .pref__body{display:flex;align-items:center;gap:var(--spacing-16);margin-top:var(--spacing-8)}
+  .pref__num{font-size:var(--typography-font-size-display-s);line-height:1;
+    font-weight:var(--typography-font-weight-bold);color:var(--text-color-brand);letter-spacing:-1px}
+  .pref__side{display:flex;flex-direction:column;gap:var(--spacing-6);min-width:0}
+  .pref__sal{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold);white-space:nowrap}
+  .pref__est{font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-regular);color:var(--text-color-tertiary)}
+  .chip-ok{align-self:flex-start;display:inline-flex;align-items:center;gap:var(--spacing-4);
+    height:24px;padding:0 var(--spacing-8);border-radius:var(--border-radius-full);
+    background:var(--surface-good);color:var(--text-color-success);
+    font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-semibold)}
+  .chip-ok .ab-icon{width:14px;height:14px}
+  .id-titlewrap{flex:1;min-width:0}
+  .assist__ic .ab-icon{width:19px;height:19px}
+
+  /* ============ 4 · Profile Readiness (dominant) ============ */
+  .ready{padding-top:var(--spacing-32)}
+  .ready__title{font-size:var(--typography-font-size-heading-l);line-height:var(--typography-line-height-heading-l);
+    font-weight:var(--typography-font-weight-bold);letter-spacing:-.3px;margin:0}
+  .ready__count{margin-top:var(--spacing-4);font-size:var(--typography-font-size-body-m);color:var(--text-color-secondary)}
+  .ready__count b{color:var(--text-color-primary)}
+
+  /* 15-part evidence meter */
+  .seg{display:flex;gap:var(--spacing-4);margin-top:var(--spacing-16)}
+  .seg__b{flex:1 1 0;height:10px;border-radius:var(--border-radius-full);transform-origin:left center}
+  .seg__b--ok{background:var(--colors-green-50)}
+  .seg__b--need{background:var(--colors-yellow-50)}
+  .seg__b--miss{background:var(--colors-red-50)}
+  .seg__b--unknown{background:var(--colors-grey-30)}
+
+  /* collapsible groups — quiet Lovi rows */
+  .grp{border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .grp:first-of-type{margin-top:var(--spacing-16)}
+  .grp__head{display:flex;align-items:center;gap:var(--spacing-12);width:100%;
+    padding:var(--spacing-16) 0;background:transparent;border:0;cursor:pointer;color:inherit;font:inherit;text-align:left}
+  .dot{width:10px;height:10px;border-radius:var(--border-radius-full);flex:0 0 auto}
+  .dot--ok{background:var(--colors-green-50)}
+  .dot--need{background:var(--colors-yellow-50)}
+  .dot--miss{background:var(--colors-red-50)}
+  .dot--unknown{background:var(--colors-grey-40)}
+  .grp__title{flex:1;min-width:0}
+  .grp__name{display:block;font-size:var(--typography-font-size-heading-s);font-weight:var(--typography-font-weight-bold)}
+  .grp__sub{display:block;font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary);margin-top:2px}
+  .grp__count{font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold);
+    color:var(--text-color-secondary)}
+  .grp__chev{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-tertiary);flex:0 0 auto;
+    transition:transform .28s cubic-bezier(.34,1.2,.64,1)}
+  .grp__head[aria-expanded="true"] .grp__chev{transform:rotate(180deg)}
+
+  /* spring-like accordion (height + opacity) */
+  .grp__panel{display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .32s cubic-bezier(.34,1.2,.64,1),opacity .24s ease}
+  .grp__head[aria-expanded="true"] + .grp__panel{grid-template-rows:1fr;opacity:1}
+  .grp__panelin{overflow:hidden;min-height:0}
+
+  /* confirmed-match labels (labels only, revealed on expand) */
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-8) var(--spacing-16);
+    padding:0 0 var(--spacing-16) var(--spacing-20)}
+  .match{display:flex;align-items:flex-start;gap:var(--spacing-8);font-size:var(--typography-font-size-body-s);
+    color:var(--text-color-secondary)}
+  .match .ab-icon{width:15px;height:15px;color:var(--icon-color-success);flex:0 0 auto;margin-top:2px}
+
+  /* evidence / mismatch / unknown rows — quiet full-width, one concise sentence */
+  .rows{padding:0 0 var(--spacing-12) var(--spacing-20)}
+  .row{padding:var(--spacing-4) 0 var(--spacing-16)}
+  .row + .row{border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light);padding-top:var(--spacing-16)}
+  .row__head{display:flex;align-items:center;gap:var(--spacing-8)}
+  .row__ind{width:8px;height:8px;border-radius:var(--border-radius-full);flex:0 0 auto}
+  .row__title{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .row__line{margin:var(--spacing-4) 0 0;font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary);line-height:20px}
+
+  /* ============ 5 · Career Assistant invitation (light, contextual, educational) ============ */
+  .assist{display:flex;align-items:center;gap:var(--spacing-12);
+    margin:var(--spacing-24) var(--layout-page-gutter) 0;
+    padding:var(--spacing-12) var(--spacing-16);
+    background:var(--colors-brand-neutral-5);
+    border:var(--stroke-weight-regular) solid var(--border-color-divider-light);
+    border-radius:var(--border-radius-12)}
+  .assist__ic{width:34px;height:34px;border-radius:var(--border-radius-full);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;background:var(--colors-brand-10);color:var(--icon-color-brand)}
+  .assist__t b{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .assist__t span{display:block;font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary);margin-top:2px}
+
+  /* ============ 6 · Persistent action dock ============ */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:20;max-width:430px;margin:0 auto;
+    background:var(--surface-default);border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light);
+    padding:var(--spacing-12) var(--layout-page-gutter);
+    padding-bottom:calc(var(--spacing-8) + env(safe-area-inset-bottom,0px));
+    display:flex;flex-direction:column;align-items:center;gap:var(--spacing-4);box-shadow:var(--elevation-level-2)}
+  .dock .ab-btn{width:100%}
+  .dock__apply{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-6);
+    height:40px;padding:0 var(--spacing-12);border-radius:var(--border-radius-8);
+    color:var(--text-color-tertiary);font-weight:var(--typography-font-weight-semibold);
+    font-size:var(--control-text-font-size-m);text-decoration:none}
+  .dock__apply:hover{color:var(--text-color-secondary);background:var(--background-row-hover)}
+  .dock__apply .ab-icon{width:16px;height:16px}
+
+  /* ---------- restrained motion ---------- */
+  @keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .seq{animation:riseIn .5s cubic-bezier(.22,.61,.36,1) both}
+  .seq2{animation-delay:.09s}
+  .seq3{animation-delay:.18s}
+  @keyframes segIn{from{opacity:0;transform:scaleX(.15)}to{opacity:1;transform:none}}
+  .seg--anim .seg__b{animation:segIn .42s cubic-bezier(.22,.61,.36,1) both}
+
+  @media (prefers-reduced-motion:reduce){
+    .seq,.seq2,.seq3{animation:none}
+    .seg--anim .seg__b{animation:none}
+    .grp__chev,.grp__panel{transition:none}
+    .skip{transition:none}
+  }
+
+  :focus-visible{outline:var(--stroke-weight-medium) solid var(--border-color-focus-ring);outline-offset:2px;border-radius:var(--border-radius-8)}
+
+  /* capture modes (inert without the query param): pin an exact phone width for screenshots */
+  body.flat .seq,body.flat .seq2,body.flat .seq3{animation:none}
+  body.flat .screen{padding-bottom:0;min-height:0}
+  body.flat .dock{position:static;box-shadow:none;border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to job details</a>
+
+  <div class="screen">
+
+    <!-- ============ Minimal top chrome ============ -->
+    <div class="topbar">
+      <button type="button" class="iconbtn" aria-label="Go back">
+        <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="iconbtn" aria-label="Save this job">
+        <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+      </button>
+    </div>
+
+    <main id="main">
+
+      <!-- ============ 1 · Job & company identity ============ -->
+      <section class="identity gutter seq" aria-label="Job and company">
+        <div class="id-row">
+          <div class="id-logo" aria-hidden="true">J</div>
+          <div class="id-titlewrap">
+            <h1 class="id-title">Senior Backend Engineer</h1>
+            <div class="id-company">
+              Juspay
+              <svg class="ab-icon ab-icon--filled ic-verified" viewBox="0 0 24 24" aria-label="Verified employer"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5z"/><path class="ic-verified__tick" d="m9 12 2 2 4-4"/></svg>
+            </div>
+          </div>
+        </div>
+        <p class="id-meta"><span class="src">via Naukri</span> · Posted 2 days ago</p>
+        <p class="id-facts">Bengaluru · Full-time · Hybrid · 6–9 years</p>
+      </section>
+
+      <!-- ============ 2 · AmbitionBox rating strip (quiet intelligence) ============ -->
+      <div class="abx seq" aria-label="AmbitionBox rating: 4.0 out of 5, based on 847 reviews">
+        <svg class="abx__star ab-icon ab-icon--filled" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8-4.3-4.1 5.9-.9z"/></svg>
+        <span class="abx__txt"><span class="abx__num tnum">4.0</span> on <span class="abx__on">AmbitionBox</span> · <span class="tnum">847</span> reviews</span>
+        <svg class="abx__chev ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+      </div>
+
+      <!-- ============ 3 · Preference Match hero (compressed, non-interactive preview) ============ -->
+      <section class="pref seq2" aria-label="Preference match: 89 percent. Estimated salary 24 to 30 lakhs, above your 22 lakh target.">
+        <div class="pref__top">
+          <span class="eyebrow">Preference Match</span>
+          <svg class="pref__chev ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+        <div class="pref__body">
+          <span class="pref__num tnum">89%</span>
+          <div class="pref__side">
+            <span class="pref__sal"><span class="tnum">₹24–30L</span> <span class="pref__est">AmbitionBox estimate</span></span>
+            <span class="chip-ok">
+              <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></svg>
+              Above <span class="tnum">₹22L</span> target
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4 · Profile Readiness (dominant) ============ -->
+      <section class="ready gutter seq3" aria-label="Profile readiness">
+        <h2 class="ready__title">Profile Readiness</h2>
+        <p class="ready__count"><b class="tnum">10 of 15</b> requirements evidenced</p>
+
+        <div class="seg" id="meter" role="img" aria-label="Of 15 requirements: 10 confirmed matches, 3 need evidence, 1 mismatch, 1 unknown">
+          <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+          <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+          <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+          <span class="seg__b seg__b--ok"></span>
+          <span class="seg__b seg__b--need"></span><span class="seg__b seg__b--need"></span><span class="seg__b seg__b--need"></span>
+          <span class="seg__b seg__b--miss"></span>
+          <span class="seg__b seg__b--unknown"></span>
+        </div>
+
+        <!-- Confirmed matches — COLLAPSED -->
+        <div class="grp">
+          <button type="button" class="grp__head" aria-expanded="false" aria-controls="grp-confirmed">
+            <span class="dot dot--ok" aria-hidden="true"></span>
+            <span class="grp__title"><span class="grp__name">Confirmed matches</span><span class="grp__sub">Clear, relevant evidence</span></span>
+            <span class="grp__count tnum">10</span>
+            <svg class="grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="grp__panel" id="grp-confirmed">
+            <div class="grp__panelin">
+              <div class="match-grid">
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>6 years backend engineering</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Payments &amp; fintech systems</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>REST &amp; gRPC API design</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Microservices architecture</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>PostgreSQL &amp; data modelling</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Redis &amp; caching</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Kafka &amp; event-driven systems</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>AWS production systems</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Monitoring &amp; incident response</span>
+                <span class="match"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Code reviews &amp; mentoring</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence needed — EXPANDED -->
+        <div class="grp">
+          <button type="button" class="grp__head" aria-expanded="true" aria-controls="grp-evidence">
+            <span class="dot dot--need" aria-hidden="true"></span>
+            <span class="grp__title"><span class="grp__name">Evidence needed</span><span class="grp__sub">You may have it — not shown yet</span></span>
+            <span class="grp__count tnum">3</span>
+            <svg class="grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="grp__panel" id="grp-evidence">
+            <div class="grp__panelin">
+              <div class="rows">
+                <div class="row">
+                  <div class="row__head"><span class="row__ind dot--need" aria-hidden="true"></span><span class="row__title">System-design ownership</span></div>
+                  <p class="row__line">Contributes to architecture, but end-to-end ownership of a major system design isn't shown yet.</p>
+                </div>
+                <div class="row">
+                  <div class="row__head"><span class="row__ind dot--need" aria-hidden="true"></span><span class="row__title">Scale &amp; throughput metrics</span></div>
+                  <p class="row__line">Large-scale systems are mentioned, but concrete volume, latency, or reliability numbers aren't shown.</p>
+                </div>
+                <div class="row">
+                  <div class="row__head"><span class="row__ind dot--need" aria-hidden="true"></span><span class="row__title">Cross-team technical leadership</span></div>
+                  <p class="row__line">Mentoring is visible, but leadership across several engineering teams isn't established.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Requirement mismatch — EXPANDED -->
+        <div class="grp">
+          <button type="button" class="grp__head" aria-expanded="true" aria-controls="grp-mismatch">
+            <span class="dot dot--miss" aria-hidden="true"></span>
+            <span class="grp__title"><span class="grp__name">Requirement mismatch</span><span class="grp__sub">A confirmed gap against the role</span></span>
+            <span class="grp__count tnum">1</span>
+            <svg class="grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="grp__panel" id="grp-mismatch">
+            <div class="grp__panelin">
+              <div class="rows">
+                <div class="row">
+                  <div class="row__head"><span class="row__ind dot--miss" aria-hidden="true"></span><span class="row__title">Java production experience</span></div>
+                  <p class="row__line">The role asks for 3+ years of production Java; you confirmed you haven't used Java in production.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unknown — COLLAPSED -->
+        <div class="grp">
+          <button type="button" class="grp__head" aria-expanded="false" aria-controls="grp-unknown">
+            <span class="dot dot--unknown" aria-hidden="true"></span>
+            <span class="grp__title"><span class="grp__name">Unknown</span><span class="grp__sub">Not yet confirmed with you</span></span>
+            <span class="grp__count tnum">1</span>
+            <svg class="grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="grp__panel" id="grp-unknown">
+            <div class="grp__panelin">
+              <div class="rows">
+                <div class="row">
+                  <div class="row__head"><span class="row__ind dot--unknown" aria-hidden="true"></span><span class="row__title">Hands-on Kubernetes ownership</span></div>
+                  <p class="row__line">Not evidenced in your résumé and not yet confirmed — it isn't counted for or against you.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5 · Career Assistant invitation (light, educational) ============ -->
+      <aside class="assist seq3" aria-label="Career Assistant">
+        <span class="assist__ic" aria-hidden="true">
+          <svg class="ab-icon" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" opacity=".55"/><path d="m12 8 1.5 2.5L16 12l-2.5 1.5L12 16l-1.5-2.5L8 12l2.5-1.5z" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <span class="assist__t">
+          <b>Career Assistant</b>
+          <span>Strengthen missing evidence and tailor your résumé for this role</span>
+        </span>
+      </aside>
+
+    </main>
+  </div>
+
+  <!-- ============ 6 · Persistent action dock ============ -->
+  <nav class="dock" aria-label="Job actions">
+    <button type="button" class="ab-btn ab-btn--primary ab-btn--lg">
+      <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v5c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+      Strengthen My Application
+    </button>
+    <a class="dock__apply" href="https://www.naukri.com" target="_blank" rel="noopener">
+      Apply on Naukri
+      <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+    </a>
+  </nav>
+
+<style>
+  /* verified badge tick uses the surface token (no raw hex) */
+  .ic-verified{width:16px;height:16px;color:var(--icon-color-brand)}
+  .ic-verified__tick{fill:none;stroke:var(--surface-default);stroke-width:2}
+</style>
+
+<script>
+  // Accessible accordion toggles (the only genuinely interactive controls on this screen)
+  document.querySelectorAll('.grp__head').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btn.setAttribute('aria-expanded', btn.getAttribute('aria-expanded') !== 'true');
+    });
+  });
+
+  // Deliberate left-to-right evidence-meter reveal (one meaningful progress moment)
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var meter = document.getElementById('meter');
+    if (!meter || reduce) return;
+    meter.querySelectorAll('.seg__b').forEach(function(b,i){ b.style.animationDelay = (i*38)+'ms'; });
+    meter.classList.add('seg--anim');
+  })();
+
+  // Screenshot capture helpers (inert without a query param):
+  //   ?flat=<w>  → pin phone to <w>px, dock inline, report full height  (full-length screenshot)
+  //   ?frame=<w> → pin phone to <w>px, keep dock fixed                  (real docked viewport shot)
+  //   ...&open   → expand every group
+  (function(){
+    var s = location.search;
+    function pin(w){
+      var px = w + 'px', sc = document.querySelector('.screen'), d = document.querySelector('.dock');
+      sc.style.margin='0'; sc.style.width=px; sc.style.maxWidth=px; sc.style.minWidth=px;
+      if (d){ d.style.margin='0'; d.style.left='0'; d.style.right='auto'; d.style.width=px; d.style.maxWidth=px; }
+    }
+    if (s.indexOf('open=confirmed') !== -1)
+      document.querySelector('[aria-controls="grp-confirmed"]').setAttribute('aria-expanded','true');
+    else if (s.indexOf('open') !== -1)
+      document.querySelectorAll('.grp__head').forEach(function(b){ b.setAttribute('aria-expanded','true'); });
+    var mFlat = s.match(/flat=(\d+)/), mFrame = s.match(/frame=(\d+)/);
+    if (mFlat){
+      document.body.classList.add('flat'); pin(mFlat[1]);
+      window.addEventListener('load', function(){
+        requestAnimationFrame(function(){ document.title = 'H=' + document.documentElement.scrollHeight; });
+      });
+    } else if (mFrame){ pin(mFrame[1]); }
+  })();
+</script>
+</body>
+</html>

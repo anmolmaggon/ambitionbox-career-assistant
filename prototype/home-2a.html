@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  AmbitionBox Career Assistant — Home, Checkpoint 2A · "Career Action Hub" (v2 refinement)
+  Direction: Immersive top + chunky destination tabs, calm sparse middle,
+  aurora "For today" moment. Persistent Career Assistant pill (only bottom control).
+  Isolated files: home-2a.html / home-2a.css / home-2a.js. Shares (READ-ONLY) tokens.css +
+  components.css. Non-Home tabs are prototype-only preview buttons.
+  The Juspay opportunity links to the locked job-detail-1a-direction-b.html.
+  States: ?state=opening | review | transition | reranked | loading
+  Quote:  &quote=concealed | revealed       Capture: &cap=1 (freeze animation)
+  Date:   &date=YYYY-MM-DD                  Time-of-day: &tod=morning|afternoon|evening
+-->
+<html lang="en" data-device="mobile">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#c6d4fb">
+<title>AmbitionBox — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<link rel="stylesheet" href="home-2a.css">
+</head>
+<body data-state="opening">
+  <a class="skip" href="#hub">Skip to your next action</a>
+
+  <div class="screen">
+
+    <!-- ============ Immersive top: greeting + chunky destination tabs ============ -->
+    <div class="top">
+      <header class="hd">
+        <div class="hd__lead">
+          <p class="hd__eyebrow" id="dateDisplay"></p>
+          <h1 class="hd__greet" id="greetText">Good morning, Arjun</h1>
+        </div>
+        <div class="hd__tools">
+          <button type="button" class="hd__btn" aria-label="Notifications — you have unread alerts">
+            <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="hd__dot" aria-hidden="true"></span>
+          </button>
+          <span class="hd__avatar" role="img" aria-label="Arjun Mehta">AM</span>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Career sections">
+        <span class="tabs__row">
+          <span class="tab tab--active" role="link" aria-current="page" aria-label="Home">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7" fill="none"/><path d="M6 10v9h5v-5h2v5h5v-9" fill="currentColor"/></svg></span>
+            <span class="tab__lb">Home</span>
+          </span>
+          <button type="button" class="tab" aria-label="Pipeline">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 18c5 0 4-8 9-8" fill="none"/><circle cx="5" cy="18" r="2.4" fill="currentColor" stroke="none"/><circle cx="10.5" cy="12.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="9.5" r="2.6" fill="currentColor"/></svg></span>
+            <span class="tab__lb">Pipeline</span>
+          </button>
+          <a class="tab" href="matches-2b.html" aria-label="Matches">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="12" height="9" rx="2" fill="currentColor"/><path d="M8 5h11a1 1 0 0 1 1 1v9" fill="none"/><path d="M18.5 4.5l.6 1.3 1.4.6-1.4.6-.6 1.3-.6-1.3-1.4-.6 1.4-.6z" fill="currentColor" stroke="none"/></svg></span>
+            <span class="tab__lb">Matches</span>
+          </a>
+          <button type="button" class="tab" aria-label="Events">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5" fill="currentColor"/><path d="M4 9h16" stroke="var(--colors-brand-10)" stroke-width="2"/><path d="M9 3v4M15 3v4"/></svg></span>
+            <span class="tab__lb">Events</span>
+          </button>
+          <button type="button" class="tab" aria-label="Prep">
+            <span class="tab__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/><circle cx="12" cy="12" r="3.4" fill="var(--colors-brand-10)" stroke="none"/></svg></span>
+            <span class="tab__lb">Prep</span>
+          </button>
+        </span>
+      </nav>
+    </div>
+
+    <main id="hub">
+
+      <!-- ============ Next-best action + other active opportunity ============ -->
+      <!-- JS reconfigures these two slots per state. Static markup = opening state. -->
+      <section class="next gutter" aria-label="Your next best action — things you're already in motion on">
+        <p class="lead">Your next best action</p>
+
+        <div class="next__hero" id="hero-slot">
+          <article class="oppo oppo--hero" data-oppo="phonepe">
+            <!-- === Opening panel === -->
+            <div class="oppo__panel oppo__panel--opening" data-panel="opening">
+              <p class="oppo__eyebrow">
+                <svg class="ab-icon oppo__eyebrow-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                From your inbox · <span class="tnum">43</span> min ago
+              </p>
+              <h2 class="oppo__title">Reply to the PhonePe recruiter</h2>
+              <p class="oppo__body">They&rsquo;ve offered two times for your technical screen.</p>
+              <div class="oppo__times" role="group" aria-label="Offered times">
+                <span class="oppo__slot tnum"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Wed 11:00 AM</span>
+                <span class="oppo__slot tnum"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Thu 4:00 PM</span>
+              </div>
+              <button type="button" class="oppo__cta" data-action="enter-review">
+                <span class="oppo__cta-label">Review reply</span>
+                <svg class="ab-icon oppo__cta-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+              </button>
+              <p class="oppo__note">You review and send from your inbox — AmbitionBox never replies for you.</p>
+            </div>
+
+            <!-- === Review panel (hidden by default, shown in review state) === -->
+            <div class="oppo__panel oppo__panel--review" data-panel="review" hidden>
+              <p class="oppo__eyebrow">
+                <svg class="ab-icon oppo__eyebrow-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                PhonePe · Technical screen scheduling
+              </p>
+              <h2 class="oppo__title oppo__title--review">Your drafted reply</h2>
+
+              <div class="review" role="group" aria-label="Review your reply before sending">
+                <p class="review__label">Selected time</p>
+                <div class="review__times" role="radiogroup" aria-label="Choose a time slot">
+                  <span class="review__slot tnum" role="radio" aria-checked="false">
+                    <span class="review__radio" aria-hidden="true"></span>
+                    <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    Wed 11:00 AM
+                  </span>
+                  <span class="review__slot review__slot--selected tnum" role="radio" aria-checked="true">
+                    <span class="review__radio" aria-hidden="true"></span>
+                    <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    Thu 4:00 PM
+                  </span>
+                </div>
+                <div class="review__preview">
+                  <p class="review__preview-label">Response preview</p>
+                  <p class="review__preview-text">&ldquo;Hi, thank you for the scheduling options. Thursday at 4:00 PM works well for me. Looking forward to the technical screen.&rdquo;</p>
+                </div>
+              </div>
+
+              <div class="oppo__actions">
+                <button type="button" class="oppo__back" data-action="back-to-opening">
+                  <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                  Back
+                </button>
+                <button type="button" class="oppo__cta oppo__cta--approve" data-action="approve-send">
+                  <span class="oppo__cta-label">Approve and send reply</span>
+                </button>
+              </div>
+              <p class="oppo__note">AmbitionBox never replies without your explicit approval.</p>
+            </div>
+
+            <!-- === Sent confirmation (brief, shown during transition) === -->
+            <div class="oppo__panel oppo__panel--sent" data-panel="sent" hidden>
+              <div class="oppo__sent-confirm">
+                <svg class="ab-icon oppo__sent-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
+                <p class="oppo__sent-title">Reply sent</p>
+                <p class="oppo__sent-detail">Thu 4:00 PM confirmed with the PhonePe recruiter.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="next__secondary" id="secondary-slot">
+          <a class="oppo oppo--compact" data-oppo="juspay" href="job-detail-1b.html" aria-label="Juspay — Senior Backend Engineer, 89% Preference Match, résumé reviewed and ready to apply. Open job detail.">
+            <span class="oppo__logo oppo__logo--juspay" aria-hidden="true">J</span>
+            <span class="oppo__body-wrap">
+              <span class="oppo__company">Juspay</span>
+              <span class="oppo__role">Senior Backend Engineer</span>
+              <span class="oppo__status oppo__status--ready">
+                <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
+                Résumé reviewed · Ready to apply
+              </span>
+            </span>
+            <span class="oppo__pref" aria-hidden="true">
+              <span class="oppo__pref-num tnum"><span class="spark spark--sm"><svg viewBox="0 0 24 24"><path d="m12 6 1.7 2.8L16.5 10.5l-2.8 1.7L12 15l-1.7-2.8L7.5 10.5l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>89%</span>
+              <span class="oppo__pref-lbl">Preference<br>Match</span>
+            </span>
+            <svg class="ab-icon oppo__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============ Worth your attention — one mixed rail ============ -->
+      <section class="attn" aria-label="New for you">
+        <div class="attn__head gutter">
+          <h2 class="section-title">New for you</h2>
+          <div class="attn__nav">
+            <button type="button" class="attn__btn" data-scroll="prev" aria-label="Scroll attention cards left">
+              <svg class="ab-icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button type="button" class="attn__btn" data-scroll="next" aria-label="Scroll attention cards right">
+              <svg class="ab-icon" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <ul class="attn__rail" role="list" aria-label="New for you">
+          <li class="attn-card" role="listitem">
+            <button type="button" class="attn-card__link" aria-label="Job match — Zeta, Senior Backend Engineer, 86% Preference Match, matched on Payments and Kafka">
+              <span class="attn-card__type attn-card__type--job">Job match</span>
+              <span class="attn-card__row">
+                <span class="oppo__logo oppo__logo--zeta" aria-hidden="true">Z</span>
+                <span class="attn-card__id">
+                  <span class="attn-card__company">Zeta</span>
+                  <span class="attn-card__role">Senior Backend Engineer</span>
+                </span>
+              </span>
+              <span class="attn-card__pref" aria-hidden="true">
+                <span class="spark spark--sm"><svg viewBox="0 0 24 24"><path d="m12 6 1.7 2.8L16.5 10.5l-2.8 1.7L12 15l-1.7-2.8L7.5 10.5l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>
+                <b class="tnum">86%</b> Preference Match
+              </span>
+              <span class="attn-card__reason">Payments · Kafka</span>
+            </button>
+          </li>
+
+          <li class="attn-card" role="listitem">
+            <button type="button" class="attn-card__link" aria-label="Event — Cracking backend system design, tomorrow at 7 PM, relevant to your PhonePe screen">
+              <span class="attn-card__type attn-card__type--event">Event</span>
+              <span class="attn-card__icon attn-card__icon--event" aria-hidden="true">
+                <svg class="ab-icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+              </span>
+              <span class="attn-card__title">Cracking backend system design</span>
+              <span class="attn-card__when tnum">Tomorrow · 7 PM</span>
+              <span class="attn-card__reason">Relevant to your PhonePe screen</span>
+            </button>
+          </li>
+
+          <li class="attn-card" role="listitem">
+            <button type="button" class="attn-card__link" aria-label="Profile — add scale and throughput evidence, strengthens future senior-backend applications">
+              <span class="attn-card__type attn-card__type--profile">Profile</span>
+              <span class="attn-card__icon attn-card__icon--profile" aria-hidden="true">
+                <svg class="ab-icon" viewBox="0 0 24 24"><path d="M3 17l5-5 3 3 5-6 5 6"/><circle cx="8" cy="8" r="2"/></svg>
+              </span>
+              <span class="attn-card__title">Add scale and throughput evidence</span>
+              <span class="attn-card__reason attn-card__reason--tall">Strengthens future senior-backend applications</span>
+            </button>
+          </li>
+          <li class="attn__endcap" role="presentation" aria-hidden="true"></li>
+        </ul>
+      </section>
+
+      <!-- ============ Momentum — last 30 days ============ -->
+      <section class="momentum gutter" aria-label="Your momentum over the last 30 days">
+        <p class="section-eyebrow">Your momentum · <span class="tnum">Last 30 days</span></p>
+        <div class="momentum__card">
+          <ul class="momentum__rail" role="list">
+            <li class="momentum__stat">
+              <span class="momentum__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <b class="tnum" data-target="5">0</b><span>applications sent</span>
+            </li>
+            <li class="momentum__stat">
+              <span class="momentum__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 6h16M16 10h-8M16 14h-8M10 18H8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+              <b class="tnum" data-target="4">0</b><span>tailored résumés</span>
+            </li>
+            <li class="momentum__stat">
+              <span class="momentum__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/></svg></span>
+              <b class="tnum" data-target="3">0</b><span>prep sessions</span>
+            </li>
+            <li class="momentum__stat">
+              <span class="momentum__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+              <b class="tnum" data-target="18">0</b><span>questions practised</span>
+            </li>
+            <li class="momentum__stat">
+              <span class="momentum__ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+              <b class="tnum" data-target="2">0</b><span>interviews reached</span>
+            </li>
+          </ul>
+          <div class="momentum__fade" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <!-- ============ For today — aurora affirmation (concealed → reveal) ============ -->
+      <section class="today" aria-label="For today">
+        <button type="button" class="affirm" id="quoteCard" data-quote-id="actionable" data-quote="concealed" aria-live="polite" aria-label="Reveal today's note">
+          <span class="affirm__aurora" aria-hidden="true">
+            <span class="ab-blob ab-blob--1"></span><span class="ab-blob ab-blob--2"></span><span class="ab-blob ab-blob--3"></span><span class="ab-blob ab-blob--4"></span>
+          </span>
+          <span class="affirm__veil" aria-hidden="true">
+            <span class="affirm__shimmer"></span>
+            <span class="affirm__hint"><span class="affirm__dot"></span>Tap to reveal today&rsquo;s note</span>
+          </span>
+          <span class="affirm__body">
+            <span class="affirm__text" id="quoteText">You don&rsquo;t need to do everything today. Just the next useful thing.</span>
+          </span>
+        </button>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============ Persistent bottom ============ -->
+  <div class="floatbar">
+    <button type="button" class="explore" aria-label="Explore AmbitionBox">
+      <svg class="ab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16.2 7.8-2.3 6.1-6.1 2.3 2.3-6.1z" fill="currentColor"/></svg>
+    </button>
+    <button type="button" class="ask" aria-label="Ask the Career Assistant">
+      <img class="ask__orb" src="assets/ai-icon.svg" alt="" aria-hidden="true">
+      <span class="ask__ph">Ask the Career Assistant</span>
+      <span class="ask__send" aria-hidden="true">
+        <svg class="ab-icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </span>
+    </button>
+  </div>
+
+  <script src="home-2a.js"></script>
+</body>
+</html>

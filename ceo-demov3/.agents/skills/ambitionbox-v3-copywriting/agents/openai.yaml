@@ -1,0 +1,4 @@
+interface:
+  display_name: "AmbitionBox V3 Copywriting"
+  short_description: "Write clear, persuasive AmbitionBox copy"
+  default_prompt: "Use $ambitionbox-v3-copywriting to develop and audit copy for this AmbitionBox V3 screen."

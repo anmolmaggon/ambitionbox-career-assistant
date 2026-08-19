@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<!--
+  AmbitionBox Career Assistant — Job Detail, Checkpoint 1A · VISUAL DIRECTION B
+  Composition-only variant of job-detail-1a.html. Same canonical scenario, copy, counts,
+  statuses, salary, rating and evidence — recomposed as contained, AI-first intelligence modules
+  (structural reference: Designs so far/Job Detail Page.png). Persistent dock unchanged.
+  Scope unchanged; no bottom sheets, no assistant chat, no React port.
+-->
+<html lang="en" data-device="mobile">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>AmbitionBox — Senior Backend Engineer @ Juspay (Direction B)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:Figtree,system-ui,sans-serif;
+    color:var(--text-color-primary);
+    background:var(--background-pagenew);
+    font-size:var(--typography-font-size-body-m);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;
+  }
+  button,a,summary{touch-action:manipulation}
+  .tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+
+  .skip{position:absolute;left:var(--spacing-8);top:-48px;z-index:60;background:var(--surface-default);
+    color:var(--text-color-brand);padding:var(--spacing-8) var(--spacing-12);border-radius:var(--border-radius-8);
+    font-weight:var(--typography-font-weight-semibold);box-shadow:var(--elevation-level-2);transition:top .16s ease}
+  .skip:focus{top:var(--spacing-8)}
+
+  .screen{max-width:430px;min-width:360px;margin:0 auto;background:var(--surface-default);
+    min-height:100vh;position:relative;padding-bottom:100px}
+  .gutter{padding-left:var(--layout-page-gutter);padding-right:var(--layout-page-gutter)}
+
+  .topbar{position:sticky;top:0;z-index:15;background:var(--surface-default);
+    display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 var(--spacing-8)}
+  .iconbtn{width:40px;height:40px;border-radius:var(--border-radius-full);border:0;background:transparent;
+    color:var(--icon-color-primary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .iconbtn:hover{background:var(--background-row-hover)}
+
+  /* AmbitionBox intelligence spark mark */
+  .spark{display:inline-flex;flex:0 0 auto;color:var(--icon-color-brand)}
+  .spark svg{width:16px;height:16px}
+
+  /* ============ 1 · Job header (rating tag attached to company) ============ */
+  .identity{padding-top:var(--spacing-8);padding-bottom:var(--spacing-16)}
+  .id-row{display:flex;gap:var(--spacing-12);align-items:flex-start}
+  .id-logo{width:48px;height:48px;border-radius:var(--border-radius-12);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-weight:var(--typography-font-weight-bold);
+    font-size:var(--typography-font-size-heading-m);color:var(--text-color-inverse-primary);
+    background:var(--colors-brand-neutral-80)}
+  .id-titlewrap{flex:1;min-width:0}
+  .id-title{font-size:var(--typography-font-size-heading-l);font-weight:var(--typography-font-weight-bold);
+    line-height:var(--typography-line-height-heading-l);letter-spacing:-.3px;margin:0}
+  .id-companyline{display:flex;flex-wrap:wrap;align-items:center;gap:var(--spacing-6) var(--spacing-8);margin-top:var(--spacing-6)}
+  .id-company{display:inline-flex;align-items:center;gap:var(--spacing-4);
+    font-size:var(--typography-font-size-body-m);color:var(--text-color-primary);font-weight:var(--typography-font-weight-bold)}
+  .ic-verified{width:16px;height:16px;color:var(--icon-color-brand)}
+  .ic-verified__tick{fill:none;stroke:var(--surface-default);stroke-width:2}
+  /* AmbitionBox rating tag — coloured tile + white star + bold number (canonical treatment) */
+  .rating{display:inline-flex;align-items:center;gap:var(--spacing-6);white-space:nowrap}
+  .rating__tile{width:22px;height:22px;border-radius:var(--border-radius-4);flex:0 0 auto;
+    display:inline-flex;align-items:center;justify-content:center;background:var(--rating-good)}
+  .rating__tile .ab-icon{width:13px;height:13px;color:var(--text-color-inverse-primary)}
+  .rating__num{font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .rating__meta{font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+  .rating__meta .on{color:var(--text-color-brand);font-weight:var(--typography-font-weight-semibold)}
+  .id-meta{margin-top:var(--spacing-12);font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary)}
+  .id-meta .src{color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold)}
+
+  /* Job actions row (Save + Apply) — sits above Preference Match */
+  .actions{display:flex;gap:var(--spacing-8);margin:0 var(--layout-page-gutter)}
+  .act-save{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-6);
+    height:44px;padding:0 var(--spacing-16);border-radius:var(--border-radius-full);cursor:pointer;
+    background:var(--surface-default);border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);
+    color:var(--text-color-secondary);font-weight:var(--typography-font-weight-semibold);font-size:var(--control-text-font-size-m)}
+  .act-save:hover{background:var(--colors-brand-neutral-5)}
+  .act-save .ab-icon{width:18px;height:18px}
+  .act-apply{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-6);
+    height:44px;border-radius:var(--border-radius-full);text-decoration:none;
+    background:var(--surface-default);border:var(--stroke-weight-medium) solid var(--colors-brand-20);
+    color:var(--text-color-brand);font-weight:var(--typography-font-weight-bold);font-size:var(--control-text-font-size-m)}
+  .act-apply:hover{background:var(--colors-brand-10)}
+  .act-apply .ab-icon{width:16px;height:16px}
+
+  /* ============ 2 · Preference Match — computed intelligence module ============ */
+  .b-pref{position:relative;overflow:hidden;margin:var(--spacing-16) var(--layout-page-gutter) 0;
+    padding:var(--spacing-16);border-radius:var(--border-radius-16);
+    background:var(--surface-default);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-20);
+    box-shadow:0 0 0 3px rgba(63,92,251,.05), 0 14px 36px -16px rgba(63,92,251,.45)}
+  .b-pref::before{content:"";position:absolute;top:-70px;left:50%;transform:translateX(-50%);
+    width:150%;height:150px;background:radial-gradient(ellipse at center,rgba(63,92,251,.14),transparent 68%);
+    pointer-events:none}
+  .b-pref__head{position:relative;display:flex;align-items:center;gap:var(--spacing-8)}
+  .b-pref__title{flex:1;min-width:0;display:flex;align-items:center;gap:var(--spacing-6);
+    font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold);letter-spacing:-.2px}
+  .b-pref__score{flex:0 0 auto;display:inline-flex;align-items:center;gap:var(--spacing-4);
+    height:30px;padding:0 var(--spacing-12);border-radius:var(--border-radius-full);
+    background:var(--colors-brand-10);color:var(--text-color-brand);
+    font-weight:var(--typography-font-weight-bold);font-size:var(--typography-font-size-body-m)}
+  .b-pref__score .ab-icon{width:15px;height:15px}
+  /* merged JD + preference chips, each carrying a match status */
+  .b-chips{position:relative;display:flex;flex-wrap:wrap;gap:var(--spacing-8);margin-top:var(--spacing-16)}
+  .b-chip{display:inline-flex;align-items:center;gap:var(--spacing-6);height:34px;padding:0 var(--spacing-12);
+    border-radius:var(--border-radius-full);font-size:var(--typography-font-size-body-s);
+    font-weight:var(--typography-font-weight-semibold);white-space:nowrap}
+  .b-chip .ab-icon{width:15px;height:15px;flex:0 0 auto}
+  .b-chip--ok{background:var(--surface-good);color:var(--rating-good)}
+  .b-chip--warn{background:var(--surface-average);color:var(--text-color-warning)}
+  .b-chip--neutral{background:var(--colors-brand-neutral-5);color:var(--text-color-secondary)}
+  .b-cta{position:relative;display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);
+    margin-top:var(--spacing-12);padding-top:var(--spacing-12);
+    border-top:var(--stroke-weight-regular) solid var(--colors-brand-neutral-15);
+    font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-brand)}
+  .b-cta .ab-icon{width:18px;height:18px;color:var(--icon-color-brand)}
+
+  /* ============ 3 · Profile Readiness — single contained assessment ============ */
+  .b-ready{position:relative;overflow:hidden;margin:var(--spacing-24) var(--layout-page-gutter) 0;
+    border-radius:var(--border-radius-16);background:var(--surface-default);
+    border:var(--stroke-weight-regular) solid var(--colors-brand-neutral-20);
+    box-shadow:0 10px 26px -18px rgba(63,92,251,.4)}
+  .b-ready__top{position:relative;padding:var(--spacing-16) var(--spacing-16) var(--spacing-12)}
+  .b-ready__head{position:relative;display:flex;align-items:center;gap:var(--spacing-6)}
+  .ready__title{font-size:var(--typography-font-size-heading-m);line-height:1.2;
+    font-weight:var(--typography-font-weight-bold);letter-spacing:-.2px;margin:0}
+  .ready__count{position:relative;margin-top:var(--spacing-4);font-size:var(--typography-font-size-body-m);color:var(--text-color-secondary)}
+  .ready__count b{color:var(--text-color-primary)}
+  .seg{position:relative;display:flex;gap:var(--spacing-4);margin-top:var(--spacing-12)}
+  .seg__b{flex:1 1 0;height:10px;border-radius:var(--border-radius-full);transform-origin:left center}
+  .seg__b--ok{background:var(--colors-green-50)}
+  .seg__b--need{background:var(--colors-yellow-50)}
+  .seg__b--miss{background:var(--colors-red-50)}
+  .seg__b--unknown{background:var(--colors-grey-30)}
+
+  .b-groups{padding:0 var(--spacing-12) var(--spacing-12);display:flex;flex-direction:column;gap:var(--spacing-8)}
+  .b-grp{border-radius:var(--border-radius-12);overflow:hidden}
+  .b-grp__head{display:flex;align-items:center;gap:var(--spacing-12);width:100%;text-align:left;
+    padding:var(--spacing-12) var(--spacing-12);background:transparent;border:0;cursor:pointer;color:inherit;font:inherit}
+  .b-grp--ok  .b-grp__head{background:var(--surface-good)}
+  .b-grp--need .b-grp__head{background:var(--surface-average)}
+  .b-grp--miss .b-grp__head{background:var(--colors-red-10)}
+  .b-grp--unknown .b-grp__head{background:var(--colors-brand-neutral-10)}
+  /* expanded: the status tint fades as a gradient down through the content */
+  .b-grp--ok:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--surface-good),transparent 92%)}
+  .b-grp--need:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--surface-average),transparent 92%)}
+  .b-grp--miss:has(.b-grp__head[aria-expanded="true"]){background:linear-gradient(180deg,var(--colors-red-10),transparent 92%)}
+  .b-grp:has(.b-grp__head[aria-expanded="true"]) .b-grp__head{background:transparent}
+  .b-grp__count{width:26px;text-align:center;flex:0 0 auto;
+    font-size:var(--typography-font-size-heading-m);font-weight:var(--typography-font-weight-bold)}
+  .b-grp--ok  .b-grp__count{color:var(--colors-green-50)}
+  .b-grp--need .b-grp__count{color:var(--text-color-warning)}
+  .b-grp--miss .b-grp__count{color:var(--colors-red-60)}
+  .b-grp--unknown .b-grp__count{color:var(--text-color-tertiary)}
+  .b-grp__title{flex:1;min-width:0}
+  .b-grp__name{display:block;font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .b-grp__sub{display:block;font-size:var(--typography-font-size-body-s);color:var(--text-color-tertiary);margin-top:1px}
+  .b-grp__chev{width:var(--icon-size-m);height:var(--icon-size-m);color:var(--icon-color-tertiary);flex:0 0 auto;
+    transition:transform .28s cubic-bezier(.34,1.2,.64,1)}
+  .b-grp__head[aria-expanded="true"] .b-grp__chev{transform:rotate(180deg)}
+  .b-grp__panel{display:grid;grid-template-rows:0fr;opacity:0;
+    transition:grid-template-rows .32s cubic-bezier(.34,1.2,.64,1),opacity .24s ease}
+  .b-grp__head[aria-expanded="true"] + .b-grp__panel{grid-template-rows:1fr;opacity:1}
+  .b-grp__panelin{overflow:hidden;min-height:0}
+
+  .rows{padding:var(--spacing-4) var(--spacing-12) var(--spacing-8) var(--spacing-16)}
+  .row{padding:var(--spacing-8) 0}
+  .row + .row{border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+  .row__head{display:flex;align-items:center;gap:var(--spacing-8)}
+  .row__ind{width:8px;height:8px;border-radius:var(--border-radius-full);flex:0 0 auto}
+  .row__ind--ok{background:var(--colors-green-50)}
+  .row__ind--need{background:var(--colors-yellow-50)}
+  .row__ind--miss{background:var(--colors-red-50)}
+  .row__ind--unknown{background:var(--colors-grey-40)}
+  .row__title{flex:1;min-width:0;font-size:var(--typography-font-size-body-m);font-weight:var(--typography-font-weight-bold)}
+  .row__label{flex:0 0 auto;display:inline-flex;align-items:center;height:22px;padding:0 var(--spacing-8);
+    border-radius:var(--border-radius-full);white-space:nowrap;
+    font-size:var(--typography-font-size-meta-m);font-weight:var(--typography-font-weight-semibold)}
+  .row__label--add{background:var(--surface-average);color:var(--text-color-warning)}
+  .row__label--confirm{background:var(--colors-brand-10);color:var(--text-color-brand)}
+  /* assistant invitation at the bottom of the readiness container (link style, like "See match breakdown") */
+  .b-ready__cta{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-8);
+    padding:var(--spacing-12) var(--spacing-16);
+    border-top:var(--stroke-weight-regular) solid var(--colors-brand-neutral-15);
+    font-size:var(--typography-font-size-body-s);font-weight:var(--typography-font-weight-semibold);color:var(--text-color-brand)}
+  .b-ready__cta-lead{display:inline-flex;align-items:center;gap:var(--spacing-6);min-width:0}
+  .b-ready__cta .ab-icon{width:18px;height:18px;color:var(--icon-color-brand);flex:0 0 auto}
+  .row__line{margin:var(--spacing-4) 0 0;font-size:var(--typography-font-size-body-s);color:var(--text-color-secondary);line-height:20px}
+
+  /* ============ Persistent action dock ============ */
+  .dock{position:fixed;left:0;right:0;bottom:0;z-index:20;max-width:430px;margin:0 auto;
+    background:var(--surface-default);border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light);
+    padding:var(--spacing-8) var(--layout-page-gutter);
+    padding-bottom:calc(var(--spacing-8) + env(safe-area-inset-bottom,0px));
+    display:flex;flex-direction:column;gap:var(--spacing-6);box-shadow:var(--elevation-level-2)}
+  /* secondary — quiet Apply on Naukri, above the assistant bar */
+  /* primary — conversational AI assistant entry (ask bar) */
+  .dock__ask{position:relative;display:flex;align-items:center;gap:var(--spacing-12);width:100%;
+    height:56px;padding:0 var(--spacing-8) 0 var(--spacing-16);border-radius:var(--border-radius-full);cursor:pointer;
+    background:var(--surface-default);border:var(--stroke-weight-medium) solid var(--colors-brand-20);
+    box-shadow:0 0 0 4px rgba(63,92,251,.06), 0 12px 28px -12px rgba(63,92,251,.5);font:inherit;text-align:left}
+  .dock__ask__ph{flex:1;min-width:0;color:var(--text-color-tertiary);font-size:var(--typography-font-size-body-m);
+    font-weight:var(--typography-font-weight-semibold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dock__ask.typing .dock__ask__type::after{content:"|";margin-left:1px;color:var(--text-color-brand);
+    animation:caretBlink 1s steps(1) infinite}
+  @keyframes caretBlink{50%{opacity:0}}
+  .dock__ask__send{width:40px;height:40px;flex:0 0 auto;border-radius:var(--border-radius-full);
+    display:inline-flex;align-items:center;justify-content:center;background:var(--fab-gradient);
+    color:var(--text-color-inverse-primary);box-shadow:0 4px 12px -2px rgba(63,92,251,.5)}
+  .dock__ask__send .ab-icon{width:18px;height:18px}
+  /* AI orb — solid brand tones so it reads on the light bar */
+  .ai-orb{position:relative;z-index:1;width:24px;height:24px;flex:0 0 auto;border-radius:var(--border-radius-full);
+    background:radial-gradient(circle at 34% 28%,var(--colors-brand-30),var(--colors-brand-50) 42%,var(--colors-brand-70) 100%);
+    box-shadow:0 0 9px rgba(63,92,251,.45);animation:orbTwinkle 2.8s ease-in-out infinite}
+  @keyframes orbTwinkle{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.09)}}
+
+  /* ---------- computed-result motion sequence ---------- */
+  @keyframes bFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes bPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+  .b-seq{animation:bFade .5s cubic-bezier(.22,.61,.36,1) both}
+  .b-chips .b-chip{animation:bPop .4s cubic-bezier(.34,1.2,.64,1) both}
+  .b-chips .b-chip:nth-child(1){animation-delay:.10s}
+  .b-chips .b-chip:nth-child(2){animation-delay:.16s}
+  .b-chips .b-chip:nth-child(3){animation-delay:.22s}
+  .b-chips .b-chip:nth-child(4){animation-delay:.28s}
+  .b-chips .b-chip:nth-child(5){animation-delay:.34s}
+  .b-chips .b-chip:nth-child(6){animation-delay:.40s}
+  .b-pref__score{animation:bPop .5s cubic-bezier(.34,1.2,.64,1) both;animation-delay:.34s}
+  @keyframes segIn{from{opacity:0;transform:scaleX(.15)}to{opacity:1;transform:none}}
+  .seg--anim .seg__b{animation:segIn .42s cubic-bezier(.22,.61,.36,1) both}
+
+  @media (prefers-reduced-motion:reduce){
+    .b-seq,.b-chips .b-chip,.b-pref__score,.ai-orb{animation:none}
+    .seg--anim .seg__b{animation:none}
+    .b-grp__chev,.b-grp__panel,.skip{transition:none}
+  }
+
+  :focus-visible{outline:var(--stroke-weight-medium) solid var(--border-color-focus-ring);outline-offset:2px;border-radius:var(--border-radius-8)}
+
+  /* capture modes (inert without the query param) */
+  body.flat .b-seq,body.flat .b-chips .b-chip,body.flat .b-pref__score,body.flat .ai-orb{animation:none}
+  body.flat .screen{padding-bottom:0;min-height:0}
+  body.flat .dock{position:static;box-shadow:none;border-top:var(--stroke-weight-regular) solid var(--border-color-divider-light)}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to job details</a>
+
+  <div class="screen">
+
+    <!-- ============ Minimal top chrome ============ -->
+    <div class="topbar">
+      <button type="button" class="iconbtn" aria-label="Go back">
+        <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <main id="main">
+
+      <!-- ============ 1 · Job header ============ -->
+      <section class="identity gutter b-seq" aria-label="Job and company">
+        <div class="id-row">
+          <div class="id-logo" aria-hidden="true">J</div>
+          <div class="id-titlewrap">
+            <h1 class="id-title">Senior Backend Engineer</h1>
+            <div class="id-companyline">
+              <span class="id-company">Juspay
+                <svg class="ab-icon ab-icon--filled ic-verified" viewBox="0 0 24 24" aria-label="Verified employer"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5z"/><path class="ic-verified__tick" d="m9 12 2 2 4-4"/></svg>
+              </span>
+              <span class="rating" aria-label="AmbitionBox rating 4.0 out of 5, based on 847 reviews">
+                <span class="rating__tile" aria-hidden="true"><svg class="ab-icon ab-icon--filled" viewBox="0 0 24 24"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8-4.3-4.1 5.9-.9z"/></svg></span>
+                <span class="rating__num tnum">4.0</span>
+                <span class="rating__meta">· <span class="tnum">847</span> reviews</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="id-meta"><span class="src">via Naukri</span> · Posted 2 days ago</p>
+      </section>
+
+      <!-- ============ Job actions (Save + Apply) ============ -->
+      <div class="actions">
+        <button type="button" class="act-save">
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+          Save
+        </button>
+        <a class="act-apply" href="https://www.naukri.com" target="_blank" rel="noopener">
+          Apply on Naukri
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+
+      <!-- ============ 2 · Preference Match (computed intelligence module) ============ -->
+      <section class="b-pref" aria-label="Preference match 89 percent. Salary 24 to 30 lakhs, above your 22 lakh target; Bengaluru, Fintech, Senior level match; Hybrid 3 office days is a caveat; Full-time.">
+        <div class="b-pref__head">
+          <span class="b-pref__title">
+            <span class="spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity=".5"/><path d="m12 7 1.7 2.8L16.5 12l-2.8 1.7L12 17l-1.7-2.8L7.5 12l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>
+            Preference match
+          </span>
+          <span class="b-pref__score" aria-hidden="true">
+            <svg class="ab-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
+            <span class="tnum">89%</span>
+          </span>
+        </div>
+
+        <div class="b-chips">
+          <span class="b-chip b-chip--ok tnum"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>₹24–30L · above ₹22L target</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Bengaluru</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Fintech</span>
+          <span class="b-chip b-chip--ok"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>Senior</span>
+          <span class="b-chip b-chip--warn"><svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg>Hybrid · 3 days</span>
+          <span class="b-chip b-chip--neutral">Full-time</span>
+        </div>
+
+        <div class="b-cta">
+          See match breakdown
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+      </section>
+
+      <!-- ============ 3 · Profile Readiness (single contained assessment) ============ -->
+      <section class="b-ready" aria-label="Profile readiness">
+        <div class="b-ready__top">
+          <div class="b-ready__head">
+            <span class="spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity=".5"/><path d="m12 7 1.7 2.8L16.5 12l-2.8 1.7L12 17l-1.7-2.8L7.5 12l2.8-1.7z" fill="currentColor" stroke="none"/></svg></span>
+            <h2 class="ready__title">Profile Readiness</h2>
+          </div>
+          <p class="ready__count"><b class="tnum">10 of 15</b> requirements evidenced</p>
+          <div class="seg" id="meter" role="img" aria-label="Of 15 requirements: 10 confirmed matches, 4 need evidence, 1 mismatch">
+            <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+            <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+            <span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span><span class="seg__b seg__b--ok"></span>
+            <span class="seg__b seg__b--ok"></span>
+            <span class="seg__b seg__b--need"></span><span class="seg__b seg__b--need"></span><span class="seg__b seg__b--need"></span><span class="seg__b seg__b--need"></span>
+            <span class="seg__b seg__b--miss"></span>
+          </div>
+        </div>
+
+        <div class="b-groups">
+          <!-- Confirmed matches — COLLAPSED -->
+          <div class="b-grp b-grp--ok">
+            <button type="button" class="b-grp__head" aria-expanded="false" aria-controls="grp-confirmed">
+              <span class="b-grp__count tnum">10</span>
+              <span class="b-grp__title"><span class="b-grp__name">What already fits</span><span class="b-grp__sub">Clear, relevant evidence</span></span>
+              <svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="b-grp__panel" id="grp-confirmed">
+              <div class="b-grp__panelin">
+                <div class="rows">
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">6 years backend engineering</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Payments &amp; fintech systems</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">REST &amp; gRPC API design</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Microservices architecture</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">PostgreSQL &amp; data modelling</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Redis &amp; caching</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Kafka &amp; event-driven systems</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">AWS production systems</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Monitoring &amp; incident response</span></div></div>
+                  <div class="row"><div class="row__head"><span class="row__ind row__ind--ok" aria-hidden="true"></span><span class="row__title">Code reviews &amp; mentoring</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evidence needed — EXPANDED -->
+          <div class="b-grp b-grp--need">
+            <button type="button" class="b-grp__head" aria-expanded="true" aria-controls="grp-evidence">
+              <span class="b-grp__count tnum">4</span>
+              <span class="b-grp__title"><span class="b-grp__name">What to strengthen</span><span class="b-grp__sub tnum">3 need stronger proof · 1 needs confirmation</span></span>
+              <svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="b-grp__panel" id="grp-evidence">
+              <div class="b-grp__panelin">
+                <div class="rows">
+                  <div class="row" data-detail="Contributes to architecture, but end-to-end ownership of a major system design isn't shown yet.">
+                    <div class="row__head"><span class="row__ind row__ind--need" aria-hidden="true"></span><span class="row__title">System-design ownership</span></div>
+                  </div>
+                  <div class="row" data-detail="Large-scale systems are mentioned, but concrete volume, latency, or reliability numbers aren't shown.">
+                    <div class="row__head"><span class="row__ind row__ind--need" aria-hidden="true"></span><span class="row__title">Scale &amp; throughput metrics</span></div>
+                  </div>
+                  <div class="row" data-detail="Mentoring is visible, but leadership across several engineering teams isn't established.">
+                    <div class="row__head"><span class="row__ind row__ind--need" aria-hidden="true"></span><span class="row__title">Cross-team technical leadership</span></div>
+                  </div>
+                  <div class="row" data-status="unknown" data-detail="Not evidenced in your résumé and not yet confirmed — it isn't counted for or against you.">
+                    <div class="row__head"><span class="row__ind row__ind--need" aria-hidden="true"></span><span class="row__title">Hands-on Kubernetes ownership</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Requirement mismatch — EXPANDED -->
+          <div class="b-grp b-grp--miss">
+            <button type="button" class="b-grp__head" aria-expanded="true" aria-controls="grp-mismatch">
+              <span class="b-grp__count tnum">1</span>
+              <span class="b-grp__title"><span class="b-grp__name">What may hold you back</span><span class="b-grp__sub">A confirmed gap against the role</span></span>
+              <svg class="b-grp__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="b-grp__panel" id="grp-mismatch">
+              <div class="b-grp__panelin">
+                <div class="rows">
+                  <div class="row" data-detail="The role asks for 3+ years of production Java; you confirmed you haven't used Java in production.">
+                    <div class="row__head"><span class="row__ind row__ind--miss" aria-hidden="true"></span><span class="row__title">Java production experience</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="b-ready__cta">
+          <span class="b-ready__cta-lead">Close gaps · tailor your résumé</span>
+          <svg class="ab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============ Persistent action dock (unchanged) ============ -->
+  <nav class="dock" aria-label="Career Assistant">
+    <button type="button" class="dock__ask" aria-label="Ask the Career Assistant to close your gaps or tailor your résumé for this role">
+      <span class="ai-orb" aria-hidden="true"></span>
+      <span class="dock__ask__ph"><span class="dock__ask__type">Close gaps · tailor your résumé</span></span>
+      <span class="dock__ask__send" aria-hidden="true">
+        <svg class="ab-icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </span>
+    </button>
+  </nav>
+
+<script>
+  // Accessible accordion toggles
+  document.querySelectorAll('.b-grp__head').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btn.setAttribute('aria-expanded', btn.getAttribute('aria-expanded') !== 'true');
+    });
+  });
+
+  // Readiness meter resolves left-to-right, after the preference sequence settles
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var meter = document.getElementById('meter');
+    if (!meter || reduce) return;
+    meter.querySelectorAll('.seg__b').forEach(function(b,i){ b.style.animationDelay = (480 + i*34) + 'ms'; });
+    meter.classList.add('seg--anim');
+  })();
+
+  // Screenshot capture helpers (inert without a query param)
+  (function(){
+    var s = location.search;
+    function pin(w){
+      var px = w + 'px', sc = document.querySelector('.screen'), d = document.querySelector('.dock');
+      sc.style.margin='0'; sc.style.width=px; sc.style.maxWidth=px; sc.style.minWidth=px;
+      if (d){ d.style.margin='0'; d.style.left='0'; d.style.right='auto'; d.style.width=px; d.style.maxWidth=px; }
+    }
+    if (s.indexOf('open=confirmed') !== -1)
+      document.querySelector('[aria-controls="grp-confirmed"]').setAttribute('aria-expanded','true');
+    else if (s.indexOf('open') !== -1)
+      document.querySelectorAll('.b-grp__head').forEach(function(b){ b.setAttribute('aria-expanded','true'); });
+    var mFlat = s.match(/flat=(\d+)/), mFrame = s.match(/frame=(\d+)/);
+    if (mFlat){
+      document.body.classList.add('flat'); pin(mFlat[1]);
+      window.addEventListener('load', function(){
+        requestAnimationFrame(function(){ document.title = 'H=' + document.documentElement.scrollHeight; });
+      });
+    } else if (mFrame){ pin(mFrame[1]); }
+  })();
+
+  // Assistant ask-bar: typewriter placeholder that loops through what the assistant can do.
+  // Static in capture (flat) and reduced-motion so screenshots/a11y stay clean.
+  (function(){
+    var bar = document.querySelector('.dock__ask'), type = document.querySelector('.dock__ask__type');
+    if (!bar || !type) return;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (document.body.classList.contains('flat') || reduce) return;
+    var phrases = [
+      "Close gaps · tailor your résumé",
+      "Get insights on Juspay",
+      "What does this role involve?",
+      "How do I stand out here?"
+    ];
+    bar.classList.add('typing');
+    var pi = 0, ci = 0, del = false;
+    function tick(){
+      var full = phrases[pi];
+      ci += del ? -1 : 1;
+      type.textContent = full.slice(0, ci);
+      if (!del && ci === full.length){ del = true; return setTimeout(tick, 1500); }
+      if (del && ci === 0){ del = false; pi = (pi + 1) % phrases.length; return setTimeout(tick, 350); }
+      setTimeout(tick, del ? 28 : 55);
+    }
+    type.textContent = '';
+    setTimeout(tick, 900);
+  })();
+</script>
+</body>
+</html>
