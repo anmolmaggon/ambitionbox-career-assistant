@@ -121,7 +121,7 @@ test('first open turns a Naukri profile and Gmail into a prioritized Home', asyn
 test('parked job curation remains query-addressable and resolves to the unified email screen', async ({ page }) => {
   await page.goto('/onboarding?step=curation&hold=1&preset=baseline')
   await expect(page.getByRole('heading', { name: 'Curating jobs worth your time.' })).toBeVisible()
-  await expect(page.getByText('Across Naukri, LinkedIn, company career pages, and leading job boards.')).toBeVisible()
+  await expect(page.getByText('Across Naukri, iimjobs, Hirist, and company career pages.')).toBeVisible()
   await expect(page.locator('.job-curation-screen > header')).toHaveCount(0)
   await expect(page.getByText('Your preferences are set')).toHaveCount(0)
   await expect(page.locator('.job-curation-progress')).toHaveCount(0)
@@ -216,9 +216,14 @@ test('email skip opens a useful profile-only Home and does not reopen a modal', 
 
 test('Home assistant is contextual and names evidence limits', async ({ page }) => {
   await page.goto('/home?preset=tracker')
-  // Chips became generic pitches on 2026-08-19; the label moved, the answer did not.
-  await page.getByRole('button', { name: 'How ready am I to interview?' }).click()
-  await expect(page.getByRole('dialog', { name: 'Ask AmbitionBox' })).toBeVisible()
+  // The suggested-question chips were removed from the dock on 2026-08-19, so the test
+  // types the question instead of tapping a shortcut to it. Same question, same answer —
+  // it is now asked through the composer, which is the path that actually remains.
+  await page.getByRole('button', { name: /Ask AmbitionBox about your next move/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'Ask AmbitionBox' })
+  await expect(sheet).toBeVisible()
+  await sheet.getByRole('textbox', { name: 'Ask AmbitionBox' }).fill('How ready am I for my next interview?')
+  await sheet.getByRole('button', { name: 'Send question' }).click()
   await expect(page.getByText('I do not have an interview invitation yet.')).toBeVisible()
   await expect(page.getByText('Nothing is sent or changed automatically.')).toBeVisible()
 })
@@ -283,4 +288,72 @@ test('completed users bypass bare onboarding while stable step links remain insp
 
   await page.goto('/onboarding?step=welcome')
   await expect(page.getByText('See the roles worth your time')).toBeVisible()
+})
+
+test('setting every card aside leaves the greeting agreeing with the rail', async ({ page }) => {
+  // Regression: the dismissed list used to live inside the carousel, so the greeting
+  // never heard about it and the all-clear state read "3 things need a look" directly
+  // above an empty rail. The count now comes from the same list the carousel renders.
+  //
+  // The suite runs with reduced motion, which is the path where a set-aside card is
+  // removed immediately rather than fading first.
+  await page.goto('/home?preset=offer')
+  await expect(page.getByText(/3 things need a look/)).toBeVisible()
+
+  for (let remaining = 3; remaining > 0; remaining -= 1) {
+    await page.locator('.action-card').first().locator('.action-card-dismiss').click()
+    await page.getByRole('menuitem', { name: 'Ignore' }).first().click()
+    await expect(page.locator('.action-card')).toHaveCount(remaining - 1)
+  }
+
+  await expect(page.getByText(/nothing is waiting on you right now/)).toBeVisible()
+  // The greeting owns the only count on Home, so nothing restates it underneath.
+  await expect(page.locator('.action-carousel')).toHaveCount(0)
+})
+
+test('the review ask appears only on a calm day, last, and is never counted', async ({ page }) => {
+  // A calm day has nothing dated on it. Application updates do not disqualify one —
+  // those run on someone else's clock.
+  await page.goto('/home?preset=resume')
+  const cards = page.locator('.action-card')
+  await expect(cards.last()).toHaveClass(/action-card--contribute/)
+
+  // The greeting counts what needs the user. The ask is not one of those things, so the
+  // count is one lower than the number of cards on screen.
+  await expect(page.getByText(/3 things need a look/)).toBeVisible()
+  await expect(cards).toHaveCount(4)
+
+  // It goes somewhere that exists, and that somewhere is honest about not submitting.
+  await page.getByRole('button', { name: /Rate working at Razorpay/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'Rate working at Razorpay' })
+  await expect(sheet).toBeVisible()
+  await expect(sheet.getByText(/isn’t wired up in this prototype/)).toBeVisible()
+  await sheet.getByRole('button', { name: 'Got it' }).click()
+
+  // A booked round is a dated day, so the ask stays away.
+  await page.goto('/home?preset=interview')
+  await expect(page.locator('.action-card--contribute')).toHaveCount(0)
+})
+
+test('the post-interview card names the interview and asks for the outcome first', async ({ page }) => {
+  await page.goto('/home?preset=postinterview')
+  // A day of the week is not an interview. The card names the company, the role and the
+  // round, because this screen can hold more than one.
+  await expect(page.getByRole('heading', { name: 'How did your Juspay interview go?' })).toBeVisible()
+  await expect(page.getByText('Senior Backend Engineer · Round 1 of 4')).toBeVisible()
+
+  await page.getByRole('button', { name: /Tell AmbitionBox how it went/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'How the Juspay interview went' })
+  await expect(sheet).toBeVisible()
+
+  // The contribution is never the price of entry: the questions only appear once the
+  // outcome — the part that serves the user — has been answered.
+  await expect(sheet.getByText('What did they actually ask?')).toHaveCount(0)
+  await sheet.getByRole('button', { name: 'Hard to read' }).click()
+  await expect(sheet.getByText('What did they actually ask?')).toBeVisible()
+  await expect(sheet.getByText(/isn’t wired up in this prototype/)).toBeVisible()
+
+  // Logging it clears the card.
+  await sheet.getByRole('button', { name: /Save how it went/ }).click()
+  await expect(page.getByRole('heading', { name: 'How did your Juspay interview go?' })).toHaveCount(0)
 })

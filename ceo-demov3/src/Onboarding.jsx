@@ -137,7 +137,6 @@ function FirstOpenScreen({ onAuth }) {
     <motion.section className="first-open-pitch" {...reveal(0)}>
       <header><OnboardingLogo /></header>
       <div className="first-open-hero">
-        <h1>A smarter job search with AmbitionBox</h1>
         <ul>
           <motion.i className="first-open-flow-line" aria-hidden="true" initial={reducedMotion ? false : { scaleY: 0, opacity: 0 }} animate={{ scaleY: 1, opacity: 1 }} transition={{ duration: reducedMotion ? 0 : .72, delay: reducedMotion ? 0 : .12, ease: [0.22, 1, 0.36, 1] }} />
           {firstOpenBenefits.map(({ icon: Icon, tone, text }, index) => <motion.li
@@ -147,6 +146,7 @@ function FirstOpenScreen({ onAuth }) {
             key={text}
           ><motion.span className={`is-${tone}`} initial={reducedMotion ? false : { scale: .78 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 360, damping: 24, delay: reducedMotion ? 0 : .14 + (index * .17) }}><Icon size={21} /></motion.span><strong>{text}</strong></motion.li>)}
         </ul>
+        <motion.h1 className="first-open-signature" {...reveal(.62)}>Know what they know.<br />And what to do about it.</motion.h1>
       </div>
     </motion.section>
     <motion.footer className="first-open-auth" {...reveal(.13)}>
@@ -527,7 +527,7 @@ function PreferenceEditSheet({ field, value, onSave, onClose }) {
 const curationMessages = [
   {
     title: 'Curating jobs worth your time.',
-    detail: 'Across Naukri, LinkedIn, company career pages, and leading job boards.',
+    detail: 'Across Naukri, iimjobs, Hirist, and company career pages.',
   },
   {
     title: 'Checking what actually fits you.',
@@ -561,7 +561,7 @@ function JobCurationTransition({ onDone, hold = false }) {
     return () => { clearTimeout(secondMessage); clearTimeout(thirdMessage); clearTimeout(done) }
   }, [hold, onDone, reducedMotion])
   const message = reducedMotion
-    ? { title: curationMessages[0].title, detail: 'Across Naukri, LinkedIn, company career pages, and job boards, matched against the preferences you just reviewed.' }
+    ? { title: curationMessages[0].title, detail: 'Across Naukri, iimjobs, Hirist, and company career pages, matched against the preferences you just reviewed.' }
     : curationMessages[messageIndex]
 
   return <motion.main

@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  ArrowLeft, BriefcaseBusiness, ChevronRight, Compass, Home, Sparkles, X,
+  ArrowLeft, BriefcaseBusiness, ChevronRight, Compass, Home, Send, X,
 } from 'lucide-react'
 import { candidate } from './data'
 
@@ -72,12 +73,93 @@ export function BottomNav({ active }) {
   )
 }
 
-export function AssistantDock({ onClick, label = 'Ask AmbitionBox' }) {
+/*
+ * The assistant's mark, one glyph everywhere it speaks — the dock pill, the assistant
+ * sheet, the job-detail dock. It is the orb from prototype/job-detail-1b.html rather
+ * than a sparkle: a sparkle is the generic sign for "an AI did something", which
+ * context/UI.md rules out by name, and the orb is this product's own mark.
+ */
+export function AssistantMark({ className = 'assistant-mark' }) {
+  return <img className={className} src="/ai-orb.svg" alt="" aria-hidden="true" />
+}
+
+export function useTypewriter(phrases, enabled) {
+  const [typed, setTyped] = useState('')
+  const [phrase, setPhrase] = useState(0)
+  const [erasing, setErasing] = useState(false)
+
+  useEffect(() => {
+    if (!enabled) return undefined
+    const target = phrases[phrase % phrases.length]
+    if (!erasing && typed === target) {
+      const hold = setTimeout(() => setErasing(true), 2000)
+      return () => clearTimeout(hold)
+    }
+    if (erasing && typed === '') {
+      setErasing(false)
+      setPhrase((current) => current + 1)
+      return undefined
+    }
+    const step = setTimeout(
+      () => setTyped(erasing ? target.slice(0, typed.length - 1) : target.slice(0, typed.length + 1)),
+      erasing ? 20 : 48,
+    )
+    return () => clearTimeout(step)
+  }, [typed, erasing, phrase, enabled, phrases])
+
+  return typed
+}
+
+/*
+ * The pill types out example questions the way a search field cycles a placeholder. The
+ * typed line is the placeholder and is hidden from assistive tech; the button keeps its
+ * `label` as the accessible name, which is the contract string a screen reader should
+ * hear. Under reduced motion the label is what is drawn, immediately and without a caret.
+ */
+export function AskPill({ label, examples, reduceMotion, onOpen }) {
+  const animate = !reduceMotion && examples?.length
+  const typed = useTypewriter(examples || [], Boolean(animate))
   return (
-    <button className="assistant-dock" onClick={onClick}>
-      <span className="assistant-orb"><Sparkles size={16} /></span>
-      <span>{label}</span><ChevronRight size={18} />
+    <button className="home-dock-ask" onClick={onOpen} aria-label={label}>
+      <AssistantMark className="home-dock-mark" />
+      {animate
+        ? <span className="home-dock-typed" aria-hidden="true">{typed}<i /></span>
+        : <span aria-hidden="true">{label}</span>}
+      <Send size={16} />
     </button>
+  )
+}
+
+export function PromptChips({ prompts, onAsk, className = 'home-dock-chips' }) {
+  if (!prompts?.length) return null
+  return (
+    <div className={className} aria-label="Suggested questions">
+      {prompts.map(({ label, question }) => <button key={label} onClick={() => onAsk(question)}>{label}</button>)}
+    </div>
+  )
+}
+
+/*
+ * The bottom cluster — MOB-HOME-001 (Cleo) — promoted to app-wide chrome on 2026-08-19.
+ *
+ * The ask pill and the tabs read as one sheet resting over the canvas, so Ask is
+ * reachable from any scroll position on any screen that renders it. The grab handle is a
+ * real control: it opens the assistant, where a swipe up would land.
+ * Explore is deliberately absent — the capability index lives inside the assistant sheet.
+ *
+ * The suggested-question chips were removed on 2026-08-19, after the same chips had
+ * already been cut from the assistant sheet. Two rows of chrome were standing between
+ * the canvas and the tabs to offer questions nobody had asked for yet, and the pill they
+ * sat above already types an example on its own. The dock is now handle, pill, tabs.
+ * `PromptChips` itself survives — the three legacy directions still render it in-page.
+ */
+export function AssistantDock({ active, label, examples, reduceMotion, onOpen }) {
+  return (
+    <div className="home-dock">
+      <button className="home-dock-handle" onClick={() => onOpen('')} aria-label="Open AmbitionBox assistant"><i /></button>
+      <AskPill label={label} examples={examples} reduceMotion={reduceMotion} onOpen={() => onOpen('')} />
+      <BottomNav active={active} />
+    </div>
   )
 }
 

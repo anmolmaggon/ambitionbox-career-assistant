@@ -20,7 +20,7 @@ h1, h2, h3 { text-wrap: balance; }
 .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .topbar-title { font-weight: 750; font-size: 16px; white-space: nowrap; }
 .topbar-eyebrow { font-size: 8px; margin-bottom: 1px; }
-.icon-button { width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: inherit; text-decoration: none; cursor: pointer; flex: 0 0 auto; }
+.icon-button { width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: inherit; text-decoration: none; cursor: pointer; flex: 0 0 auto; }
 .icon-button:hover { background: #eceefa; }
 .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; background: #252a48; color: #fff; font-size: 11px; font-weight: 800; box-shadow: 0 0 0 1px #dfe2ee; cursor: pointer; }
 
@@ -49,7 +49,7 @@ h1, h2, h3 { text-wrap: balance; }
 /* Three tabs, MOB-HOME-001 (Cleo) treatment: the bar sits quietly on the canvas
    rather than as a heavy white shelf, and the active tab is a filled glyph in
    brand ink instead of a coloured chip. Colour stays inside the glyph. */
-.bottom-nav { position: fixed; z-index: 24; bottom: 0; width: 100%; max-width: 430px; height: calc(74px + env(safe-area-inset-bottom)); padding: 10px 13px env(safe-area-inset-bottom); display: flex; align-items: flex-start; justify-content: space-around; background: linear-gradient(to bottom, rgba(247,248,252,0), rgba(247,248,252,.92) 42%, rgba(247,248,252,.98)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.bottom-nav { position: fixed; z-index: 24; bottom: 0; width: 100%; max-width: 430px; height: calc(74px + env(safe-area-inset-bottom)); padding: 10px 13px env(safe-area-inset-bottom); display: flex; align-items: flex-start; justify-content: space-around; background: var(--ab-color-white); }
 .bottom-nav button,.bottom-nav a { min-width: 72px; height: 54px; border: 0; border-radius: 14px; color: #858ba1; background: transparent; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; letter-spacing: .01em; text-decoration: none; cursor: pointer; }
 .bottom-nav button.is-active,.bottom-nav a.is-active { color: var(--primary); background: transparent; font-weight: 800; }
 .bottom-nav button.is-active svg,.bottom-nav a.is-active svg { fill: rgba(63,92,251,.16); }
@@ -79,17 +79,25 @@ h1, h2, h3 { text-wrap: balance; }
 .chapter-row > span:nth-child(2) { min-width: 0; flex: 1; }.chapter-row strong { display: block; font-size: 13px; }.chapter-row small { display: block; margin-top: 4px; color: var(--subtle); font-size: 10px; }
 .reset-button { margin-top: 4px; }.launcher-note { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 16px 0 0; color: var(--muted); font-size: 10px; }
 
-.tracker-screen .topbar { background: rgba(255,255,255,.96); }
-.tracker-tools { display: flex; gap: 9px; padding-top: 12px; padding-bottom: 5px; }
-.tracker-tools button { min-height: 44px; border: 1px solid #e0e3ed; border-radius: 13px; display: flex; align-items: center; background: #fff; color: #656c86; cursor: pointer; }
-.tracker-search { min-width: 0; flex: 1; gap: 9px; padding: 0 13px; text-align: left; }.tracker-search span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-.tracker-add { flex: 0 0 auto; gap: 5px; padding: 0 12px; color: var(--primary) !important; font-size: 11px; font-weight: 750; }
+/* Tracker now carries the shared dock (handle + ask pill + tabs), so it reserves the
+   same bottom room Jobs does instead of the bare-nav 132px from `.screen`. */
+.tracker-screen { padding-bottom: 272px; }
+/* Search and Add moved out of the chrome slot above the summary and into the content,
+   sharing the Jobs feed's `.job-search` field so the two browsable tabs search alike. */
+.tracker-tools { margin: 16px 0 4px; display: flex; align-items: stretch; gap: 9px; }
+.tracker-tools .job-search { min-width: 0; flex: 1; margin-bottom: 0; }
+.tracker-add { min-height: 48px; flex: 0 0 auto; gap: 5px; padding: 0 15px; border: 0; border-radius: 999px; display: flex; align-items: center; color: var(--primary); background: #fff; box-shadow: 0 0 0 1px #e4e8f2; font-size: 12px; font-weight: 750; cursor: pointer; }
+.tracker-add-link { min-height: 44px; margin: 4px auto 0; padding: 0 14px; border: 0; border-radius: 999px; display: flex; align-items: center; gap: 6px; color: var(--muted); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* Closed cards are legible but visibly finished: flat, no lift, muted mark, no score. */
+.application-card--closed { box-shadow: none; background: #fbfcfe; }
+.application-card--closed .company-logo { opacity: .55; }
+.application-card--closed .application-card__company { color: #4a5170; }
 .empty-state { min-height: calc(100vh - 190px); display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 54px; }
 .tracker-onboarding { min-height: auto; padding-top: 14px; padding-bottom: 24px; }
 .empty-illustration { position: relative; width: 124px; height: 94px; margin-bottom: 3px; }
 .mail-card { position: absolute; width: 65px; height: 76px; border-radius: 16px; display: grid; place-items: center; color: var(--primary); background: #fff; border: 1px solid #e4e7f3; box-shadow: 0 14px 30px rgba(54,61,112,.11); }
 .mail-card--one { left: 16px; top: 8px; transform: rotate(-9deg); }.mail-card--two { right: 14px; top: 13px; color: var(--teal); transform: rotate(8deg); }
-.empty-spark { position: absolute; right: 4px; top: 0; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--primary); box-shadow: 0 8px 20px rgba(63,92,251,.3); }
 .empty-state h1 { max-width: 340px; margin: 13px 0 8px; font-size: 28px; line-height: 1.1; letter-spacing: -.04em; }
 .empty-state > p { max-width: 340px; margin-bottom: 0; color: var(--muted); line-height: 1.48; font-size: 13px; }.empty-state .primary-button { margin-top: 0; }
 .tracker-benefits { width: 100%; margin: 21px 0 20px; display: grid; gap: 16px; text-align: left; }
@@ -105,23 +113,107 @@ h1, h2, h3 { text-wrap: balance; }
 .tracker-content { padding-top: 18px; }
 .tracker-summary { padding: 18px 18px 0; overflow: hidden; border: 1px solid #e1e4ed; border-radius: 19px; color: var(--ink); background: #fff; box-shadow: 0 8px 22px rgba(34,39,74,.045); }
 .tracker-summary-top { display: flex; justify-content: space-between; align-items: flex-start; }.tracker-period { color: var(--muted); font-size: 10px; font-weight: 700; }.tracker-summary h1 { margin: 4px 0 0; font-size: 25px; letter-spacing: -.035em; }.tracker-summary .sync-badge { color: var(--teal); font-size: 9px; }.tracker-summary .sync-badge span { box-shadow: 0 0 0 4px #e6f6ef; }
-.stat-row { margin: 17px -18px 0; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #e7e9f0; }
-.stat { min-height: 65px; padding: 10px 12px; border: 0; border-right: 1px solid #e7e9f0; color: #70778e; background: #fff; text-align: left; cursor: pointer; }.stat:last-child { border-right: 0; }.stat.is-selected { color: #293b9d; background: #f0f3ff; }.stat strong { display: block; color: var(--ink); font-size: 21px; }.stat span { display: block; margin-top: 3px; font-size: 9px; line-height: 1.25; }
+/* Provenance shares the summary's border via an internal divider rather than floating
+   in a second card — UI.md's rule for a source header that qualifies a whole surface.
+   This replaced the three-way stat filter: the stages below are the only filter now. */
+.tracker-shortlist-line { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.tracker-sources { margin: 15px -18px 0; padding: 12px 18px; border-top: 1px solid #e7e9f0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.tracker-sources__label { color: var(--subtle); font-size: 10px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.tracker-sources__list { display: flex; flex-wrap: wrap; gap: 7px; }
+.tracker-source { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 5px; border-radius: 999px; background: #f4f6fb; color: #5b6382; font-size: 11px; font-weight: 650; }
+.tracker-source b { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+.tracker-source__mark { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 800; font-style: normal; }
+.tracker-source__mark--gmail { color: #4285f4; background: #fff; box-shadow: 0 0 0 1px #e2e6f0; }
+.tracker-source__mark--naukri { color: #1e5df8; background: #fff; box-shadow: 0 0 0 1px #e2e6f0; }
+.tracker-source__mark--manual { color: #fff; background: var(--primary); }
 .content-heading { margin: 25px 0 11px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }.content-heading h2 { margin: 4px 0 0; font-size: 20px; }
-.filter-button { min-height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid #dfe2eb; display: inline-flex; align-items: center; gap: 4px; background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
+.filter-button { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #dfe2eb; display: inline-flex; align-items: center; gap: 5px; background: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
 .tracker-view-toggle { flex: 0 0 auto; padding: 3px; border: 1px solid #dfe2eb; border-radius: 11px; display: flex; background: #fff; }
 .tracker-view-toggle button { min-width: 47px; min-height: 30px; padding: 0 9px; border: 0; border-radius: 8px; color: #747b93; background: transparent; font-size: 10px; font-weight: 750; cursor: pointer; }.tracker-view-toggle button.is-active { color: var(--primary); background: #edf0ff; }
+/* One vertical pipeline. Each stage is a labelled, collapsible group, so the order of
+   the list is itself the answer to "where does everything stand".
+
+   The group used to be a quiet 13px label on the same canvas as its cards and did not
+   read as a section at all. It is now a banded 52px header that visually owns the cards
+   beneath it: filled surface, stage colour, count, and a disclosure chevron. */
+.stage-list { display: grid; gap: 14px; }
+.stage-group { padding: 8px; border: 1px solid #e6e9f2; border-radius: 20px; background: #eef0f6; }
+.stage-group.is-collapsed { background: transparent; border-color: transparent; padding: 0; }
+.stage-head { width: 100%; min-height: 52px; padding: 0 6px 0 12px; border: 0; border-radius: 14px; display: flex; align-items: center; gap: 10px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.stage-group.is-collapsed .stage-head { padding: 0 6px 0 12px; border: 1px solid #e6e9f2; background: #fff; }
+.stage-head__title { min-width: 0; flex: 1; display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.stage-head__count { min-width: 26px; padding: 4px 9px; border-radius: 999px; background: #fff; color: #4c5470; font-size: 12px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1px #e3e6f0; }
+.stage-head__chevron { flex: 0 0 auto; color: #7b8299; transition: transform .18s ease; }
+.stage-group.is-collapsed .stage-head__chevron { transform: rotate(-90deg); }
+.stage-group .application-list { margin-top: 8px; }
+.stage-empty { margin: 8px 0 0; padding: 16px; border: 1px dashed #d8dce9; border-radius: 15px; color: var(--subtle); font-size: 12px; line-height: 1.45; }
+
+/* One dot vocabulary, shared by the chips, the section headers and the board columns. */
+.stage-dot { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%; background: #aeb6cd; }
+.stage-dot--shortlisted { background: #6f7bf7; }
+.stage-dot--applied { background: #aeb6cd; }
+.stage-dot--review { background: #8b7bf0; }
+.stage-dot--recruiter-shortlist { background: var(--primary); }
+.stage-dot--interviewing { background: var(--amber); }
+.stage-dot--offer { background: var(--teal); }
+.stage-dot--closed { background: #c8cddc; }
+
+/* Same chip shape as the Jobs feed's filters, so "narrow this down" looks identical
+   on both browsable tabs. */
+.stage-chips { display: flex; gap: 8px; margin: 0 -20px 14px; padding: 2px 20px 4px; overflow-x: auto; scrollbar-width: none; }
+.stage-chips::-webkit-scrollbar { display: none; }
+.stage-chips button { min-height: 40px; flex: 0 0 auto; padding: 0 14px; border: 0; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; background: #fff; box-shadow: 0 0 0 1px #e4e8f2; color: #4c5470; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.stage-chips button b { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+.stage-chips button.is-on { background: var(--primary); color: #fff; box-shadow: none; }
+.stage-chips button.is-on b { color: #fff; }
+.stage-chips button.is-on .stage-dot { background: rgba(255,255,255,.85); }
+
 .application-list { display: grid; gap: 12px; }.application-card { width: 100%; padding: 14px; border: 1px solid #e3e6ee; border-radius: 17px; background: #fff; text-align: left; box-shadow: 0 6px 17px rgba(34,39,74,.035); }
-.application-card--interview { border-color: #bdc8fb; box-shadow: 0 9px 22px rgba(63,92,251,.08); }.application-card--interview .company-logo { background: #183f44; }.application-card-head { display: flex; align-items: flex-start; gap: 11px; }.application-card-head .due { margin-left: auto; }
 .smart-label { display: block; margin-bottom: 4px; color: var(--primary); font-size: 8px; line-height: 1; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .company-logo { width: 44px; height: 44px; display: inline-grid; place-items: center; flex: 0 0 auto; border-radius: 13px; background: #1d2451; color: #fff; font-size: 12px; font-weight: 800; letter-spacing: -.02em; }
-.application-copy { min-width: 0; flex: 1; }.application-copy strong, .application-copy small, .muted-line { display: block; }.application-copy strong { font-size: 14px; }.application-copy small { margin-top: 3px; color: var(--muted); font-size: 11px; }.muted-line { margin-top: 10px; color: var(--subtle); font-size: 10px; }.application-signals { margin: 13px 0 0 55px; display: flex; flex-wrap: wrap; gap: 6px; }.application-signals span { padding: 5px 7px; border-radius: 7px; color: #5e6680; background: #f4f5f9; font-size: 9px; }.application-signals b { color: #3449bd; }.application-insight { margin: 11px 0 12px 55px; color: #59617a; font-size: 10.5px; line-height: 1.45; }.card-action { min-height: 38px; margin-left: 55px; padding: 0 12px; border: 1px solid #cfd6ff; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; color: #3550d5; background: #fff; font-size: 10.5px; font-weight: 750; cursor: pointer; }.card-action--primary { color: #fff; border-color: var(--primary); background: var(--primary); }.tracker-action-notice { padding: 11px 12px; border-radius: 12px; display: flex; align-items: center; gap: 8px; color: #356d5a; background: #eaf7f2; font-size: 10px; line-height: 1.4; }
-.due { color: var(--amber); font-size: 9px; font-weight: 700; white-space: nowrap; }.due--urgent { color: var(--danger); }.inline-success { padding: 13px; border-radius: 15px; display: flex; gap: 10px; color: var(--teal); background: #e8f7f1; }.inline-success strong,.inline-success small { display: block; }.inline-success small { color: #548273; margin-top: 2px; }
+/* Typeset against `.job-id__*` in the Jobs feed so the two tabs read as one product.
+   The old card ran a 14px company over an 11px role — the role, which is what the user
+   is actually scanning for, was the smallest line on the card. */
+.application-card__id { display: flex; align-items: flex-start; gap: 12px; }
+.application-card__copy { min-width: 0; flex: 1; }
+.application-card__company { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 800; }
+.application-card__role { margin: 3px 0 0; font-size: 15px; line-height: 1.28; letter-spacing: -.02em; }
+.application-card__meta { display: block; margin-top: 4px; color: #7b8299; font-size: 11px; font-weight: 650; }
+.application-signals { margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.application-signals span { padding: 6px 9px; border-radius: 8px; color: #5e6680; background: #f4f5f9; font-size: 11px; font-weight: 650; }
+.application-signals b { color: #3449bd; font-weight: 800; }
+.application-insight { margin: 11px 0 0; color: #59617a; font-size: 12.5px; line-height: 1.5; }
+.application-card__actions { margin-top: 13px; display: flex; align-items: center; gap: 8px; }
+.job-action--move { flex: 0 0 auto; padding: 0 14px; border: 1px solid #dfe2eb; background: #fff; color: #5b6382; }
+.job-action--secondary { flex: 1; border: 1px solid #cfd6ff; background: #fff; color: #3550d5; }
+.tracker-action-notice { margin-top: 12px; padding: 12px 13px; border-radius: 12px; display: flex; align-items: center; gap: 8px; color: #356d5a; background: #eaf7f2; font-size: 12px; line-height: 1.4; }
+
+/* The move sheet. A five-column board on a 430px phone has no honest drop target, so
+   the stage change is a deliberate pick rather than a drag. */
+.stage-picker { margin-top: 16px; display: grid; gap: 8px; }
+.stage-picker button { width: 100%; min-height: 60px; padding: 11px 14px; border: 1px solid #e3e6ee; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; color: var(--primary); text-align: left; cursor: pointer; }
+.stage-picker button strong, .stage-picker button small { display: block; }
+.stage-picker button strong { color: var(--ink); font-size: 13.5px; }
+.stage-picker button small { margin-top: 3px; color: var(--muted); font-size: 11px; }
+.stage-picker button.is-current { border-color: #c6d0ff; background: #f2f5ff; color: var(--teal); cursor: default; }
+.stage-picker button:disabled { opacity: 1; }
 .closed-state { padding: 45px 25px; border: 1px dashed #d9dce8; border-radius: 18px; text-align: center; color: var(--teal); }.closed-state h3 { margin: 13px 0 7px; color: var(--ink); }.closed-state p { color: var(--muted); line-height: 1.45; font-size: 12px; }
-.kanban-board { width: 100%; display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 1px 1px 10px; }.kanban-board::-webkit-scrollbar { display: none; }
-.kanban-column { width: min(82vw,310px); flex: 0 0 min(82vw,310px); min-height: 365px; padding: 12px; border: 1px solid #e0e3ed; border-radius: 17px; background: #f0f2f7; scroll-snap-align: start; }.kanban-column > header { display: flex; align-items: center; justify-content: space-between; padding: 1px 2px 11px; color: #626a82; font-size: 10px; font-weight: 750; }.kanban-column > header span { display: flex; align-items: center; gap: 7px; }.kanban-column > header i { width: 8px; height: 8px; border-radius: 50%; background: #788ae7; }.kanban-column > header strong { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; color: #666e87; background: #fff; font-size: 10px; }.kanban-column--review > header i { background: #a17bea; }.kanban-column--interviewing > header i { background: #d5963e; }.kanban-column--offer > header i { background: #2fa77a; }.kanban-column--closed > header i { background: #8c92a4; }
-.kanban-cards { display: grid; gap: 9px; }.kanban-card { width: 100%; min-height: 116px; padding: 11px; border: 1px solid #e2e5ed; border-radius: 14px; display: block; color: var(--ink); background: #fff; text-align: left; box-shadow: 0 5px 14px rgba(34,39,74,.04); }.kanban-card:is(button) { cursor: pointer; }.kanban-card--priority { border-color: #bbc6ff; box-shadow: 0 8px 19px rgba(63,92,251,.1); }.kanban-company { display: flex; align-items: center; gap: 9px; }.kanban-company .company-logo { width: 35px; height: 35px; border-radius: 10px; font-size: 9px; }.kanban-company > span:last-child { min-width: 0; }.kanban-company strong,.kanban-company small { display: block; }.kanban-company strong { font-size: 12px; }.kanban-company small { margin-top: 2px; color: var(--muted); font-size: 9px; }.kanban-signals { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 5px; }.kanban-signals span { padding: 4px 6px; border-radius: 6px; color: #687087; background: #f3f4f8; font-size: 8px; }.kanban-signals b { color: #3548b8; }.kanban-card > b { display: block; margin-top: 10px; color: #7c849c; font-size: 9px; font-weight: 650; }.kanban-card > em { min-height: 32px; margin-top: 10px; padding: 0 9px; border-radius: 9px; display: flex; align-items: center; justify-content: space-between; color: #fff; background: var(--primary); font-size: 9px; font-style: normal; font-weight: 750; }.kanban-card--offer { border-color: #b9dfd1; }.kanban-card--offer > em { background: var(--teal); }.kanban-more { padding: 4px 2px; color: #71788f; font-size: 8.5px; font-weight: 650; text-align: center; }.kanban-empty { min-height: 132px; padding: 28px 16px; border: 1px dashed #d4d8e4; border-radius: 13px; color: #7f8699; background: rgba(255,255,255,.55); text-align: center; }.kanban-empty span,.kanban-empty small { display: block; }.kanban-empty span { color: #555d73; font-size: 11px; font-weight: 700; }.kanban-empty small { margin-top: 7px; font-size: 8.5px; line-height: 1.45; }
-.kanban-closed-summary { min-height: 205px; padding: 28px 18px; border: 1px dashed #d6d9e3; border-radius: 14px; color: #80879b; background: rgba(255,255,255,.55); text-align: center; }.kanban-closed-summary strong { display: block; margin-top: 12px; color: #464c61; font-size: 12px; }.kanban-closed-summary p { margin: 7px 0 0; font-size: 9px; line-height: 1.45; }
+.kanban-board { width: 100%; display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 1px 1px 10px; }.kanban-board::-webkit-scrollbar { display: none; }
+.kanban-column { width: min(88vw,344px); flex: 0 0 min(88vw,344px); padding: 12px; border: 1px solid #e0e3ed; border-radius: 20px; background: #eef0f6; scroll-snap-align: start; }
+.kanban-column > header { display: flex; align-items: center; gap: 10px; padding: 4px 4px 12px; color: var(--ink); font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.kanban-column > header span { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; }
+.kanban-column > header i { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%; background: #aeb6cd; }
+.kanban-column > header strong { min-width: 26px; padding: 4px 9px; display: block; border-radius: 999px; color: #4c5470; background: #fff; font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1px #e3e6f0; }
+.kanban-column--shortlisted > header i { background: #6f7bf7; }
+.kanban-column--review > header i { background: #8b7bf0; }
+.kanban-column--recruiter-shortlist > header i { background: var(--primary); }
+.kanban-column--interviewing > header i { background: var(--amber); }
+.kanban-column--offer > header i { background: var(--teal); }
+.kanban-column--closed > header i { background: #c8cddc; }
+/* The column is sized to hold the shared card at its real scale rather than a shrunken
+   copy of it. */
+.kanban-cards { display: grid; gap: 10px; }
+.kanban-empty { padding: 26px 18px; border: 1px dashed #d4d8e4; border-radius: 15px; color: #7f8699; background: rgba(255,255,255,.55); text-align: center; }.kanban-empty span,.kanban-empty small { display: block; }.kanban-empty span { color: #555d73; font-size: 13px; font-weight: 800; }.kanban-empty small { margin-top: 6px; font-size: 12px; line-height: 1.45; }
 
 .sheet-backdrop { position: fixed; z-index: 60; inset: 0; display: flex; justify-content: center; align-items: flex-end; background: rgba(15,18,38,.58); padding-top: 30px; }
 .sheet { position: relative; width: 100%; max-width: 430px; max-height: calc(100vh - 24px); overflow-y: auto; overscroll-behavior: contain; padding: 28px 22px calc(24px + env(safe-area-inset-bottom)); border-radius: 26px 26px 0 0; background: #fff; box-shadow: 0 -16px 50px rgba(14,18,42,.2); }
@@ -137,8 +229,6 @@ h1, h2, h3 { text-wrap: balance; }
 .scan-stage { position: relative; z-index: 1; flex: 1; display: grid; place-items: center; text-align: center; }.scan-stage > div { width: 100%; }.scan-stage-icon { width: 70px; height: 70px; margin: 0 auto 23px; border-radius: 23px; display: grid; place-items: center; color: #fff; background: linear-gradient(145deg,#344fe5,#6579ff); box-shadow: 0 16px 34px rgba(63,92,251,.24),0 0 0 13px rgba(230,234,255,.72); }.scan-stage h1 { margin: 0 auto 9px; max-width: 330px; font-size: 29px; line-height: 1.1; letter-spacing: -.04em; }.scan-stage p { margin: 0 auto; max-width: 310px; color: var(--muted); font-size: 13px; line-height: 1.45; }.scan-stage-stat { margin-top: 31px; display: flex; flex-direction: column; align-items: center; }.scan-stage-stat strong { font-size: 42px; line-height: 1; letter-spacing: -.045em; }.scan-stage-stat span { margin-top: 7px; color: var(--subtle); font-size: 11px; }.scan-ready-note { width: fit-content; max-width: 320px; margin: 28px auto 0; padding: 11px 13px; border: 1px solid #d8dfff; border-radius: 13px; display: flex; align-items: center; gap: 8px; color: #3448ba; background: rgba(239,242,255,.85); font-size: 10px; font-weight: 650; }
 .scan-footer { position: relative; z-index: 1; }.scan-progress-label { margin-bottom: 9px; display: flex; justify-content: space-between; color: var(--subtle); font-size: 9px; }.scan-progress-label strong { color: #60677e; }.progress-track { height: 8px; overflow: hidden; border-radius: 5px; background: #e4e7ef; }.progress-track span { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg,var(--primary),#7658e9); }.scan-footer .text-button { width: 100%; margin-top: 11px; font-size: 11px; }
 .success-burst { width: 58px; height: 58px; margin: 0 auto 15px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--teal); box-shadow: 0 0 0 10px #e5f6ef; }.sheet > .success-burst + .pill { margin-left: 50%; transform: translateX(-50%); }.sheet > .success-burst ~ h2,.sheet > .success-burst ~ .sheet-lead { margin-right: 0; text-align: center; }.result-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin: 20px 0; }.result-stats div { padding: 12px 5px; border-radius: 12px; background: #f5f6fa; text-align: center; }.result-stats strong,.result-stats span { display: block; }.result-stats strong { font-size: 21px; }.result-stats span { color: var(--muted); font-size: 9px; }.discovery-card { margin: 0 0 18px; padding: 12px; display: flex; align-items: center; gap: 11px; border-radius: 14px; background: #f2edfb; }.discovery-card strong,.discovery-card small { display: block; }.discovery-card strong { font-size: 12px; }.discovery-card small { margin-top: 3px; color: var(--muted); font-size: 9px; }
-.tracker-search-field { min-height: 50px; margin-top: 18px; padding: 0 13px; border: 1px solid #dfe2eb; border-radius: 14px; display: flex; align-items: center; gap: 9px; color: var(--muted); background: #f8f9fc; }.tracker-search-field input { min-width: 0; flex: 1; height: 46px; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; }
-.tracker-search-results { max-height: 45vh; margin-top: 13px; overflow-y: auto; border: 1px solid #e5e7ef; border-radius: 15px; }.tracker-search-results > button { width: 100%; min-height: 67px; padding: 10px 12px; border: 0; border-bottom: 1px solid #eceef3; display: flex; align-items: center; gap: 10px; background: #fff; text-align: left; cursor: pointer; }.tracker-search-results > button:last-child { border-bottom: 0; }.tracker-search-results .company-logo { width: 37px; height: 37px; border-radius: 11px; }.tracker-search-results > button > span:nth-child(2) { min-width: 0; flex: 1; }.tracker-search-results strong,.tracker-search-results small { display: block; }.tracker-search-results strong { font-size: 12px; }.tracker-search-results small { margin-top: 3px; color: var(--muted); font-size: 9px; }
 .tracker-tool-empty { padding: 30px 8px 4px; text-align: center; color: var(--primary); }.tracker-tool-empty strong { display: block; margin-top: 12px; color: var(--ink); font-size: 14px; }.tracker-tool-empty p { margin: 7px auto 17px; max-width: 280px; color: var(--muted); font-size: 11px; line-height: 1.45; }
 .manual-application-form { margin-top: 20px; display: grid; gap: 15px; }.manual-application-form label span { display: block; margin-bottom: 7px; color: #565e77; font-size: 10px; font-weight: 750; }.manual-application-form input { width: 100%; min-height: 48px; padding: 0 13px; border: 1px solid #dfe2eb; border-radius: 13px; color: var(--ink); background: #fff; font-size: 12px; }.manual-application-form .primary-button { margin-top: 4px; }
 
@@ -151,11 +241,109 @@ h1, h2, h3 { text-wrap: balance; }
 
 .matches-intro { padding-top: 24px; padding-bottom: 18px; }.matches-intro h1 { margin: 6px 0 8px; font-size: 29px; line-height: 1.1; letter-spacing: -.04em; }.matches-intro p { color: var(--muted); font-size: 13px; line-height: 1.5; }
 .connect-card { padding: 20px; border-radius: 22px; color: #fff; background: linear-gradient(145deg,#202b63,#3f5cfb); box-shadow: 0 14px 30px rgba(50,67,177,.21); }.connect-visual { display: flex; align-items: center; margin-bottom: 18px; }.naukri-logo,.ab-mini { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: #fff; }.naukri-logo { color: #2769dd; font-size: 28px; font-weight: 800; }.ab-mini { background: rgba(255,255,255,.13); }.ab-mini .brand-mark { width: 32px; height: 32px; border-radius: 9px; }.link-line { width: 48px; color: #cbd4ff; text-align: center; }.connect-card .pill { color: #dce2ff; background: rgba(255,255,255,.11); }.connect-card h2 { margin: 11px 0 7px; font-size: 22px; }.connect-card p { color: rgba(255,255,255,.71); font-size: 12px; line-height: 1.45; }.connect-card .primary-button { margin-top: 8px; color: #253069; background: #fff; box-shadow: none; }
-.source-strip { margin: 0 20px 18px; padding: 13px 14px; border: 1px solid #e4e6ef; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; background: #fff; }.source-strip > div { display: flex; align-items: center; gap: 10px; }.source-strip strong,.source-strip small { display: block; }.source-strip strong { font-size: 11px; }.source-strip small { margin-top: 2px; color: var(--muted); font-size: 9px; }.source-avatars { display: flex; }.source-avatars i { width: 26px; height: 26px; margin-left: -5px; border: 2px solid #fff; border-radius: 50%; display: grid; place-items: center; color: #fff; background: #2b3c9f; font-size: 7px; font-style: normal; font-weight: 800; }.source-avatars i:first-child { margin: 0; background: #2769dd; }.source-avatars i:nth-child(2) { background: var(--primary); }.source-avatars i:nth-child(3) { background: #8f4a82; }.source-avatars i:nth-child(4) { background: #4c6075; }
-.feed-section { padding-bottom: 16px; }.feed-toolbar { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }.feed-toolbar strong,.feed-toolbar small { display: block; }.feed-toolbar strong { font-size: 13px; }.feed-toolbar small { margin-top: 3px; color: var(--muted); font-size: 9px; }.job-feed { display: grid; gap: 12px; }
-.job-card { position: relative; padding: 15px; border: 1px solid #e3e6ef; border-radius: 19px; background: #fff; box-shadow: 0 7px 20px rgba(35,42,76,.04); }.job-card--featured { border-color: #cdd4ff; box-shadow: 0 11px 28px rgba(56,73,171,.1); }.job-source { margin-bottom: 12px; display: flex; justify-content: space-between; color: var(--subtle); font-size: 8px; font-weight: 750; text-transform: uppercase; letter-spacing: .07em; }.job-head { display: flex; align-items: flex-start; gap: 10px; }.job-title-button { min-width: 0; flex: 1; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; }.job-title-button:disabled { opacity: 1; cursor: default; }.job-head h3 { margin: 1px 0 4px; font-size: 14px; }.job-head p { margin: 0; display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 10px; }.job-head p svg { color: #e4a11a; }.job-head p span { color: var(--subtle); }.save-button { width: 34px; height: 34px; border: 0; border-radius: 10px; display: grid; place-items: center; color: var(--primary); background: #f2f4ff; cursor: pointer; }
-.job-meta { display: flex; gap: 7px; margin: 12px 0; }.job-meta span { padding: 5px 7px; border-radius: 6px; color: #565d75; background: #f4f5f8; font-size: 9px; }.match-row { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e7e9f0; border-radius: 12px; overflow: hidden; }.match-score,.readiness-mini { min-height: 55px; padding: 9px 11px; }.match-score { background: #effaf6; }.readiness-mini { border-left: 1px solid #e4e7ed; }.match-score strong,.match-score span,.readiness-mini span,.readiness-mini small { display: block; }.match-score strong { color: var(--teal); font-size: 16px; }.match-score span,.readiness-mini small { color: var(--muted); font-size: 8px; }.readiness-mini span { font-weight: 800; font-size: 15px; }
-.job-reason { display: flex; align-items: flex-start; gap: 7px; margin: 12px 0; color: #4f5875; font-size: 10px; line-height: 1.42; }.job-reason svg { flex: 0 0 auto; color: var(--primary); }.culture-row { width: 100%; padding: 10px 0 0; border: 0; border-top: 1px solid #eceef3; display: flex; justify-content: space-between; color: var(--muted); background: transparent; font-size: 10px; text-align: left; }.culture-row--button { cursor: pointer; }.matches-screen > .assistant-dock { width: calc(100% - 40px); margin: 5px 20px 0; }
+/* One header shape for Home and Jobs: the wordmark, then whatever that screen's tools
+   are. The avatar is the door to Profile on both. */
+.app-header { padding-top: 16px; padding-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+.app-header-tools { display: flex; align-items: center; gap: 4px; }
+.app-avatar-button { padding: 4px; border: 0; background: none; line-height: 0; cursor: pointer; }
+.app-avatar-button .avatar { display: inline-grid; place-items: center; box-sizing: border-box; }
+
+/* The whole strip is the control — a ⋯ button at the end of a row is a target nobody
+   finds, and the row itself is what the user is trying to press. */
+.source-strip { width: 100%; min-height: 64px; margin: 0 0 18px; padding: 12px 14px; border: 0; border-radius: 18px; display: flex; align-items: center; gap: 12px; background: #fff; box-shadow: 0 8px 22px rgba(26,33,66,.05), 0 0 0 1px rgba(26,33,66,.04); text-align: left; cursor: pointer; }
+.source-strip__copy { min-width: 0; flex: 1; }
+.source-strip strong, .source-strip small { display: block; }
+.source-strip strong { font-size: 13px; }
+.source-strip small { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.source-strip > svg { flex: 0 0 auto; color: #a9b0c4; }
+.source-avatars { display: flex; flex: 0 0 auto; }
+.source-avatars i { width: 30px; height: 30px; margin-left: -7px; border: 2px solid #fff; border-radius: 50%; display: grid; place-items: center; color: #fff; background: #2b3c9f; font-size: 8px; font-style: normal; font-weight: 800; }
+/* Job-boards rows: one per source, state on the right. A source that is not connected is
+   named rather than hidden — "what is this actually watching" is why the sheet is opened. */
+.board-list { margin: 18px 0; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px #e6e9f2; }
+.board-row { min-height: 68px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eef0f6; }
+.board-row:last-child { border-bottom: 0; }
+.board-mark { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 11px; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; }
+.board-row--off .board-mark { opacity: .55; }
+.board-copy { min-width: 0; flex: 1; }
+.board-copy strong, .board-copy small { display: block; }
+.board-copy strong { font-size: 13.5px; }
+.board-copy small { margin-top: 2px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.board-status { flex: 0 0 auto; padding: 5px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
+.board-status--on { color: #0e6a55; background: #e3f1ea; }
+.board-status--off { color: #6b7390; background: #eef0f6; }
+.board-connect { flex: 0 0 auto; min-height: 36px; padding: 0 14px; border: 1px solid #c6d0ff; border-radius: 999px; background: #fff; color: var(--primary); font-size: 12px; font-weight: 800; cursor: pointer; }
+.board-connect:hover { background: #eef1ff; }
+
+.source-avatars i:first-child { margin: 0; background: #2769dd; }.source-avatars i:nth-child(2) { background: var(--primary); }.source-avatars i:nth-child(3) { background: #8f4a82; }.source-avatars i:nth-child(4) { background: #4c6075; }
+.feed-section { padding-top: 4px; padding-bottom: 16px; }.feed-toolbar { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }.feed-toolbar__label { color: var(--muted); font-size: 13px; font-weight: 700; }.job-feed { display: grid; gap: 14px; }
+/* ---------- Job card ----------
+   Ported from prototype/matches-2b.css on 2026-08-19, with its design-system tokens
+   resolved to this project's values. The composition is the prototype's: a dark source
+   strip carrying the match score, an identity row with the locked AmbitionBox rating tag,
+   then the Highlights list that is the whole point of the card. */
+
+.match-card { position: relative; overflow: hidden; display: flex; flex-direction: column; border-radius: 20px; background: #fff; box-shadow: 0 14px 32px -20px rgba(26,33,66,.45), 0 0 0 1px rgba(63,92,251,.14); }
+/* The whole card is the target; the inner controls stop propagation. */
+.match-card--open { cursor: pointer; }
+.match-card--open:active { transform: scale(.995); }
+.match-card--open:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+.match-card__strip { min-height: 36px; padding: 9px 14px; display: flex; align-items: center; gap: 10px; background: #1b2030; color: rgba(255,255,255,.7); font-size: 11px; font-weight: 650; }
+.match-card__source { white-space: nowrap; }
+
+/* The score used to be a line of white text in the strip and read as a caption. It is the
+   card's verdict, so it is set as a figure in brand ink, sitting with the identity it
+   judges rather than in the chrome above it. */
+.job-score { flex: 0 0 auto; display: grid; justify-items: center; gap: 1px; padding: 6px 10px; border-radius: 12px; background: #eef1ff; }
+.job-score b { color: var(--primary); font-size: 19px; font-weight: 800; letter-spacing: -.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+.job-score i { color: #7d88c0; font-size: 8.5px; font-weight: 800; font-style: normal; letter-spacing: .07em; text-transform: uppercase; }
+
+.match-card__body { flex: 1; display: flex; flex-direction: column; padding: 14px 16px 16px; }
+
+.job-id { display: flex; align-items: flex-start; gap: 12px; }
+.job-id__copy { min-width: 0; flex: 1; }
+.job-id__companyline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.job-id__company { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 800; }
+/* The locked AmbitionBox rating tag: coloured tile, white star, bold number — never a
+   loose star glyph beside grey text. */
+.job-id__rating { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: #868da3; font-size: 10.5px; }
+.job-id__star { display: inline-flex; align-items: center; gap: 3px; padding: 2px 5px; border-radius: 5px; background: var(--teal); color: #fff; font-weight: 800; }
+.job-id__role { margin: 3px 0 0; font-size: 15px; line-height: 1.28; letter-spacing: -.02em; }
+.job-role-button { padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+.job-id__meta { display: block; margin-top: 4px; color: #7b8299; font-size: 11px; font-weight: 650; }
+.save-button { width: 44px; height: 44px; flex: 0 0 auto; border: 0; border-radius: 13px; display: grid; place-items: center; color: var(--primary); background: #f2f4ff; cursor: pointer; }
+
+.highlights-title { margin: 16px 0 2px; color: #7b8299; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.highlights { margin: 0; padding: 0; list-style: none; }
+.highlight { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 0; }
+.highlight + .highlight { border-top: 1px solid #eef0f6; }
+.highlight__icon { width: 34px; height: 34px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; }
+.highlight--pay .highlight__icon { background: #e3f1ea; color: #0e6a55; }
+.highlight--culture .highlight__icon { background: #eaeefe; color: var(--primary); }
+.highlight--fit .highlight__icon { background: #efebfa; color: #5a3fa8; }
+.highlight__content { min-width: 0; }
+.highlight__label { display: block; color: #868da3; font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.highlight__title { display: block; margin-top: 2px; color: var(--ink); font-size: 13px; line-height: 1.35; font-weight: 700; }
+.highlight__meta { display: block; margin-top: 2px; color: #7b8299; font-size: 11px; line-height: 1.4; }
+/* An absent insight is drawn as absence — quiet ink, neutral tile — so it can never be
+   mistaken for something AmbitionBox found. */
+.highlight--empty .highlight__icon { background: #f1f3fa; color: #a9b0c4; }
+.highlight--empty .highlight__title { color: #6b7390; font-weight: 650; }
+
+.match-card__actions { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 14px; }
+/* `job-action`, not `card-action` — Tracker already owns that name with a 55px left
+   margin for its indented rows, and the matches-2b port inherited it invisibly. */
+.job-action { min-height: 44px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; font-size: 13px; font-weight: 800; cursor: pointer; }
+/* Save sits to the left of the action it belongs beside, not up in the identity row.
+   A 46px circle around an 18px glyph read as empty space, so the box is tightened to
+   the target floor and squared off. */
+.job-action--save { width: 44px; flex: 0 0 auto; border-radius: 14px; border: 1px solid #dfe2eb; background: #fff; color: var(--primary); }
+.job-action--save[aria-pressed="true"] { border-color: #c6d0ff; background: #eef1ff; }
+.job-action--view { flex: 1; background: var(--primary); color: #fff; }
+.job-action:active { transform: scale(.99); }
+.matches-screen { padding-bottom: 272px; }
+.matches-screen > .unused-assistant-dock { width: calc(100% - 40px); margin: 5px 20px 0; }
 .sheet-step { color: var(--primary); font-size: 9px; font-weight: 800; letter-spacing: .12em; }.profile-head { display: flex; align-items: center; gap: 13px; margin: 17px 0; }.large-avatar { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 18px; color: #fff; background: #252d5c; font-weight: 800; }.profile-head h2 { margin: 0 0 4px; font-size: 21px; }.profile-head p { margin: 0; color: var(--muted); font-size: 11px; }.profile-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }.profile-facts div { padding: 11px; border-radius: 11px; background: #f6f7fa; }.profile-facts span,.profile-facts strong { display: block; }.profile-facts span { color: var(--muted); font-size: 8px; }.profile-facts strong { margin-top: 4px; font-size: 11px; }.tag-block { margin: 17px 0; }.tag-block > span { color: var(--muted); font-size: 9px; font-weight: 700; }.tag-block > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }.sheet .text-button { width: 100%; margin-top: 5px; font-size: 11px; }
 .form-stack { display: grid; gap: 14px; margin: 18px 0; }.form-stack label > span,.form-stack legend { display: block; margin-bottom: 6px; color: var(--muted); font-size: 9px; font-weight: 700; }.input-shell,.form-stack input { width: 100%; min-height: 46px; padding: 0 12px; border: 1px solid #dfe2eb; border-radius: 11px; display: flex; align-items: center; justify-content: space-between; background: #fff; font-size: 12px; }.form-stack fieldset { margin: 0; padding: 0; border: 0; }.choice-row { display: flex; flex-wrap: wrap; gap: 7px; }.choice-row button { min-height: 38px; padding: 0 12px; border: 1px solid #dfe2eb; border-radius: 10px; color: var(--muted); background: #fff; font-size: 10px; font-weight: 700; cursor: pointer; }.choice-row button.is-selected { color: var(--primary); border-color: #aeb9ff; background: #f0f2ff; }.rerank-card { margin: 18px 0; padding: 13px; border-radius: 14px; background: #f5f7fd; display: flex; justify-content: space-between; align-items: center; }.rerank-card > div { display: flex; align-items: center; gap: 9px; }.rerank-card strong,.rerank-card small { display: block; }.rerank-card small { color: var(--muted); font-size: 9px; }.rank-arrow { color: var(--teal); font-weight: 800; }
 .source-list { display: grid; gap: 7px; margin: 18px 0; }.source-list > div { min-height: 61px; padding: 10px; display: flex; align-items: center; gap: 9px; border: 1px solid #e5e7ef; border-radius: 13px; background: #fff; }.source-check { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; color: var(--teal); background: #e6f6ef; }.source-list > div > span:nth-child(2) { min-width: 0; flex: 1; }.source-list strong,.source-list small { display: block; }.source-list strong { font-size: 11px; }.source-list small { margin-top: 3px; color: var(--muted); font-size: 8px; }.source-list .pill { font-size: 7px; }
@@ -218,7 +406,6 @@ h1, h2, h3 { text-wrap: balance; }
   .copilot-intro h1,.prep-hero h1 { font-size: 23px; }
   .offer-title h1 { font-size: 25px; }
   .comparison-bars > div { grid-template-columns: 58px 1fr 49px; }
-  .tracker-tools { padding-left: 16px; padding-right: 16px; }
   .tracker-onboarding h1 { font-size: 26px; }
   .scan-step-line { width: 25px; }
 }
@@ -226,3 +413,277 @@ h1, h2, h3 { text-wrap: balance; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* ---------- Job detail · ported from prototype/job-detail-1b.html (2026-08-19) ----------
+   The 1B composition with its design-system tokens resolved to this project's values.
+   Readiness is the screen's content: a segmented meter over the fifteen requirements and
+   three groups you can open. A flat bar said "10/15" and stopped; this says which ten. */
+
+.identity { padding-top: 8px; padding-bottom: 16px; }
+.id-row { display: flex; gap: 12px; align-items: flex-start; }
+.id-logo { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 12px; display: grid; place-items: center; color: #fff; background: #252a48; font-size: 15px; font-weight: 800; }
+.id-titlewrap { flex: 1; min-width: 0; }
+.id-title { margin: 0; font-size: 22px; line-height: 1.2; letter-spacing: -.03em; }
+.id-companyline { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.id-company { font-size: 14px; font-weight: 800; }
+.rating { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.rating__tile { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 5px; display: inline-grid; place-items: center; color: #fff; background: var(--teal); }
+.rating__num { font-size: 14px; font-weight: 800; }
+.rating__meta { color: var(--subtle); font-size: 12px; }
+.id-meta { margin: 12px 0 0; color: var(--subtle); font-size: 12px; }
+.id-meta .src { color: var(--muted); font-weight: 700; }
+
+.actions { display: flex; gap: 8px; }
+.act-save, .act-apply { min-height: 44px; padding: 0 18px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; font-weight: 800; cursor: pointer; }
+.act-save { flex: 0 0 auto; border: 1px solid #dfe2eb; background: #fff; color: var(--muted); }
+.act-apply { flex: 1; border: 2px solid #cfd8ff; background: #fff; color: var(--primary); }
+
+/* The one card on the screen that carries a soft brand glow — it is the answer to
+   "is this role for me", and 1B gives it that weight deliberately. */
+.b-pref { position: relative; overflow: hidden; margin: 16px 20px 0; padding: 16px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px #d7deff, 0 14px 36px -16px rgba(63,92,251,.45); }
+.b-pref::before { content: ''; position: absolute; top: -70px; left: 50%; transform: translateX(-50%); width: 150%; height: 150px; background: radial-gradient(ellipse at center, rgba(63,92,251,.14), transparent 68%); pointer-events: none; }
+.b-pref__head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.b-pref__title { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .09em; }
+.b-pref__score { min-height: 30px; padding: 0 12px; border-radius: 999px; display: inline-flex; align-items: center; background: #eef1ff; color: var(--primary); font-size: 15px; font-weight: 800; }
+.b-chips { position: relative; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.b-chip { min-height: 32px; padding: 0 11px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.b-chip--ok { background: #e3f1ea; color: #0e6a55; }
+.b-chip--warn { background: #fbf0e0; color: #b96a12; }
+.b-chip--neutral { background: #f1f3fa; color: var(--muted); }
+.b-cta { position: relative; width: 100%; min-height: 44px; margin-top: 12px; padding: 12px 0 0; border: 0; border-top: 1px solid #e8ebf5; display: flex; align-items: center; justify-content: space-between; background: transparent; color: var(--primary); font-size: 13px; font-weight: 800; text-align: left; cursor: pointer; }
+
+.b-ready { margin: 24px 20px 0; padding: 0; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px #e6e9f2, 0 10px 26px -18px rgba(63,92,251,.4); }
+.b-ready__top { padding: 16px 16px 12px; }
+.ready__title { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+.ready__count { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.ready__count b { color: var(--ink); }
+.seg { margin-top: 12px; display: flex; gap: 4px; }
+.seg__b { flex: 1 1 0; height: 10px; border-radius: 999px; }
+.seg__b--ok { background: #2aa87c; }
+.seg__b--need { background: #f0c14b; }
+.seg__b--miss { background: #d9534f; }
+
+.b-groups { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.b-ready__cta { width: 100%; min-height: 52px; padding: 12px 16px; border: 0; border-top: 1px solid #eef0f6; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: transparent; color: var(--primary); font-size: 13px; font-weight: 800; text-align: left; cursor: pointer; }
+.b-ready__cta:hover { background: #f6f8ff; }
+.b-ready__cta-lead { min-width: 0; display: inline-flex; align-items: center; gap: 8px; }
+.b-ready__cta-orb { width: 20px; height: 20px; flex: 0 0 auto; display: block; }
+.b-grp { border-radius: 12px; overflow: hidden; }
+.b-grp__head { width: 100%; min-height: 56px; padding: 12px; border: 0; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; color: inherit; font: inherit; background: transparent; }
+.b-grp--ok .b-grp__head { background: #e8f5ef; }
+.b-grp--need .b-grp__head { background: #fdf3e2; }
+.b-grp--miss .b-grp__head { background: #fbeaea; }
+.b-grp.is-open .b-grp__head { background: transparent; }
+.b-grp.is-open { background: #f7f8fc; }
+.b-grp__head[disabled] { cursor: default; }
+.b-grp__head[disabled] .b-grp__chev { opacity: .35; }
+.b-grp__count { width: 26px; flex: 0 0 auto; text-align: center; font-size: 17px; font-weight: 800; }
+.b-grp--ok .b-grp__count { color: #1f8f68; }
+.b-grp--need .b-grp__count { color: #b96a12; }
+.b-grp--miss .b-grp__count { color: #c0433f; }
+.b-grp__title { flex: 1; min-width: 0; }
+.b-grp__name { display: block; font-size: 14px; font-weight: 800; }
+.b-grp__sub { display: block; margin-top: 1px; color: var(--subtle); font-size: 11.5px; }
+.b-grp__chev { flex: 0 0 auto; color: #a9b0c4; transition: transform .28s cubic-bezier(.34,1.2,.64,1); }
+.b-grp.is-open .b-grp__chev { transform: rotate(180deg); }
+.b-grp__panel { padding: 4px 12px 8px 16px; }
+.b-grp__panel .row { padding: 9px 0; display: flex; align-items: center; gap: 10px; }
+.b-grp__panel .row + .row { border-top: 1px solid #eef0f6; }
+.row__ind { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; }
+.row__ind--ok { background: #2aa87c; }
+.row__ind--need { background: #f0c14b; }
+.row__ind--miss { background: #d9534f; }
+.row__title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) { .b-grp__chev { transition: none; } }
+
+/* ---------- Jobs search and filters (2026-08-19) ---------- */
+.job-search { min-height: 48px; margin-bottom: 10px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 10px; background: #fff; box-shadow: 0 0 0 1px #e4e8f2; }
+.job-search > svg { flex: 0 0 auto; color: #a9b0c4; }
+.job-search input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font-size: 14px; font-weight: 600; }
+.job-search input::placeholder { color: #9aa2b8; font-weight: 500; }
+.job-search__clear { width: 30px; height: 30px; flex: 0 0 auto; border: 0; border-radius: 50%; display: grid; place-items: center; color: #6b7390; background: #f1f3fa; cursor: pointer; }
+
+.job-filters { margin-bottom: 14px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.job-filters::-webkit-scrollbar { display: none; }
+.job-filters button { min-height: 44px; flex: 0 0 auto; padding: 0 14px; border: 1px solid #e4e8f2; border-radius: 999px; background: #fff; color: #4f5875; font-size: 12.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.job-filters button.is-on { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+.job-feed__empty { margin: 24px 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+
+/* AmbitionBox's own estimate wears the badge; that is what keeps it legible as an
+   estimate rather than a quoted fact. */
+.highlight__badge { display: inline-block; margin-left: 7px; padding: 2px 7px; border-radius: 999px; background: #eef1ff; color: var(--primary); font-size: 9px; font-style: normal; font-weight: 800; letter-spacing: .03em; vertical-align: 1px; }
+
+
+/* ---------- Job detail dock · prototype/job-detail-1b.html ----------
+   The assistant is the way forward from this screen, so the chrome is the assistant
+   rather than a generic primary button. */
+.detail-dock { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; width: 100%; max-width: 430px; margin: 0 auto; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -14px 34px -22px rgba(26,33,66,.5); }
+.detail-dock-ask { width: 100%; min-height: 56px; padding: 0 6px 0 12px; border: 1px solid #d9dffb; border-radius: 999px; display: flex; align-items: center; gap: 10px; background: #f7f8ff; color: #202641; font-size: 13.5px; font-weight: 800; text-align: left; cursor: pointer; }
+.detail-dock-ask > span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-dock-mark { width: 26px; height: 26px; flex: 0 0 auto; display: block; }
+.detail-dock-send { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--primary); }
+.detail-screen { padding-bottom: 116px; }
+
+/* ---------- Evidence conversation · prototype/job-detail-1b.html ----------
+   One question in one contained card, at normal typography. The 1B revision note is
+   explicit that a display heading per question made the sequence feel like an exam. */
+.q-card { margin-top: 16px; padding: 16px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px #e6e9f2, 0 10px 26px -20px rgba(63,92,251,.5); }
+.q-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.q-card__step { color: var(--subtle); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.q-card__ask { margin: 12px 0 0; font-size: 17px; line-height: 1.32; letter-spacing: -.02em; }
+.q-card__hint { margin: 6px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+/* A counter-question, not an error: the answer was heard, it just did not settle it. */
+.q-card__note { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; display: flex; align-items: flex-start; gap: 8px; color: #8a5a10; background: #fdf3e2; font-size: 12.5px; line-height: 1.45; }
+.q-card__note svg { flex: 0 0 auto; margin-top: 1px; }
+.q-card .answer-field { margin-top: 12px; }
+.evidence-receipt--running { margin-top: 16px; }
+.assistant-orb-img { width: 26px; height: 26px; display: block; }
+.demo-answer-img { width: 15px; height: 15px; display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- Evidence chat · prototype/job-detail-1b.html ----------
+   A thread, not a form. Header identifies who is speaking, the bar tracks the four
+   requirements, the composer stays at the foot, and every turn appends. */
+.chat-screen { display: flex; flex-direction: column; height: 100vh; max-width: 430px; margin: 0 auto; background: #fff; }
+.c-top { flex: 0 0 auto; height: 56px; padding: 0 8px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eef0f6; }
+.iconbtn { width: 44px; height: 44px; flex: 0 0 auto; border: 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: transparent; cursor: pointer; }
+.iconbtn:hover { background: #f2f4fa; }
+.c-top__id { min-width: 0; display: flex; align-items: center; gap: 10px; }
+.c-top__orb { width: 28px; height: 28px; flex: 0 0 auto; display: block; }
+.c-top__txt { min-width: 0; }
+.c-top__name, .c-top__sub { display: block; }
+.c-top__name { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.c-top__sub { margin-top: 1px; color: var(--subtle); font-size: 11.5px; }
+
+.c-prog { flex: 0 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+.c-prog__bar { flex: 1; display: flex; gap: 4px; }
+.c-prog__seg { flex: 1 1 0; height: 4px; border-radius: 999px; background: #e6e9f2; }
+.c-prog__seg.is-done { background: var(--primary); }
+.c-prog__seg.is-current { background: #b9c4fd; }
+.c-prog__label { flex: 0 0 auto; color: var(--subtle); font-size: 12px; font-weight: 700; }
+
+.c-thread { flex: 1 1 auto; overflow-y: auto; padding: 4px 20px 16px; }
+.c-thread__in { display: flex; flex-direction: column; gap: 18px; }
+.c-asst { display: flex; flex-direction: column; gap: 8px; }
+.c-asst__ident { display: flex; align-items: center; gap: 8px; }
+.c-mini-orb { width: 22px; height: 22px; display: block; }
+.c-asst__ident b { font-size: 13px; font-weight: 800; }
+.c-asst p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+/* The user's own words, kept verbatim and visibly theirs. */
+.c-user { align-self: flex-end; max-width: 84%; padding: 11px 14px; border-radius: 18px 18px 4px 18px; background: var(--primary); color: #fff; font-size: 13.5px; line-height: 1.45; }
+
+.c-findings { padding: 14px; border: 1px solid #e6e9f2; border-radius: 16px; }
+.c-findings__hd { color: var(--subtle); font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.c-findings__score { margin-top: 4px; color: var(--muted); font-size: 17px; }
+.c-findings__score b { color: var(--ink); font-size: 19px; font-weight: 800; }
+.c-fsum { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px solid #eef0f6; display: flex; flex-direction: column; gap: 8px; }
+.c-fsum li { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; font-size: 13px; }
+.c-fdot { width: 8px; height: 8px; flex: 0 0 auto; align-self: flex-start; transform: translateY(6px); border-radius: 50%; }
+.c-fdot--need { background: #f0c14b; }
+.c-fdot--miss { background: #d9534f; }
+.c-fsum li b { font-weight: 800; white-space: nowrap; }
+.c-fsum__v { flex: 1 1 auto; min-width: 0; color: var(--muted); }
+
+.c-qcard { padding: 14px; border: 1px solid #d9dffb; border-radius: 16px; background: #f7f8ff; }
+.c-qcard__label { display: block; color: var(--primary); font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.c-qcard__q { margin: 6px 0 0; font-size: 17px; line-height: 1.32; letter-spacing: -.02em; }
+.c-qcard__hint { margin: 8px 0 0 !important; color: var(--muted) !important; font-size: 13px !important; line-height: 1.45; }
+.c-qguide { color: var(--subtle) !important; font-size: 12.5px !important; }
+
+.c-receipt { padding: 12px 14px; border-radius: 14px; display: flex; align-items: flex-start; gap: 10px; color: #1f6b52; background: #e8f5ef; }
+.c-receipt--open { color: #8a5a10; background: #fdf3e2; }
+.c-receipt svg { flex: 0 0 auto; margin-top: 2px; }
+.c-receipt strong, .c-receipt small { display: block; }
+.c-receipt strong { font-size: 13.5px; }
+.c-receipt small { margin-top: 3px; opacity: .82; font-size: 12px; line-height: 1.4; }
+
+.c-composer { flex: 0 0 auto; padding: 10px 20px calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #eef0f6; background: #fff; }
+.c-composer__field { display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 14px; border: 1px solid #dfe2eb; border-radius: 22px; background: #fff; }
+.c-composer__field:focus-within { border-color: #b9c4fd; }
+.c-composer textarea { flex: 1; min-width: 0; min-height: 28px; max-height: 120px; border: 0; outline: 0; resize: none; background: transparent; font: inherit; font-size: 14px; line-height: 1.45; }
+.c-send { width: 40px; height: 40px; flex: 0 0 auto; border: 0; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--primary); cursor: pointer; }
+.c-send:disabled { color: #a0a7bd; background: #eef0f6; cursor: default; }
+.c-composer__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.c-composer__note { min-width: 0; flex: 1; color: var(--subtle); font-size: 10.5px; line-height: 1.35; }
+.c-demohint { flex: 0 0 auto; min-height: 32px; padding: 0 10px; border: 1px solid #e4e8f2; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; background: #fff; color: var(--muted); font-size: 11.5px; font-weight: 700; cursor: pointer; }
+.c-demohint__tag { padding: 2px 6px; border-radius: 999px; background: #eef1ff; color: var(--primary); font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.c-asst .primary-button { margin-top: 4px; }
+
+/* ---------- Résumé handover ----------
+   The screen exists to hand over a file, so Download is the only primary and everything
+   above it earns the press: where the number moved to, which requirements moved it, and
+   what the document now says. */
+.r-score { margin-top: 18px; padding: 16px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px #e6e9f2, 0 10px 26px -20px rgba(63,92,251,.4); }
+.r-score__row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.r-score__row b { font-size: 20px; font-weight: 800; letter-spacing: -.03em; }
+.r-score__row span { color: var(--muted); font-size: 13px; }
+.r-score__row em { margin-left: auto; padding: 3px 9px; border-radius: 999px; background: #e3f1ea; color: #0e6a55; font-size: 11px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.r-score .seg { margin-top: 12px; }
+
+.r-heading { margin: 22px 0 10px; color: var(--subtle); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.r-changes { display: grid; gap: 8px; }
+.r-change { padding: 11px 13px; border-radius: 13px; display: flex; align-items: center; gap: 9px; background: #e8f5ef; color: #1f6b52; font-size: 13px; font-weight: 700; }
+.r-change svg { flex: 0 0 auto; }
+
+.r-actions { margin-top: 20px; display: grid; gap: 6px; justify-items: center; }
+.r-actions .primary-button { width: 100%; }
+.r-actions .text-button { min-height: 44px; color: var(--muted); font-size: 13px; font-weight: 700; }
+/* The paper is a preview, not a viewer — it stops at its content instead of holding a
+   screenful of empty page. */
+.resume-paper { min-height: 0; padding-bottom: 18px; }
+
+
+/* ---------- States board · /states ----------
+   Every Home state side by side, for showing the screen to a room.
+
+   Live iframes rather than screenshots, on purpose: the board cannot go stale, and any
+   tile can be opened and driven for real mid-presentation. Each frame renders the app at
+   a true 390x844 and is scaled with `transform`, so the layout inside is a phone's
+   rather than a squeezed desktop rendering — a scaled iframe keeps its own viewport. */
+
+.states-board { min-height: 100vh; padding: 40px clamp(20px, 4vw, 56px) 72px; background: var(--stage, #e7e9f1); }
+.states-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; max-width: 1560px; margin: 0 auto 26px; }
+.states-head h1 { margin: 10px 0 0; font-size: clamp(30px, 4vw, 44px); line-height: 1.08; letter-spacing: -.035em; }
+.states-head p { margin: 12px 0 0; max-width: 62ch; color: var(--muted); font-size: 14.5px; line-height: 1.58; }
+.states-head .secondary-button { width: auto; flex: 0 0 auto; }
+
+.states-legend { display: flex; flex-wrap: wrap; gap: 10px 24px; max-width: 1560px; margin: 0 auto 32px; padding-top: 22px; border-top: 1px solid #d9dde9; }
+.states-legend span { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+.states-legend i { width: 26px; height: 17px; border-radius: 6px; }
+.states-legend b { color: var(--ink); font-weight: 750; }
+
+/* Fixed 300px columns, not fluid: the frames are scaled by a constant (300/390 = .769),
+   and a fluid column would need JS to keep the scale in step with the width. */
+.states-grid { display: grid; grid-template-columns: repeat(auto-fill, 300px); justify-content: center; gap: clamp(22px, 2.6vw, 38px); max-width: 1560px; margin: 0 auto; align-items: start; }
+
+.state-tile { display: flex; flex-direction: column; gap: 16px; width: 300px; }
+
+/* 390x844 scaled to the column. `zoom` would reflow the app as a narrow desktop; a
+   transform keeps the iframe's own viewport at phone width. */
+.state-tile-frame { position: relative; width: 300px; height: 649px; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 14px 34px rgba(26,33,66,.16), 0 0 0 1px rgba(26,33,66,.06); }
+.state-tile-frame iframe { position: absolute; top: 0; left: 0; width: 390px; height: 844px; border: 0; transform-origin: 0 0; transform: scale(0.7692); }
+.state-tile-open { position: absolute; inset: 0; border: 0; background: transparent; cursor: zoom-in; }
+.state-tile-open:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; }
+
+.state-tile-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+.state-tile-num { color: var(--subtle); font-size: 11px; font-weight: 800; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.state-tile-copy strong { font-size: 18px; letter-spacing: -.025em; }
+.state-tile-copy code { padding: 3px 8px; border-radius: 7px; background: #fff; box-shadow: inset 0 0 0 1px #dfe3ee; color: #3948b5; font-size: 11.5px; font-weight: 600; }
+.state-tile-copy small { color: var(--subtle); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.state-tile-copy p { margin: 4px 0 6px; color: var(--muted); font-size: 13px; line-height: 1.52; }
+.state-tile-copy .light-button { min-height: 42px; width: auto; padding: 0 16px; font-size: 13px; box-shadow: 0 6px 14px rgba(8,17,57,.10); }
+
+/* ---------- Zoom ---------- */
+
+.states-zoom { position: fixed; z-index: 80; inset: 0; display: flex; align-items: center; justify-content: center; gap: 36px; padding: 32px; flex-wrap: wrap; }
+.states-zoom-scrim { position: absolute; inset: 0; border: 0; padding: 0; background: rgba(14,17,38,.66); cursor: zoom-out; }
+.states-zoom-phone { position: relative; width: 390px; height: min(844px, calc(100vh - 64px)); border-radius: 26px; overflow: hidden; background: #fff; box-shadow: 0 30px 70px rgba(8,12,32,.5); }
+.states-zoom-phone iframe { width: 100%; height: 100%; border: 0; }
+.states-zoom-side { position: relative; width: min(320px, 100%); display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: #fff; }
+.states-zoom-side strong { font-size: 24px; letter-spacing: -.03em; }
+.states-zoom-side small { color: rgba(255,255,255,.66); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.states-zoom-side p { margin: 4px 0 10px; color: rgba(255,255,255,.82); font-size: 14px; line-height: 1.55; }
+.states-zoom-side .secondary-button { background: transparent; color: #fff; border-color: rgba(255,255,255,.3); }
+.states-link { margin-top: 14px; text-decoration: none; }

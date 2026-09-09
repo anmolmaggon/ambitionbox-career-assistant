@@ -18,8 +18,8 @@
 .first-open-pitch .onboarding-brand > span > span { color: #fff; }
 .first-open-pitch .onboarding-brand img { width: 29px; height: 29px; border: 2px solid rgba(255,255,255,.72); box-shadow: 0 0 0 3px rgba(255,255,255,.12); }
 .first-open-hero { flex: 1; display: grid; align-items: center; }
-.first-open-hero h1 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .first-open-hero ul { position: relative; width: 100%; max-width: 346px; margin: 18px auto 0; padding: 0; display: grid; gap: 7px; list-style: none; }
+.first-open-signature { width: 100%; max-width: 346px; margin: 20px auto 0; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.28); color: rgba(255,255,255,.92); font-size: 17px; font-weight: 750; line-height: 1.24; letter-spacing: -.024em; }
 .first-open-flow-line { position: absolute; z-index: 0; top: 35px; bottom: 35px; left: 24px; width: 1px; background: rgba(255,255,255,.44); transform-origin: top; }
 .first-open-hero li { position: relative; min-height: 68px; display: flex; align-items: center; gap: 16px; }
 .first-open-hero li > span { position: relative; z-index: 1; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.72); border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; color: #3f5cfb; background: #fff; box-shadow: 0 8px 22px rgba(25,39,126,.16); }
@@ -455,6 +455,7 @@
   .first-open-hero li > span { width: 44px; height: 44px; }
   .first-open-hero ul::before { top: 32px; bottom: 32px; left: 22px; }
   .first-open-hero li strong { font-size: 17px; }
+  .first-open-signature { margin-top: 15px; padding-top: 13px; font-size: 15.5px; }
   .first-open-auth { padding: 18px 16px max(14px,env(safe-area-inset-bottom)); }
   .detected-naukri-profile { min-height: 50px; margin-bottom: 10px; }
   .detected-naukri-profile > span:first-child { width: 46px; height: 46px; }

@@ -3,6 +3,9 @@
   "configurations": [
     {
       "name": "ceo-demov3",
+      "cwd": "ceo-demov3",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
       "url": "http://127.0.0.1:4273",
       "port": 4273
     }

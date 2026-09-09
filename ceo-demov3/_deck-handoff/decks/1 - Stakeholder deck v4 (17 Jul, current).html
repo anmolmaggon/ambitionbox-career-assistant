@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AmbitionBox · Stakeholder Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand:#4E68F4; --brand-deep:#273AA4; --brand-soft:#EDF0FE;
+    --ink:#1E223C; --slate:#5E6B92; --faint:#97A0BE;
+    --paper:#F7F8FC; --card:#FFFFFF; --line:#EBF0F6;
+    --green:#198A4E; --green-soft:#E8F5EE;
+    --red:#E02020; --red-soft:#FDECEC;
+    --amber:#FDAD35; --amber-ink:#C38E27; --amber-soft:#FEF5E6;
+    --shadow:0 14px 40px rgba(0,106,194,.14);
+    --shadow-sm:0 4px 14px rgba(0,106,194,.10);
+    --grad:linear-gradient(135deg,#5570FF 0%,#273AA4 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  body{font-family:'Figtree',system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  section.slide{
+    min-height:100vh;scroll-snap-align:start;position:relative;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:72px min(9vw,110px) 88px;overflow:hidden;
+  }
+  .chrome{position:absolute;top:34px;left:min(9vw,110px);right:min(9vw,110px);
+    display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+  .chrome .wm{font-weight:800;font-size:14px;letter-spacing:.01em;color:var(--ink)}
+  .chrome .wm span{color:var(--brand)}
+  .chrome .no{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+  .foot-receipt{position:absolute;bottom:32px;left:min(9vw,110px);right:min(9vw,110px);
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);letter-spacing:.02em}
+
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin-bottom:20px}
+  h1{font-size:clamp(40px,5.4vw,74px);font-weight:800;line-height:1.04;letter-spacing:-.025em}
+  h2{font-size:clamp(30px,3.6vw,48px);font-weight:800;line-height:1.08;letter-spacing:-.02em;max-width:15em}
+  .lede{font-size:clamp(16px,1.35vw,19px);color:var(--slate);line-height:1.55;max-width:34em;margin-top:18px;font-weight:400}
+  .lede strong{color:var(--ink);font-weight:600}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  .rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+  .rv.d4{transition-delay:.32s}.rv.d5{transition-delay:.4s}
+  section.on .rv{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}
+    .orb::after{animation:none}.orb{animation:none}}
+
+  /* ---------- orb ---------- */
+  .orb{width:88px;height:88px;border-radius:50%;background:var(--grad);position:relative;
+    box-shadow:0 18px 44px rgba(78,104,244,.42);animation:breathe 4.2s ease-in-out infinite}
+  .orb::before{content:"";position:absolute;inset:14%;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85),rgba(255,255,255,0) 55%)}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+  .orb.sm{width:40px;height:40px;box-shadow:0 8px 20px rgba(78,104,244,.4)}
+
+  /* ---------- verdict chips ---------- */
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;
+    font-size:12.5px;font-weight:700;letter-spacing:.04em}
+  .chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .chip.apply{background:var(--green-soft);color:var(--green)}
+  .chip.stretch{background:var(--amber-soft);color:var(--amber-ink)}
+  .chip.skip{background:var(--red-soft);color:var(--red)}
+  .chip.unrated{background:#F0F2F8;color:var(--faint)}
+
+  /* ---------- slide 1 : title ---------- */
+  #s1{align-items:flex-start;text-align:left}
+  #s1 .brandline{margin-top:34px;display:flex;align-items:center;gap:14px}
+  #s1 .brandline .rule{width:44px;height:2px;background:var(--brand)}
+  #s1 .brandline p{font-size:17px;color:var(--slate);font-weight:500}
+  #s1 .brandline p b{color:var(--ink);font-weight:700}
+
+  /* ---------- slide 2 : empty seat ---------- */
+  .seats{display:flex;gap:16px;margin-top:44px;flex-wrap:wrap}
+  .seat{flex:1;min-width:170px;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:22px 22px 20px;box-shadow:var(--shadow-sm)}
+  .seat .who{font-weight:700;font-size:16px}
+  .seat .serves{font-size:13px;color:var(--slate);margin-top:6px}
+  .seat .serves b{color:var(--ink)}
+  .seat.empty{border:2px dashed var(--brand);background:var(--brand-soft);box-shadow:none;position:relative}
+  .seat.empty .who{color:var(--brand)}
+  .seat.empty .serves{color:var(--brand-deep)}
+  .stats{display:flex;gap:min(4.5vw,60px);margin-top:52px;flex-wrap:wrap}
+  .stat .n{font-size:clamp(34px,3.4vw,46px);font-weight:800;letter-spacing:-.02em}
+  .stat .l{font-size:13px;color:var(--slate);margin-top:4px;max-width:15em}
+  .stat .src{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-top:6px}
+
+  /* ---------- slide 3 : three acts ---------- */
+  .acts{display:flex;gap:18px;margin-top:52px;flex-wrap:wrap}
+  .act{flex:1;min-width:220px;background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:26px 26px 24px;box-shadow:var(--shadow-sm);position:relative}
+  .act .yr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brand);letter-spacing:.1em}
+  .act h3{font-size:21px;font-weight:800;margin-top:10px;letter-spacing:-.01em}
+  .act p{font-size:14px;color:var(--slate);line-height:1.5;margin-top:8px}
+  .act .tag{margin-top:14px;font-size:13px;font-weight:600;color:var(--ink);font-style:italic}
+  .actline{height:3px;background:linear-gradient(90deg,var(--brand) 0%,var(--brand-deep) 100%);
+    border-radius:2px;margin-top:40px;position:relative;opacity:.25}
+
+  /* ---------- slide 4 : library → person ---------- */
+  .transform{display:grid;grid-template-columns:1fr 64px 1fr;gap:0;margin-top:46px;align-items:stretch}
+  .tcol{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow-sm)}
+  .tcol.today{background:transparent;box-shadow:none;border-style:dashed}
+  .tcol h3{font-size:19px;font-weight:800}
+  .tcol .sub{font-size:13px;color:var(--slate);margin-top:4px}
+  .trow{display:flex;align-items:baseline;gap:10px;padding:13px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+  .trow:last-child{border-bottom:none}
+  .trow .k{color:var(--slate);min-width:7.5em;font-size:13px}
+  .trow .v{font-weight:600}
+  .tarrow{display:flex;align-items:center;justify-content:center;color:var(--brand);font-size:26px;font-weight:300}
+  .oneliner{margin-top:34px;font-size:clamp(19px,1.9vw,25px);font-weight:700;letter-spacing:-.01em}
+  .oneliner span{color:var(--brand)}
+
+  /* ---------- phone frame ---------- */
+  .phone{width:330px;background:#fff;border-radius:44px;border:8px solid var(--ink);
+    box-shadow:0 30px 70px rgba(30,34,60,.22);overflow:hidden;flex-shrink:0;position:relative}
+  .phone .screen{background:var(--paper);height:100%}
+  .p-status{display:flex;justify-content:space-between;padding:12px 22px 6px;
+    font-size:11px;font-weight:600;color:var(--ink);background:#fff}
+  .p-head{display:flex;align-items:center;justify-content:space-between;background:#fff;
+    padding:8px 16px 12px;border-bottom:1px solid var(--line)}
+  .p-head .ham{display:flex;flex-direction:column;gap:4px}
+  .p-head .ham i{display:block;width:17px;height:2px;background:var(--ink);border-radius:2px}
+  .p-head .logo{font-weight:800;font-size:14.5px}
+  .p-head .logo span{color:var(--brand)}
+  .p-head .mag{width:16px;height:16px;border:2px solid var(--ink);border-radius:50%;position:relative}
+  .p-head .mag::after{content:"";position:absolute;width:7px;height:2px;background:var(--ink);
+    bottom:-3px;right:-5px;transform:rotate(45deg);border-radius:2px}
+  .p-context{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;
+    font-size:10.5px;color:var(--slate)}
+  .p-context b{color:var(--ink);font-weight:700}
+  .p-context .ct{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--faint)}
+  /* Mirrors the prototype's real bar: five tabs, then a divider, then the Void as a dark
+     circle sitting outside the tab set. The Void is a separate space, not a sixth tab. */
+  .p-nav{display:flex;justify-content:space-between;align-items:center;background:#fff;
+    border-top:1px solid var(--line);padding:8px 9px 12px;gap:2px}
+  .p-nav .ni{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:7.5px;
+    color:var(--faint);font-weight:600;white-space:nowrap}
+  .p-nav .ni .ic{width:18px;height:18px;border-radius:6px;background:#E7EAF3}
+  .p-nav .ni.active{color:var(--brand)}
+  .p-nav .ni.active .ic{background:var(--brand-soft);outline:1.5px solid var(--brand)}
+  .p-nav .nav-div{width:1px;height:22px;background:var(--line);flex-shrink:0}
+  .p-nav .voidbtn{width:27px;height:27px;border-radius:50%;background:var(--ink);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center}
+  .p-nav .voidbtn i{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);
+    display:block;position:relative}
+  .p-nav .voidbtn i::after{content:"";position:absolute;inset:2px;border-radius:50%;background:#fff}
+
+  /* match card inside phone */
+  .mcard{background:#fff;margin:0 12px;border-radius:18px;border:1px solid var(--line);
+    box-shadow:var(--shadow-sm);overflow:hidden}
+  .mc-top{padding:15px 16px 13px;border-bottom:1px solid var(--line)}
+  .mc-idrow{display:flex;gap:11px;align-items:center}
+  .mc-logo{width:38px;height:38px;border-radius:10px;background:#5F259F;color:#fff;display:flex;
+    align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .mc-role{font-size:14.5px;font-weight:800;line-height:1.15}
+  .mc-co{font-size:11.5px;color:var(--slate);margin-top:2px}
+  .mc-pay{display:flex;align-items:baseline;gap:7px;margin-top:11px}
+  .mc-pay .band{font-size:13px;font-weight:800}
+  .mc-pay .med{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint)}
+  .mc-verdict{padding:13px 16px;border-bottom:1px solid var(--line)}
+  .mc-headline{font-size:12.5px;font-weight:600;color:var(--ink);margin-top:9px;line-height:1.4}
+  .mc-sec{padding:11px 16px 12px}
+  .mc-sec .sl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+  .drv{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12px}
+  .drv .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .drv .dot.g{background:var(--green)}.drv .dot.a{background:var(--amber)}.drv .dot.r{background:var(--red)}
+  .drv .dl{color:var(--slate);min-width:6.8em;font-size:11px}
+  .drv .dv{font-weight:700;font-size:11.5px}
+  .mc-receipt{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
+    padding:9px 16px 12px;border-top:1px dashed var(--line)}
+  /* --- match card, matched to the prototype's real anatomy --- */
+  .mc-match{margin-left:auto;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800;flex-shrink:0}
+  .mc-match.apply{background:var(--green-soft);color:var(--green)}
+  .mc-match.stretch{background:var(--amber-soft);color:var(--amber-ink)}
+  .mc-match.skip{background:var(--red-soft);color:var(--red)}
+  .mc-meta{font-size:9.5px;color:var(--faint);margin-top:9px}
+  .mc-intel{padding:12px 16px;border-top:1px solid var(--line)}
+  .mc-ihead{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .mc-ihead .ih{font-size:12.5px;font-weight:800;letter-spacing:-.01em}
+  .mc-block{padding:8px 0;border-bottom:1px solid var(--line)}
+  .mc-block:last-child{border-bottom:none;padding-bottom:0}
+  .mc-block .bl{font-size:11px;font-weight:700;margin-bottom:5px}
+  /* the pay bar: the one viz the card keeps, with the candidate's own number on it */
+  .pb-track{height:6px;border-radius:4px;background:#EDF0F6;position:relative;margin:15px 0 7px}
+  .pb-range{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--brand);opacity:.3}
+  .pb-mark{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;
+    border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(30,34,60,.3)}
+  .pb-mark.you{background:var(--slate)}
+  .pb-mark.med{background:var(--brand)}
+  .pb-mark.offer{background:var(--green);width:12px;height:12px}
+  .pb-labels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
+    font-size:8.5px;color:var(--faint)}
+  .pb-note{font-size:10.5px;font-weight:600;margin-top:7px;color:var(--green)}
+  .pb-note.bad{color:var(--red)}
+  .rrow{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:10.5px}
+  .rrow .rl{color:var(--slate)}
+  .rrow .rn{font-weight:800}
+  .rrow .rn.g{color:var(--green)}.rrow .rn.a{color:var(--amber-ink)}.rrow .rn.r{color:var(--red)}
+  .tstats{display:flex;gap:12px;margin-top:5px}
+  .tstat{flex:1}
+  .tstat .tn{font-size:14px;font-weight:800;letter-spacing:-.01em}
+  .tstat .tn.a{color:var(--amber-ink)}
+  .tstat .tl{font-size:8.5px;color:var(--faint);margin-top:1px}
+  .beta{background:var(--brand-soft);color:var(--brand);font-size:7px;font-weight:800;
+    padding:2px 5px;border-radius:4px;letter-spacing:.06em;margin-left:6px;vertical-align:middle}
+  .mc-sample{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-top:6px}
+  .mc-empty{font-size:10.5px;color:var(--faint);font-style:italic;padding:3px 0}
+  .p-actions .pa-btn.refer{background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(78,104,244,.35)}
+  .p-actions .pa-btn.applyghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+  .p-actions{display:flex;gap:8px;padding:11px 12px;align-items:center}
+  .pa-arrow{width:34px;height:38px;border-radius:11px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:15px}
+  .pa-btn{flex:1;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px}
+  .pa-btn.later{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+  .pa-btn.apply{background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(78,104,244,.35)}
+
+  /* tracker board inside phone */
+  .p-strip{display:flex;gap:6px;padding:10px 12px 4px;overflow:hidden}
+  .strip-chip{display:flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;
+    font-size:10px;font-weight:700;background:#fff;border:1px solid var(--line);color:var(--slate);white-space:nowrap}
+  .strip-chip.on{background:var(--brand);border-color:var(--brand);color:#fff;
+    box-shadow:0 3px 8px rgba(78,104,244,.3)}
+  .strip-chip i{font-style:normal;background:#F0F2F8;border-radius:999px;padding:0 5px;font-size:9.5px}
+  .strip-chip.on i{background:rgba(255,255,255,.22)}
+  .p-board{display:flex;gap:8px;padding:8px 0 4px 12px;overflow:hidden}
+  .p-col{flex-shrink:0;width:84%;background:#F0F2F8;border-radius:12px;padding:9px 9px 10px}
+  .p-col.peek{width:60%}
+  .p-col .colhead{display:flex;justify-content:space-between;font-size:9px;font-weight:800;
+    letter-spacing:.1em;color:var(--slate);text-transform:uppercase;padding:0 2px 7px}
+  .pl-src{display:inline-block;border-radius:5px;padding:2px 6px;font-size:9px;font-weight:700;margin-top:6px}
+  .pl-src.naukri{background:#F0F2F8;color:var(--slate)}
+  .pl-src.inbox{background:var(--brand-soft);color:var(--brand)}
+  .pl-src.manual{background:var(--amber-soft);color:var(--amber-ink)}
+  .pl-src.merged{background:var(--brand-soft);color:var(--brand);border:1px solid #DCE3FD}
+
+  /* offer percentile track (red → amber → green) */
+  .ptrack-wrap{margin-top:12px}
+  .ptrack{position:relative;height:8px;border-radius:5px;
+    background:linear-gradient(90deg,#E02020 0%,#FDAD35 45%,#198A4E 100%);opacity:.9}
+  .ptrack .pin{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;
+    border-radius:50%;background:#fff;border:3px solid var(--ink);box-shadow:0 2px 6px rgba(30,34,60,.3)}
+  .ptrack-labels{display:flex;justify-content:space-between;margin-top:6px;
+    font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint)}
+  .ptrack-badge{display:inline-block;margin-top:10px;border-radius:999px;background:var(--green-soft);
+    color:var(--green);font-size:11.5px;font-weight:800;padding:4px 11px}
+
+  /* inbox-moment reveal phone */
+  .rv-progress{margin:14px 16px 0;height:5px;border-radius:3px;background:#EDF0F6;overflow:hidden}
+  .rv-progress i{display:block;height:100%;width:100%;border-radius:3px;background:var(--grad)}
+  .rv-stat{padding:18px 16px 4px;text-align:left}
+  .rv-stat .n{font-size:40px;font-weight:800;color:var(--brand);letter-spacing:-.02em;line-height:1}
+  .rv-stat .l{font-size:12.5px;font-weight:700;color:var(--ink);margin-top:6px}
+  .rv-stat .s{font-size:11px;color:var(--slate);margin-top:3px;line-height:1.45}
+  .trustrow{display:flex;gap:14px;margin-top:22px}
+  .trustrow span{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink)}
+  .trustrow span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand)}
+
+  /* --- tracker board: five horizontal lanes, exactly as the prototype renders them.
+         Lane labels run vertically; cards scroll sideways inside each lane. --- */
+  .lanes{background:var(--paper)}
+  .lane{display:flex;border-bottom:1px solid var(--line);align-items:stretch}
+  .lane:last-child{border-bottom:none}
+  .lane-label{writing-mode:vertical-rl;transform:rotate(180deg);font-size:6.5px;letter-spacing:.11em;
+    color:var(--faint);font-weight:800;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;width:17px;border-right:1px solid var(--line);text-align:center}
+  .lane-cards{display:flex;gap:7px;padding:8px;flex:1;min-width:0;overflow:hidden}
+  .tcard{background:#fff;border:1px solid var(--line);border-radius:11px;padding:8px 9px 9px;
+    width:152px;flex-shrink:0;box-shadow:var(--shadow-sm)}
+  .lane.dim .tcard{opacity:.72}
+  .tc-top{display:flex;gap:7px;align-items:center}
+  .tc-logo{width:23px;height:23px;border-radius:7px;color:#fff;font-weight:800;font-size:11px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tc-name{font-size:11.5px;font-weight:800;line-height:1.1}
+  .tc-role{font-size:8px;color:var(--faint);margin-top:1px;white-space:nowrap}
+  .tc-chips{display:flex;gap:4px;align-items:center;margin-top:7px;flex-wrap:wrap}
+  .tchip{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:999px;
+    background:#F0F2F8;color:var(--slate);white-space:nowrap}
+  .tchip.naukri{background:#F3EEFE;color:#7C3AED}
+  .tchip.inbox{background:var(--brand-soft);color:var(--brand)}
+  .tchip.merged{background:var(--green-soft);color:var(--green)}
+  .tc-time{font-size:7.5px;color:var(--faint);white-space:nowrap}
+
+  /* pipeline phone */
+  .pl-item{background:#fff;margin:0 12px 9px;border-radius:14px;border:1px solid var(--line);
+    padding:12px 14px;box-shadow:var(--shadow-sm)}
+  .pl-top{display:flex;justify-content:space-between;align-items:center}
+  .pl-co{font-size:12.5px;font-weight:800}
+  .pl-role{font-size:10px;color:var(--slate);margin-top:1px}
+  .pl-status{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .pl-status.alive{background:var(--green-soft);color:var(--green)}
+  .pl-status.wait{background:var(--amber-soft);color:var(--amber-ink)}
+  .pl-status.ghost{background:var(--red-soft);color:var(--red)}
+  .pl-status.offer{background:var(--brand-soft);color:var(--brand)}
+  .pl-note{font-size:10.5px;color:var(--slate);margin-top:7px;line-height:1.45}
+  .pl-note b{color:var(--ink)}
+  .pl-cta{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;color:var(--brand)}
+  .pl-log{margin:2px 12px 0;border:1.5px dashed var(--brand);border-radius:14px;padding:10px 14px;
+    font-size:11px;font-weight:600;color:var(--brand);text-align:center;background:var(--brand-soft)}
+
+  /* slide 5/7 layout */
+  /* s7's first sentence must hold one line, else "are." orphans above the highlight pill */
+  #s7 h2{font-size:clamp(24px,2.75vw,37px);max-width:none}
+  .duo{display:flex;gap:min(5vw,70px);align-items:center;margin-top:8px}
+  .duo .txt{flex:1;min-width:0}
+  .points{margin-top:30px;display:flex;flex-direction:column;gap:0}
+  .point{display:flex;gap:16px;padding:17px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .point:last-child{border-bottom:none}
+  .point .pk{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--brand);
+    letter-spacing:.08em;min-width:2.4em;text-transform:uppercase}
+  .point .pv{font-size:16px;line-height:1.5;color:var(--slate)}
+  .point .pv b{color:var(--ink);font-weight:700}
+
+  /* ---------- slide 6 : spectrum ---------- */
+  .spectrum{display:flex;gap:13px;margin-top:44px;align-items:stretch}
+  .sp-card{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:18px 16px 15px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-width:0}
+  .sp-card.hero-card{outline:2px solid var(--green);outline-offset:-1px}
+  .sp-card.reveal-card{outline:2px solid var(--amber);outline-offset:-1px}
+  .sp-card.skip-card{outline:2px solid var(--red);outline-offset:-1px}
+  .sp-cohead{display:flex;align-items:center;gap:10px}
+  .sp-co{font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .sp-score{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-top:3px;letter-spacing:.04em}
+  .sp-chiprow{margin-top:10px}
+  .sp-pay{margin-top:13px;font-size:13.5px;font-weight:800}
+  .sp-pay small{display:block;font-family:'JetBrains Mono',monospace;font-size:8.5px;
+    color:var(--faint);font-weight:400;margin-top:2px;letter-spacing:.03em}
+  .sp-why{font-size:11.5px;color:var(--slate);line-height:1.5;margin-top:11px;flex:1}
+  .sp-why b{color:var(--ink)}
+  .sp-band{height:5px;border-radius:3px;background:#EDF0F6;margin-top:13px;position:relative}
+  .sp-band i{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--brand);opacity:.75}
+  .sp-band.na{background:repeating-linear-gradient(90deg,#EDF0F6 0 6px,transparent 6px 11px)}
+  /* full-width slide: let the headline's first line breathe so 'something' doesn't orphan */
+  #s6 h2{max-width:none}
+  .sp-note{margin-top:30px;font-size:15px;color:var(--slate)}
+  .sp-note b{color:var(--ink)}
+
+  /* ---------- stage-by-stage help ---------- */
+  .stages{margin-top:26px;max-width:1120px}
+  .stg-head,.stg-row{display:grid;grid-template-columns:118px minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:center}
+  .stg-head{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+    color:var(--faint);padding:0 12px 9px;text-transform:uppercase}
+  .stg-row{padding:9px 12px;border-top:1px solid var(--line);border-radius:10px}
+  .stg-row.hero{background:var(--brand-soft);border-top-color:transparent}
+  .lanepill{font-size:11px;font-weight:800;padding:4px 11px;border-radius:999px;display:inline-block;letter-spacing:.01em}
+  .lanepill.applied,.lanepill.seen,.lanepill.closed{background:#F0F2F8;color:var(--slate)}
+  .lanepill.shortlisted{background:var(--green-soft);color:var(--green)}
+  .lanepill.interviewing{background:var(--brand-soft);color:var(--brand)}
+  .lanepill.offer{background:var(--green);color:#fff}
+  .lanepill.ghosted{background:var(--red-soft);color:var(--red)}
+  .stg-saw{font-size:13.5px;color:var(--slate);line-height:1.45}
+  .stg-saw b{color:var(--ink);font-weight:600}
+  .stg-act{font-size:13.5px;font-weight:700;color:var(--brand);line-height:1.35}
+  .stg-act::before{content:"→ ";color:var(--faint);font-weight:400}
+
+  /* ---------- slide 8 : moments ---------- */
+  .moments{display:flex;gap:18px;margin-top:44px;flex-wrap:wrap}
+  .toast{flex:1;min-width:230px;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:18px 20px;box-shadow:var(--shadow)}
+  .toast .t-top{display:flex;align-items:center;gap:10px}
+  .toast .t-app{font-size:11px;font-weight:700;color:var(--ink)}
+  .toast .t-when{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);margin-left:auto}
+  .toast .t-msg{font-size:13.5px;line-height:1.5;margin-top:11px;color:var(--ink)}
+  .toast .t-msg b{font-weight:700}
+  .toast .t-act{display:inline-block;margin-top:12px;font-size:12px;font-weight:700;color:var(--brand)}
+  .dial-wrap{display:flex;align-items:center;gap:14px;margin-top:12px}
+  .dial{width:64px;height:64px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--green) 0 84%,#EDF0F6 84% 100%);display:flex;align-items:center;justify-content:center}
+  .dial i{width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;
+    justify-content:center;font-style:normal;font-weight:800;font-size:13px}
+  .dial-cap{font-size:11.5px;color:var(--slate);line-height:1.5}
+  .dial-cap b{color:var(--ink)}
+
+  /* ---------- the flywheel moment ---------- */
+  .celebrate{padding:26px 18px 6px;text-align:center;background:#fff}
+  .celebrate .em{font-size:32px;line-height:1}
+  .celebrate h3{font-size:19px;font-weight:800;margin-top:10px;letter-spacing:-.01em}
+  .celebrate p{font-size:11.5px;color:var(--slate);margin-top:8px;line-height:1.5}
+  .celebrate p b{color:var(--ink)}
+  .ask-label{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;
+    color:var(--faint);text-transform:uppercase;padding:14px 16px 8px;background:#fff}
+  .asks{padding:0 12px 4px;background:#fff}
+  .ask{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+  .ask .at{font-size:12px;font-weight:800}
+  .ask .ad{font-size:10px;color:var(--slate);margin-top:4px;line-height:1.45}
+  .trust-line{font-size:8.5px;color:var(--faint);text-align:center;padding:2px 0 14px;background:#fff}
+  .loopnote{margin-top:30px;display:flex;flex-direction:column;gap:0}
+
+  /* ---------- slide 9 : moat ---------- */
+  .moat{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px}
+  .moat .m{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 26px;box-shadow:var(--shadow-sm)}
+  .moat .m h3{font-size:17px;font-weight:800}
+  .moat .m p{font-size:13.5px;color:var(--slate);margin-top:7px;line-height:1.55}
+  .moat .m p b{color:var(--ink)}
+  .moat .m .mk{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:.1em}
+
+  /* ---------- competitive 2x2 positioning map ----------
+     Fuld-style: dashed cross, poles at the four edges, brand wordmarks scattered,
+     one highlighted target ringed with an annotation, dotted arrow from today to target. */
+  #s9b h2{max-width:none;font-size:clamp(26px,3.1vw,42px)}
+  .map{position:relative;margin:12px auto 0;width:100%;max-width:1010px;height:392px}
+  /* poles sit in the margins, outside the data area */
+  .map-plot{position:absolute;top:30px;bottom:30px;left:132px;right:132px}
+  .map-plot::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed #D8DFEA}
+  .map-plot::after{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:1px dashed #D8DFEA}
+  .pole{position:absolute;font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.25}
+  .pole small{display:block;font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:400;
+    color:var(--faint);letter-spacing:.05em;margin-top:3px;text-transform:uppercase;line-height:1.45}
+  .pole.t{top:0;left:50%;transform:translateX(-50%);text-align:center}
+  .pole.b{bottom:0;left:50%;transform:translateX(-50%);text-align:center}
+  .pole.l{left:0;top:50%;transform:translateY(-50%);width:118px;text-align:right}
+  .pole.r{right:0;top:50%;transform:translateY(-50%);width:118px;text-align:left}
+  /* marks */
+  .mk2{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;z-index:2;text-align:center}
+  .mk2 .nm{font-size:13.5px;font-weight:700;color:#7C859E;letter-spacing:-.01em}
+  .mk2.incumbent .nm{color:#A6AEC2;font-weight:600}
+  .mk2 .sub{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#B9C0D2;margin-top:2px;letter-spacing:.03em}
+  .mk2.today .dot{width:9px;height:9px;border-radius:50%;background:var(--faint);
+    outline:3px solid rgba(151,160,190,.2);margin:0 auto}
+  .mk2.today .nm{font-size:11px;font-weight:700;color:var(--faint);margin-top:6px}
+  .mk2.target{z-index:4}
+  .mk2.target .nm{background:var(--brand);color:#fff;font-size:14.5px;font-weight:800;
+    padding:9px 15px;border-radius:9px;box-shadow:0 8px 22px rgba(78,104,244,.42);display:inline-block}
+  /* ring drawn as a rotated div so it can't be distorted by non-uniform SVG scaling */
+  .map-ring{position:absolute;border:1.6px solid #EE9CC4;border-radius:50%;
+    transform:translate(-50%,-50%) rotate(-7deg);z-index:3;pointer-events:none}
+  /* the arrow: a dashed vertical run from today up to the target, with a CSS arrowhead */
+  .map-arrow{position:absolute;border-left:1.5px dashed var(--brand);opacity:.65;z-index:1}
+  .map-arrow::after{content:"";position:absolute;top:-1px;left:-4.5px;
+    border-left:4.5px solid transparent;border-right:4.5px solid transparent;border-bottom:7px solid var(--brand)}
+  .map-note{position:absolute;background:#fff;border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;font-size:11.5px;font-weight:600;color:var(--ink);
+    box-shadow:var(--shadow-sm);z-index:5;width:172px;line-height:1.4}
+  .map-lead{position:absolute;border-top:1.2px solid #EE9CC4;z-index:4;transform-origin:left center}
+  .map-foot{margin-top:2px;font-size:14.5px;color:var(--slate);text-align:center;max-width:60em;
+    margin-left:auto;margin-right:auto}
+  .map-foot b{color:var(--ink)}
+
+  /* ---------- slide 10 : window / bars ---------- */
+  .bars{margin-top:44px;display:flex;flex-direction:column;gap:13px;max-width:760px}
+  .bar{display:grid;grid-template-columns:120px 1fr 200px;gap:16px;align-items:center}
+  .bar .bn{font-size:14px;font-weight:700;text-align:right}
+  .bar .bt{height:22px;border-radius:6px;background:var(--line);position:relative;overflow:hidden}
+  .bar .bt i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--faint);
+    width:0;transition:width 1s cubic-bezier(.2,.7,.2,1) .25s}
+  .bar.ab .bt i{background:var(--grad)}
+  .bar.ab .bn{color:var(--brand)}
+  section.on .bar .bt i{width:var(--w)}
+  .bar .bv{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate)}
+  .bar .bv b{color:var(--ink)}
+
+  /* ---------- slide 11 : roadmap ---------- */
+  .phases{display:flex;gap:18px;margin-top:46px;flex-wrap:wrap}
+  .phase{flex:1;min-width:230px;background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:24px;box-shadow:var(--shadow-sm)}
+  .phase .ph{display:flex;justify-content:space-between;align-items:baseline}
+  .phase .ph h3{font-size:18px;font-weight:800}
+  .phase .ph .pm{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)}
+  .phase .pt{font-size:13px;font-style:italic;color:var(--brand);margin-top:3px;font-weight:600}
+  .phase ul{list-style:none;margin-top:15px}
+  .phase li{font-size:13.5px;color:var(--slate);padding:6px 0 6px 18px;position:relative;line-height:1.45}
+  .phase li::before{content:"";position:absolute;left:0;top:12px;width:7px;height:7px;border-radius:50%;
+    background:var(--brand-soft);outline:1.5px solid var(--brand)}
+  .phase li b{color:var(--ink)}
+  /* marks a roadmap line the prototype already demonstrates */
+  .dm{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;
+    letter-spacing:.07em;background:var(--green-soft);color:var(--green);padding:1px 5px;
+    border-radius:4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+
+  /* ---------- slide 12 : refusals ---------- */
+  .refusals{margin-top:42px;display:grid;grid-template-columns:1fr 1fr;gap:0 min(5vw,64px);max-width:980px}
+  .ref{display:flex;gap:14px;padding:15px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .ref .rx{color:var(--red);font-weight:800;font-size:15px;font-family:'JetBrains Mono',monospace}
+  .ref .rt{font-size:15.5px;line-height:1.45;color:var(--slate)}
+  .ref .rt b{color:var(--ink);font-weight:700}
+
+  /* ---------- slide 13 : close ---------- */
+  #s13{align-items:flex-start}
+  #s13 .northstar{margin-top:40px;display:flex;gap:min(4vw,54px);flex-wrap:wrap}
+  #s13 .ns .k{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--faint)}
+  #s13 .ns .v{font-size:19px;font-weight:800;margin-top:6px}
+
+  /* progress dots */
+  .dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);display:flex;
+    flex-direction:column;gap:9px;z-index:50}
+  .dots a{width:7px;height:7px;border-radius:50%;background:#CBD2E4;display:block;transition:.25s}
+  .dots a.cur{background:var(--brand);transform:scale(1.35)}
+
+  /* ---------- logos ---------- */
+  .ab-wm{width:132px;height:29px;display:block}
+  .ab-wm.ph{width:100px;height:22px}
+  .abmark{display:block;filter:drop-shadow(0 14px 28px rgba(78,104,244,.35))}
+  .abmark.lg{width:78px;height:87px}
+  .abmark.md{width:58px;height:65px}
+  .abmark.sm{width:26px;height:29px;filter:drop-shadow(0 5px 12px rgba(78,104,244,.3));flex-shrink:0}
+  .hl{background:var(--brand-soft);color:var(--brand-deep);padding:2px 16px 6px;border-radius:16px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+
+  /* ---------- slide 4 : company page cards ---------- */
+  .pages{display:flex;gap:26px;margin-top:32px;align-items:stretch}
+  .pagecard{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden;max-width:470px;display:flex;flex-direction:column}
+  .pagecard.withagent{box-shadow:var(--shadow);outline:2px solid var(--brand);outline-offset:-1px}
+  .pc-bar{display:flex;gap:5px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:#FBFCFE}
+  .pc-bar i{width:8px;height:8px;border-radius:50%;background:#E2E7F2}
+  .pc-bar span{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--faint);margin-left:8px}
+  .pc-tag{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:14px 20px 0}
+  .pc-tag.b{color:var(--brand)}
+  .pc-body{padding:12px 20px 16px;flex:1;display:flex;flex-direction:column}
+  .pc-co{display:flex;gap:11px;align-items:center}
+  .pc-logo{width:36px;height:36px;border-radius:10px;background:#FC8019;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .pc-name{font-weight:800;font-size:15.5px}
+  .pc-sub{font-size:11px;color:var(--slate);margin-top:2px}
+  .pc-tabs{display:flex;gap:6px;margin-top:13px}
+  .pc-tab{font-size:10.5px;font-weight:600;color:var(--slate);border:1px solid var(--line);padding:4px 11px;border-radius:999px}
+  .pc-tab.on{color:var(--brand);border-color:var(--brand);background:var(--brand-soft)}
+  .pc-line{height:8px;border-radius:4px;background:#EEF1F8;margin-top:8px}
+  .pc-line.short{width:62%}
+  .pc-exit{font-size:11.5px;color:var(--slate);padding:12px 20px;border-top:1px dashed var(--line);line-height:1.5}
+  .pc-exit b{color:var(--ink)}
+  .pc-doorway{margin-top:14px;padding:12px 14px;background:var(--brand-soft);border:1px solid #DCE3FD;border-radius:14px;display:flex;gap:11px;align-items:center}
+  .pc-doorway p{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.4;flex:1}
+  .pc-doorway .go{background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:8px 13px;border-radius:10px;white-space:nowrap}
+  .morph{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .mchip{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 17px;font-size:13.5px}
+  .mchip .from{color:var(--slate)}
+  .mchip .to{color:var(--brand);font-weight:700}
+  .mchip .ar{color:var(--faint)}
+
+  /* ---------- matrix slide ---------- */
+  .mx{margin-top:34px;max-width:1040px}
+  .mx-head,.mx-row{display:grid;grid-template-columns:minmax(230px,1.5fr) repeat(6,1fr);align-items:center}
+  .mx-head{font-size:12px;font-weight:700;color:var(--slate);padding:0 10px 10px}
+  .mx-head span{justify-self:center}
+  .mx-head .sc{color:var(--brand);font-weight:800}
+  .mx-row{padding:8px 10px;border-top:1px solid var(--line);font-size:13.5px;border-radius:10px}
+  .mx-row .f{padding-right:10px;line-height:1.35}
+  .mx-row.bet{background:var(--brand-soft);border-top-color:transparent}
+  .mx-row.bet .f{font-weight:700}
+  .cell{justify-self:center;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800}
+  .cell.y{background:var(--green-soft);color:var(--green)}
+  .cell.p{background:var(--amber-soft);color:var(--amber-ink)}
+  .cell.n{background:#F0F2F8;color:#C3CADC}
+  .cell.s{background:var(--brand);color:#fff;box-shadow:0 3px 8px rgba(78,104,244,.35)}
+  /* solid = running in the prototype today · dashed = an Act 2–3 promise, not yet built */
+  .cell.s.later{background:var(--brand-soft);color:var(--brand);box-shadow:none;outline:1.5px dashed var(--brand);outline-offset:-1.5px}
+  .mx-legend{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-top:14px;letter-spacing:.04em}
+
+  @media(max-height:800px){
+    .abmark.lg{width:64px;height:72px}
+    .pages{margin-top:24px}.morph{margin-top:20px}
+    .mx{margin-top:18px}.mx-row{padding:4px 10px;font-size:12.5px}
+    .mx-head{padding:0 10px 6px;font-size:11.5px}
+    .cell{width:19px;height:19px;font-size:10px}
+    .mx-legend{margin-top:10px;font-size:9px}
+    section.slide{padding:56px min(9vw,110px) 70px}
+    .phone{zoom:.87}
+    .seats{margin-top:32px}.stats{margin-top:34px}
+    .acts,.spectrum,.moments,.moat,.bars,.phases,.transform{margin-top:28px}
+    .refusals{margin-top:24px}.ref{padding:11px 0}
+    .point{padding:13px 0}
+    .oneliner{margin-top:22px}.sp-note{margin-top:20px}
+    .foot-receipt{bottom:20px}
+    .phase{padding:18px 20px}.phase li{padding:4px 0 4px 18px}
+    .bars{gap:10px}.bar .bt{height:20px}
+    h2{font-size:clamp(26px,3.1vw,42px)}
+    /* keep every slide inside a 720p projector: these four run tall at full size */
+    #s2 .lede{margin-top:18px!important;font-size:14.5px}
+    .stages{margin-top:16px}
+    .stg-row{padding:5px 12px}
+    .stg-head{padding:0 12px 5px}
+    .stg-saw,.stg-act{font-size:12.5px;line-height:1.4}
+    #s7c .lede{margin-top:14px!important;font-size:14.5px}
+    .mc-intel{padding:9px 14px}
+    .mc-block{padding:6px 0}
+    .celebrate{padding:18px 16px 4px}
+    .mx-legend{line-height:1.5}
+  }
+  @media(max-width:980px){
+    .duo{flex-direction:column;align-items:flex-start}
+    .spectrum{flex-wrap:wrap}.sp-card{min-width:44%}
+    .moat{grid-template-columns:1fr}
+    .transform{grid-template-columns:1fr;gap:14px}.tarrow{transform:rotate(90deg)}
+    .refusals{grid-template-columns:1fr}
+    .dots{display:none}
+    .phone{width:300px}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ablogo" viewBox="0 0 252 56">
+      <path d="M75.9111 39.1378L74.5483 35.407H64.8777L63.5149 39.1378H58.4526L66.8255 17.4975H72.6018L80.9417 39.1378H75.9111ZM69.713 21.4882L66.1109 31.4163H73.2828L69.713 21.4882Z" fill="#14182B"/>
+      <path d="M102.294 39.1382V29.2424C102.294 27.7826 101.645 26.7444 99.9569 26.7444C98.4967 26.7444 97.2958 27.7181 96.7114 28.5615V39.1382H92.5579V29.2424C92.5579 27.7826 91.9091 26.7444 90.2212 26.7444C88.7933 26.7444 87.5924 27.7181 86.9758 28.5937V39.1382H82.8545V23.4675H86.9758V25.5116C87.6246 24.5708 89.702 23.0781 92.1032 23.0781C94.407 23.0781 95.8678 24.1485 96.4515 25.9333C97.3603 24.5057 99.4371 23.0781 101.839 23.0781C104.727 23.0781 106.447 24.603 106.447 27.8148V39.1382H102.294Z" fill="#14182B"/>
+      <path d="M110.503 39.1378V17.4975H114.625V25.4789C115.858 23.8888 117.61 23.0783 119.46 23.0783C123.452 23.0783 126.405 26.1927 126.405 31.3189C126.405 36.5425 123.419 39.5273 119.46 39.5273C117.578 39.5273 115.858 38.6839 114.625 37.1589V39.1378H110.503ZM114.625 34.109C115.307 35.1149 116.832 35.8609 118.162 35.8609C120.563 35.8609 122.154 34.0439 122.154 31.3189C122.154 28.5933 120.564 26.744 118.162 26.744C116.832 26.744 115.306 27.5229 114.625 28.5611V34.109Z" fill="#14182B"/>
+      <path d="M129.098 18.6983C129.098 17.3359 130.234 16.2326 131.564 16.2326C132.927 16.2326 134.031 17.3359 134.031 18.6983C134.031 20.0608 132.927 21.1641 131.564 21.1641C130.234 21.1641 129.098 20.0608 129.098 18.6983ZM129.52 39.1381V23.4673H133.641V39.1381H129.52Z" fill="#14182B"/>
+      <path d="M138.541 35.2443V27.0682H135.945V23.467H138.541V19.1842H142.695V23.467H145.875V27.0682H142.695V34.1411C142.695 35.1147 143.214 35.8608 144.123 35.8608C144.739 35.8608 145.323 35.6338 145.55 35.4068L146.426 38.5212C145.81 39.0726 144.706 39.5271 142.986 39.5271C140.099 39.5271 138.541 38.0344 138.541 35.2443Z" fill="#14182B"/>
+      <path d="M148.277 18.6983C148.277 17.3359 149.413 16.2326 150.743 16.2326C152.106 16.2326 153.21 17.3359 153.21 18.6983C153.21 20.0608 152.106 21.1641 150.743 21.1641C149.413 21.1641 148.277 20.0608 148.277 18.6983ZM148.699 39.1381V23.4673H152.82V39.1381H148.699Z" fill="#14182B"/>
+      <path d="M155.903 31.2864C155.903 26.8418 159.018 23.0781 164.178 23.0781C169.371 23.0781 172.486 26.8418 172.486 31.2864C172.486 35.764 169.371 39.5271 164.178 39.5271C159.018 39.5277 155.903 35.764 155.903 31.2864ZM168.202 31.2864C168.202 28.853 166.742 26.7444 164.178 26.7444C161.615 26.7444 160.187 28.8536 160.187 31.2864C160.187 33.7522 161.615 35.8613 164.178 35.8613C166.742 35.8613 168.202 33.7522 168.202 31.2864Z" fill="#14182B"/>
+      <path d="M186.114 39.1382V29.6647C186.114 27.4911 184.979 26.745 183.226 26.745C181.604 26.745 180.338 27.6536 179.656 28.5943V39.1382H175.535V23.4675H179.656V25.5116C180.663 24.3109 182.577 23.0781 185.141 23.0781C188.581 23.0781 190.236 25.0247 190.236 28.0747V39.1382H186.114Z" fill="#14182B"/>
+      <path d="M194.422 39.1378V17.4975H205.813C209.934 17.4975 212.043 20.1257 212.043 23.0132C212.043 25.7387 210.356 27.5552 208.312 27.9769C210.616 28.3335 212.465 30.5722 212.465 33.2978C212.465 36.5425 210.291 39.1378 206.17 39.1378H194.422ZM199.03 26.1927H204.806C206.364 26.1927 207.338 25.1868 207.338 23.7921C207.338 22.4618 206.364 21.4237 204.806 21.4237H199.03V26.1927ZM199.03 35.2122H204.969C206.721 35.2122 207.76 34.2063 207.76 32.6491C207.76 31.2867 206.786 30.1183 204.969 30.1183H199.03V35.2122Z" fill="#14182B"/>
+      <path d="M214.834 31.2864C214.834 26.8418 217.95 23.0781 223.11 23.0781C228.302 23.0781 231.418 26.8418 231.418 31.2864C231.418 35.764 228.302 39.5271 223.11 39.5271C217.95 39.5277 214.834 35.764 214.834 31.2864ZM227.134 31.2864C227.134 28.853 225.674 26.7444 223.11 26.7444C220.546 26.7444 219.118 28.8536 219.118 31.2864C219.118 33.7522 220.546 35.8613 223.11 35.8613C225.673 35.8613 227.134 33.7522 227.134 31.2864Z" fill="#14182B"/>
+      <path d="M243.392 39.1382L239.822 33.8495L236.22 39.1382H231.644L237.193 31.0923L231.968 23.4681H236.577L239.822 28.3023L243.035 23.4681H247.643L242.386 31.0923L248 39.1382H243.392Z" fill="#14182B"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M25.0617 18.5852C25.0617 18.5852 24.5934 16.6125 22.418 18.2212C20.2426 19.8298 7.19078 27.041 7.19078 27.041C7.19078 27.041 5.81122 27.6668 5.43966 27.7071C5.0712 27.7474 4.17548 27.4571 4.05452 26.1796C3.93294 24.9021 4.05266 17.0584 4.05266 17.0584C4.05266 17.0584 3.97636 15.5284 5.79943 14.7284C7.62251 13.9284 23.06 4.71789 23.06 4.71789C23.06 4.71789 24.7441 3.83975 25.0865 5.72999C25.4289 7.62022 25.0617 18.5852 25.0617 18.5852Z" fill="#3655FF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.91742 38.4186L23.345 29.4462C23.345 29.4462 24.9013 28.751 25.0322 27.3222C25.0322 27.3222 24.83 28.3454 26.2982 28.9792C26.9762 29.2719 31.038 31.4592 35.1971 33.7526C40.0479 36.4285 45.0382 39.2416 45.0382 39.2416C45.0382 39.2416 45.5233 39.4462 45.6945 39.84C45.7175 39.8921 45.7373 39.9479 45.7429 40.0062C45.746 40.036 45.7491 40.067 45.7472 40.098C45.7466 40.1147 45.7416 40.1296 45.7404 40.1482L26.4949 51.5144C26.4949 51.5144 25.1575 52.4099 24.0075 51.7687C22.858 51.1275 7.47452 41.8543 7.47452 41.8543C7.47452 41.8543 4.25204 40.1402 7.91742 38.4186Z" fill="#3655FF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M23.2905 4.61987C23.2905 4.61987 24.515 4.10018 24.979 5.34359C25.443 6.587 25.0509 18.6887 25.0509 18.6887L25.0212 27.4813C25.0212 27.4813 24.8711 28.414 26.6426 29.1576C28.4142 29.9005 45.0384 39.2413 45.0384 39.2413C45.0384 39.2413 45.8286 39.6301 45.7393 40.1449C45.7393 40.1449 46.1245 39.539 46.091 39.0304C46.0581 38.5219 46.0985 17.7808 46.0985 17.7808C46.0985 17.7808 46.3906 16.0022 43.5732 14.3476C40.7558 12.6931 26.1278 4.20747 26.1278 4.20747C26.1278 4.20747 24.7575 3.5315 23.2905 4.61987Z" fill="#5570FF"/>
+    </symbol>
+    <!-- The AmbitionBox glyph, lifted from the real logo. The product has no sub-brand mark:
+         the agent IS AmbitionBox, so it wears AmbitionBox's own mark. -->
+    <symbol id="abmark" viewBox="0 0 50 56">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M25.0617 18.5852C25.0617 18.5852 24.5934 16.6125 22.418 18.2212C20.2426 19.8298 7.19078 27.041 7.19078 27.041C7.19078 27.041 5.81122 27.6668 5.43966 27.7071C5.0712 27.7474 4.17548 27.4571 4.05452 26.1796C3.93294 24.9021 4.05266 17.0584 4.05266 17.0584C4.05266 17.0584 3.97636 15.5284 5.79943 14.7284C7.62251 13.9284 23.06 4.71789 23.06 4.71789C23.06 4.71789 24.7441 3.83975 25.0865 5.72999C25.4289 7.62022 25.0617 18.5852 25.0617 18.5852Z" fill="#3655FF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.91742 38.4186L23.345 29.4462C23.345 29.4462 24.9013 28.751 25.0322 27.3222C25.0322 27.3222 24.83 28.3454 26.2982 28.9792C26.9762 29.2719 31.038 31.4592 35.1971 33.7526C40.0479 36.4285 45.0382 39.2416 45.0382 39.2416C45.0382 39.2416 45.5233 39.4462 45.6945 39.84C45.7175 39.8921 45.7373 39.9479 45.7429 40.0062C45.746 40.036 45.7491 40.067 45.7472 40.098C45.7466 40.1147 45.7416 40.1296 45.7404 40.1482L26.4949 51.5144C26.4949 51.5144 25.1575 52.4099 24.0075 51.7687C22.858 51.1275 7.47452 41.8543 7.47452 41.8543C7.47452 41.8543 4.25204 40.1402 7.91742 38.4186Z" fill="#3655FF"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M23.2905 4.61987C23.2905 4.61987 24.515 4.10018 24.979 5.34359C25.443 6.587 25.0509 18.6887 25.0509 18.6887L25.0212 27.4813C25.0212 27.4813 24.8711 28.414 26.6426 29.1576C28.4142 29.9005 45.0384 39.2413 45.0384 39.2413C45.0384 39.2413 45.8286 39.6301 45.7393 40.1449C45.7393 40.1449 46.1245 39.539 46.091 39.0304C46.0581 38.5219 46.0985 17.7808 46.0985 17.7808C46.0985 17.7808 46.3906 16.0022 43.5732 14.3476C40.7558 12.6931 26.1278 4.20747 26.1278 4.20747C26.1278 4.20747 24.7575 3.5315 23.2905 4.61987Z" fill="#5570FF"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ 1 · TITLE ============ -->
+<section class="slide" id="s1">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">01 / 13</div></div>
+  <svg class="abmark lg rv"><use href="#abmark"/></svg>
+  <div style="height:38px"></div>
+  <h1 class="rv d1">Job search,<br>on purpose.</h1>
+  <p class="lede rv d2" style="font-size:clamp(18px,1.7vw,23px);max-width:27em">
+    Somewhere along the way, looking for a job stopped being a decision and became a numbers game.
+    <strong>AmbitionBox makes it a decision again.</strong> It watches the whole market for you, tells you the
+    truth about what it finds, and stays with you at every stage after you apply.</p>
+  <div class="brandline rv d3">
+    <div class="rule"></div>
+    <p>Naukri opens the doors. <b>AmbitionBox tells you which one to walk through.</b></p>
+  </div>
+  <div class="foot-receipt">NEW VISION · 17 JULY 2026 · VISION v5.2 / BLUEPRINT v4 / COMPETITIVE v6 · EVERY MOCKUP IN THIS DECK MATCHES THE LIVE PROTOTYPE</div>
+</section>
+
+<!-- ============ 2 · THE EMPTY SEAT ============ -->
+<section class="slide" id="s2">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">02 / 13</div></div>
+  <div class="eyebrow rv">THE PROBLEM</div>
+  <h2 class="rv d1">Every platform is built to make you apply more.<br>None of them help you decide where.</h2>
+  <div class="seats">
+    <div class="seat rv d2"><div class="who">LinkedIn</div><div class="serves">customer: <b>the recruiter</b></div></div>
+    <div class="seat rv d2"><div class="who">Job boards</div><div class="serves">customer: <b>the employer</b></div></div>
+    <div class="seat rv d3"><div class="who">Indeed + Glassdoor</div><div class="serves">earns on <b>application volume</b></div></div>
+    <div class="seat rv d3"><div class="who">AI auto-appliers</div><div class="serves">charge candidates to <b>mass-apply</b></div></div>
+    <div class="seat empty rv d4"><div class="who">The candidate's side</div><div class="serves">empty, worldwide</div></div>
+  </div>
+  <div class="stats">
+    <div class="stat rv d4"><div class="n">75%</div><div class="l">of applications get no response at all</div><div class="src">VERIFIED · GHOSTING INDEX 2025</div></div>
+    <div class="stat rv d4"><div class="n">~3%</div><div class="l">of applicants ever get an interview</div><div class="src">VERIFIED · CAREERPLUG</div></div>
+    <div class="stat rv d5"><div class="n">11,000</div><div class="l">applications per minute hit LinkedIn. Applying more now hurts you</div><div class="src">VERIFIED · MID-2025, +45% YoY</div></div>
+  </div>
+  <p class="lede rv d5" style="margin-top:30px;max-width:44em">Applying more is not a strategy. It is what people fall back on when
+  <strong>nobody will tell them which jobs are worth the effort</strong>, so they spend their hardest weeks firing in every direction, and call the silence bad luck.</p>
+  <div class="foot-receipt">SOURCES & CONFIDENCE FLAGS · COMPETITIVE LANDSCAPE DOC §2</div>
+</section>
+
+<!-- ============ 3 · THE VISION / 3 ACTS ============ -->
+<section class="slide" id="s3">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">03 / 13</div></div>
+  <div class="eyebrow rv">THE VISION</div>
+  <h2 class="rv d1">AmbitionBox takes that seat.<br>In three acts.</h2>
+  <div class="acts">
+    <div class="act rv d2">
+      <div class="yr">ACT 1</div><h3>The Agent</h3>
+      <p>AmbitionBox watches the whole market for you and hands you only the few jobs worth your effort, each with an honest verdict. Then it stays with you through every stage that follows.</p>
+      <div class="tag">"Finally, someone on your side."</div>
+    </div>
+    <div class="act rv d3">
+      <div class="yr">ACT 2</div><h3>The Truth Layer</h3>
+      <p>The tracker is secretly a measuring device. Hiring itself becomes transparent, and we publish proof that guided applications convert better.</p>
+      <div class="tag">"The truth about hiring, published."</div>
+    </div>
+    <div class="act rv d4">
+      <div class="yr">ACT 3</div><h3>The Reversal</h3>
+      <p>Candidates stop applying. Verified employers approach verified candidates, through recruiter pipes the family already owns.</p>
+      <div class="tag">"The right job finds you."</div>
+    </div>
+  </div>
+  <div class="actline rv d5"></div>
+  <div class="foot-receipt">NOT A PIVOT. AB HAS ALWAYS SOLD ONE THING: TRUTH · 5.7 Cr+ REVIEWS · 1 Cr+ SALARIES · 4L+ INTERVIEW ACCOUNTS</div>
+</section>
+
+<!-- ============ 4 · LIBRARY → PERSON ============ -->
+<section class="slide" id="s4">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">04 / 13</div></div>
+  <div class="eyebrow rv">TODAY'S AMBITIONBOX, TRANSFORMED</div>
+  <h2 class="rv d1">Same truth, put to work.</h2>
+  <div class="pages">
+    <div class="pagecard rv d2">
+      <div class="pc-bar"><i></i><i></i><i></i><span>ambitionbox.com/reviews/swiggy · 11:04 PM</span></div>
+      <div class="pc-tag">TODAY · ONE OF 72 LAKH MONTHLY VISITS</div>
+      <div class="pc-body">
+        <div class="pc-co">
+          <div class="pc-logo">S</div>
+          <div><div class="pc-name">Swiggy</div><div class="pc-sub">Reviews · Salaries · Interview questions</div></div>
+        </div>
+        <div class="pc-tabs"><span class="pc-tab on">Reviews</span><span class="pc-tab">Salaries</span><span class="pc-tab">Interviews</span></div>
+        <div class="pc-line"></div><div class="pc-line"></div><div class="pc-line short"></div>
+      </div>
+      <div class="pc-exit">Reads the reviews at 11pm, gets the answer, closes the tab. <b>We lose them at the exact moment their hardest weeks begin.</b></div>
+    </div>
+    <div class="pagecard withagent rv d3">
+      <div class="pc-bar"><i></i><i></i><i></i><span>ambitionbox.com/reviews/swiggy · 11:04 PM</span></div>
+      <div class="pc-tag b">WITH THE AGENT · THE SAME PAGE BECOMES A DOORWAY</div>
+      <div class="pc-body">
+        <div class="pc-co">
+          <div class="pc-logo">S</div>
+          <div><div class="pc-name">Swiggy</div><div class="pc-sub">Reviews · Salaries · Interview questions</div></div>
+        </div>
+        <div class="pc-tabs"><span class="pc-tab on">Reviews</span><span class="pc-tab">Salaries</span><span class="pc-tab">Interviews</span></div>
+        <div class="pc-line"></div><div class="pc-line short"></div>
+        <div class="pc-doorway">
+          <svg class="abmark sm"><use href="#abmark"/></svg>
+          <p>Interviewing at Swiggy? I'll watch this one for you.</p>
+          <span class="go">Yes, watch it</span>
+        </div>
+      </div>
+      <div class="pc-exit">The visit becomes a relationship. <b>AmbitionBox carries them through the whole search.</b></div>
+    </div>
+  </div>
+  <div class="morph rv d4">
+    <span class="mchip"><span class="from">Pages</span><span class="ar">→</span><span class="to">doorways</span></span>
+    <span class="mchip"><span class="from">Visits</span><span class="ar">→</span><span class="to">relationships</span></span>
+    <span class="mchip"><span class="from">Content</span><span class="ar">→</span><span class="to">ammunition at the right moment</span></span>
+    <span class="mchip"><span class="from">Contribution</span><span class="ar">→</span><span class="to">asked at the perfect moment</span></span>
+  </div>
+  <div class="oneliner rv d5">A library you visit &nbsp;→&nbsp; <span>a person who knows you.</span></div>
+  <div class="foot-receipt">NOTHING DISCARDED. THE MOONSHOT ACTIVATES AN ASSET THE FAMILY ALREADY OWNS</div>
+</section>
+
+<!-- ============ 5 · THE PRODUCT (PHONE: MATCH CARD) ============ -->
+<section class="slide" id="s5">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">05 / 13</div></div>
+  <div class="duo">
+    <div class="txt">
+      <div class="eyebrow rv">THE PRODUCT · THE DECISION</div>
+      <h2 class="rv d1">1,840 postings.<br>Three worth your time.</h2>
+      <div class="points">
+        <div class="point rv d2"><div class="pk">01</div><div class="pv"><b>Your fit is judged first, off the card.</b> If a job reached your deck, you already have a real shot at it. Nothing here is a lottery ticket.</div></div>
+        <div class="point rv d3"><div class="pk">02</div><div class="pv"><b>Then the card judges the job.</b> Given you'd clear their bar, is it worth <i>your</i> time? Both sides get judged, in that order.</div></div>
+        <div class="point rv d4"><div class="pk">03</div><div class="pv"><b>Every number carries its source and its sample.</b> "Based on 847 engineering reviews" is a claim a stakeholder can audit. So is "not enough data".</div></div>
+      </div>
+    </div>
+    <div class="phone rv d2"><div class="screen">
+      <div class="p-status"><span>9:41</span><span>◦◦◦ ⌁ ▮</span></div>
+      <div class="p-head"><div class="ham"><i></i><i></i><i></i></div><svg class="ab-wm ph"><use href="#ablogo"/></svg><div class="mag"></div></div>
+      <div class="p-context"><span><b>Your matches</b></span><span class="ct">1 OF 3</span></div>
+      <div class="mcard">
+        <div class="mc-top">
+          <div class="mc-idrow">
+            <div class="mc-logo">P</div>
+            <div><div class="mc-role">Senior Backend Engineer</div><div class="mc-co">PhonePe ★ 4.1 · Fintech</div></div>
+            <span class="mc-match apply">92%</span>
+          </div>
+          <div class="mc-meta">Bengaluru (Hybrid) · ₹22–28L · Posted 2d ago</div>
+        </div>
+        <div class="mc-intel">
+          <div class="mc-ihead"><span class="ih">AmbitionBox Intelligence</span><span class="chip apply">APPLY</span></div>
+          <div class="mc-block">
+            <div class="bl">Salary insights</div>
+            <div class="pb-track">
+              <i class="pb-range" style="left:47%;width:31%"></i>
+              <span class="pb-mark you" style="left:18%"></span>
+              <span class="pb-mark med" style="left:59%"></span>
+            </div>
+            <div class="pb-labels"><span>YOU ₹15L</span><span>MEDIAN ₹25L</span><span>₹22–28L</span></div>
+            <div class="pb-note">Pays 47–87% more than your current salary</div>
+          </div>
+          <div class="mc-block">
+            <div class="bl">How you match</div>
+            <div class="rrow"><span class="rl">Experience</span><span class="rn g">7 yrs / 5–8 required</span></div>
+            <div class="rrow"><span class="rl">Skills</span><span class="rn g">4/5 matched</span></div>
+          </div>
+          <div class="mc-block">
+            <div class="bl">Engineering department reviews</div>
+            <div class="rrow"><span class="rl">Work-life balance</span><span class="rn g">4.2</span></div>
+            <div class="rrow"><span class="rl">Salary &amp; benefits</span><span class="rn g">4.3</span></div>
+            <div class="mc-sample">BASED ON 847 ENGINEERING REVIEWS</div>
+          </div>
+          <div class="mc-block">
+            <div class="bl">Applicant treatment<span class="beta">BETA</span></div>
+            <div class="tstats">
+              <div class="tstat"><div class="tn">72%</div><div class="tl">Reply rate</div></div>
+              <div class="tstat"><div class="tn">7d</div><div class="tl">Reply time</div></div>
+              <div class="tstat"><div class="tn">3</div><div class="tl">Rounds</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-actions"><div class="pa-btn refer">🤝 Get referred</div><div class="pa-btn applyghost">Apply</div><div class="pa-btn later" style="flex:0 0 52px">Skip</div></div>
+      <div class="p-nav">
+        <div class="ni active"><div class="ic"></div>Matches</div>
+        <div class="ni"><div class="ic"></div>Tracker</div>
+        <div class="ni"><div class="ic"></div>Interview Qs</div>
+        <div class="ni"><div class="ic"></div>Profile</div>
+        <div class="ni"><div class="ic"></div>More</div>
+        <div class="nav-div"></div>
+        <div class="voidbtn"><i></i></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="foot-receipt">EVERY FIGURE ON THIS CARD IS RENDERED BY THE LIVE PROTOTYPE · REAL AMBITIONBOX SALARY BANDS AND DEPARTMENT-LEVEL REVIEWS</div>
+</section>
+
+<!-- ============ 6 · THE HONEST VERDICT (SPECTRUM) ============ -->
+<section class="slide" id="s6">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">06 / 13</div></div>
+  <div class="eyebrow rv">THE SIGNATURE · REAL DATA</div>
+  <h2 class="rv d1">A verdict is only worth something<br>if it is allowed to say no.</h2>
+  <div class="spectrum">
+    <div class="sp-card hero-card rv d2">
+      <div class="sp-cohead"><div class="sp-co">PhonePe</div><span class="mc-match apply">92%</span></div>
+      <div class="sp-score">SENIOR BACKEND ENGINEER · ★ 4.1</div>
+      <div class="sp-chiprow"><span class="chip apply">APPLY</span></div>
+      <div class="sp-pay">₹22–28L<small>MEDIAN ₹25L · YOU ₹15L</small></div>
+      <div class="sp-why">Pays <b>47–87% more</b> than you earn today. Engineering rates work-life <b>4.2</b> across <b>847 reviews</b>, and they reply to <b>72%</b> of applicants, usually in a week.</div>
+      <div class="sp-band"><i style="left:47%;width:31%"></i></div>
+    </div>
+    <div class="sp-card reveal-card rv d3">
+      <div class="sp-cohead"><div class="sp-co">Groww</div><span class="mc-match stretch">68%</span></div>
+      <div class="sp-score">SDE-3 FULL STACK · ★ 3.8</div>
+      <div class="sp-chiprow"><span class="chip stretch">STRETCH</span></div>
+      <div class="sp-pay">₹20–24L<small>MEDIAN ₹22L · YOU ₹15L</small></div>
+      <div class="sp-why">Still a real raise. But engineers rate promotions <b>3.2</b>, only <b>58%</b> of applicants hear back, it takes <b>10 days</b> and <b>4 rounds</b>, and you match <b>3 of 5</b> skills.</div>
+      <div class="sp-band"><i style="left:42%;width:24%"></i></div>
+    </div>
+    <div class="sp-card skip-card rv d4">
+      <div class="sp-cohead"><div class="sp-co">Homerun</div><span class="mc-match skip">35%</span></div>
+      <div class="sp-score">FRONTEND ENGINEER · NO RATING</div>
+      <div class="sp-chiprow"><span class="chip skip">SKIP</span></div>
+      <div class="sp-pay">₹10–14L<small>MEDIAN ₹12L · BELOW YOUR ₹15L</small></div>
+      <div class="sp-why"><b>A pay cut, and you're overqualified.</b> No AmbitionBox reviews yet, and not enough data on how they treat applicants. We say that instead of guessing.</div>
+      <div class="sp-band na"></div>
+    </div>
+  </div>
+  <div class="sp-note rv d5">Every other platform tells you whether you match the job. <b>AmbitionBox only shows jobs you'd match, then tells you whether the job is worth your time.</b></div>
+  <div class="foot-receipt">ALL THREE VERDICTS RUN LIVE IN THE PROTOTYPE ON REAL AMBITIONBOX SALARY BANDS AND DEPARTMENT-LEVEL REVIEWS · A "SKIP" IS A JOB WE COULD HAVE LET YOU APPLY TO</div>
+</section>
+
+<!-- ============ 7 · THE TRACKER (PHONE: PIPELINE) ============ -->
+<section class="slide" id="s7">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">07 / 13</div></div>
+  <div class="duo">
+    <div class="phone rv d2"><div class="screen">
+      <div class="p-status"><span>9:41</span><span>◦◦◦ ⌁ ▮</span></div>
+      <div class="p-head"><div class="ham"><i></i><i></i><i></i></div><svg class="ab-wm ph"><use href="#ablogo"/></svg><div class="mag"></div></div>
+      <div class="p-context"><span><b>Your tracker</b> · 20 applications, everywhere</span><span class="ct">BOARD</span></div>
+      <div class="lanes">
+        <div class="lane">
+          <div class="lane-label">APPLIED</div>
+          <div class="lane-cards">
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#7C3AED">M</div>
+                <div><div class="tc-name">Meesho</div><div class="tc-role">Senior SWE · E-commerce</div></div></div>
+              <div class="tc-chips"><span class="tchip">SEEN</span><span class="tchip">87% Match</span><span class="tchip naukri">via Naukri</span><span class="tc-time">1d ago</span></div>
+            </div>
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#2563EB">N</div>
+                <div><div class="tc-name">Navi</div><div class="tc-role">Backend Engineer · Fintech</div></div></div>
+              <div class="tc-chips"><span class="tchip">92% Match</span><span class="tchip inbox">from inbox</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">INTERVIEWING</div>
+          <div class="lane-cards">
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#111">U</div>
+                <div><div class="tc-name">Uber</div><div class="tc-role">Senior SWE · Mobility</div></div></div>
+              <div class="tc-chips"><span class="tchip">94% Match</span><span class="tchip inbox">from inbox</span><span class="tc-time">2d ago</span></div>
+            </div>
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#22B5E8">P</div>
+                <div><div class="tc-name">Paytm</div><div class="tc-role">SDE-3 · Fintech</div></div></div>
+              <div class="tc-chips"><span class="tchip">89% Match</span><span class="tchip naukri">via Naukri</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="lane">
+          <div class="lane-label">OFFER</div>
+          <div class="lane-cards">
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#1A1A2E">C</div>
+                <div><div class="tc-name">CRED</div><div class="tc-role">Senior SWE · Fintech</div></div></div>
+              <div class="tc-chips"><span class="tchip">91% Match</span><span class="tchip inbox">from inbox</span><span class="tc-time">1d ago</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="lane dim">
+          <div class="lane-label">GHOSTED</div>
+          <div class="lane-cards">
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#4EAE8E">P</div>
+                <div><div class="tc-name">PayU</div><div class="tc-role">Senior SWE · Payments</div></div></div>
+              <div class="tc-chips"><span class="tchip">82% Match</span><span class="tchip inbox">from inbox</span><span class="tc-time">14d ago</span></div>
+            </div>
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#F58A5B">P</div>
+                <div><div class="tc-name">Postman</div><div class="tc-role">SWE · API Platform</div></div></div>
+              <div class="tc-chips"><span class="tchip">79% Match</span><span class="tchip inbox">from inbox</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="lane dim">
+          <div class="lane-label">CLOSED/<br>REJECTED</div>
+          <div class="lane-cards">
+            <div class="tcard">
+              <div class="tc-top"><div class="tc-logo" style="background:#FC8019">S</div>
+                <div><div class="tc-name">Swiggy</div><div class="tc-role">Backend Engineer · Food Tech</div></div></div>
+              <div class="tc-chips"><span class="tchip merged">2 sources · merged</span><span class="tc-time">2mo ago</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-nav">
+        <div class="ni"><div class="ic"></div>Matches</div>
+        <div class="ni active"><div class="ic"></div>Tracker</div>
+        <div class="ni"><div class="ic"></div>Interview Qs</div>
+        <div class="ni"><div class="ic"></div>Profile</div>
+        <div class="ni"><div class="ic"></div>More</div>
+        <div class="nav-div"></div>
+        <div class="voidbtn"><i></i></div>
+      </div>
+    </div></div>
+    <div class="txt">
+      <div class="eyebrow rv">THE TRACKER</div>
+      <h2 class="rv d1">A tracker tells you where things are.<br><span class="hl">Ours tells you what to do next.</span></h2>
+      <p class="lede rv d2" style="margin-top:14px">You never update it. It updates you, and then it helps.</p>
+      <div class="points">
+        <div class="point rv d2"><div class="pk">SEE</div><div class="pv">Every application from every source: your inbox, the Naukri bridge, the calendar invite you forgot to read. <b>Sources merge; nothing repeats.</b></div></div>
+        <div class="point rv d3"><div class="pk">KNOW</div><div class="pv"><b>Ghosted is a lane, not a feeling.</b> Silence is the one thing no email announces, so we measure it against how fast that company actually replies, and name it.</div></div>
+        <div class="point rv d4"><div class="pk">ACT</div><div class="pv">Every lane hands you a move: a referral, a draft, a prep sheet, a negotiation. <b>That is the half nobody else builds.</b></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot-receipt">NOTHING ABOUT A JOB'S STATE IS STORED · EVERY LANE, CHIP AND TIMESTAMP IS DERIVED FROM WHAT AMBITIONBOX NOTICED · INGESTION IS ToS-SAFE: READING YOUR OWN INBOX BREAKS NO PLATFORM'S RULES</div>
+</section>
+
+<!-- ============ 7c · HELP AT EVERY STAGE ============ -->
+<section class="slide" id="s7c">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no"></div></div>
+  <div class="eyebrow rv">THE HALF NOBODY ELSE BUILDS</div>
+  <h2 class="rv d1">Seven stages. Every one answers the same question: <span class="hl">what now?</span></h2>
+  <div class="stages">
+    <div class="stg-head rv d1"><span>Stage</span><span>What AmbitionBox noticed</span><span>The move it hands you</span></div>
+    <div class="stg-row rv d2">
+      <div><span class="lanepill applied">Applied</span></div>
+      <div class="stg-saw"><b>"Day 4 of about 6 — nothing's wrong yet."</b> Navi replies to 68% of applicants, usually within 6 days.</div>
+      <div class="stg-act">Get referred and skip the wait</div>
+    </div>
+    <div class="stg-row rv d2">
+      <div><span class="lanepill seen">Seen</span></div>
+      <div class="stg-saw"><b>"A recruiter at Meesho opened your application — twice."</b> That window closes fast.</div>
+      <div class="stg-act">Reply while you're top of mind</div>
+    </div>
+    <div class="stg-row rv d3">
+      <div><span class="lanepill shortlisted">Shortlisted</span></div>
+      <div class="stg-saw"><b>Here's the loop CRED runs.</b> Four rounds, reported by candidates who went through it.</div>
+      <div class="stg-act">See the loop</div>
+    </div>
+    <div class="stg-row hero rv d3">
+      <div><span class="lanepill interviewing">Interviewing</span></div>
+      <div class="stg-saw"><b>"No date yet for Round 3."</b> It's been 2 days since your last round; Uber usually moves in 4.</div>
+      <div class="stg-act">Prep Round 3, on the questions real Uber candidates were asked in this exact round</div>
+    </div>
+    <div class="stg-row hero rv d4">
+      <div><span class="lanepill offer">Offer</span></div>
+      <div class="stg-saw"><b>"₹46L is above CRED's median of ₹40L — and there's still room."</b> The band for this role runs to ₹52L.</div>
+      <div class="stg-act">See the negotiation draft</div>
+    </div>
+    <div class="stg-row rv d4">
+      <div><span class="lanepill ghosted">Ghosted</span></div>
+      <div class="stg-saw"><b>"You're past their window."</b> No reply for 21 days; Postman usually replies in 7.</div>
+      <div class="stg-act">Nudge, go around the front door, or close it out with dignity</div>
+    </div>
+    <div class="stg-row rv d5">
+      <div><span class="lanepill closed">Closed</span></div>
+      <div class="stg-saw"><b>"You did 3 rounds at Swiggy — share what they asked."</b> It's where the questions you prepped with came from.</div>
+      <div class="stg-act">Share your experience</div>
+    </div>
+  </div>
+  <p class="lede rv d5" style="margin-top:24px;max-width:46em">Every other tracker stops at the left-hand column. <strong>The right-hand column is the product</strong>, and it is the reason a jobseeker opens this on a Tuesday morning when nothing has happened.</p>
+  <div class="foot-receipt">ALL SEVEN RUN IN THE PROTOTYPE TODAY · EVERY LINE ABOVE IS RENDERED FROM WHAT THE AGENT INFERRED, NOT WRITTEN BY HAND</div>
+</section>
+
+<!-- ============ 7b · THE INBOX MOMENT ============ -->
+<section class="slide" id="s7b">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no"></div></div>
+  <div class="duo">
+    <div class="txt">
+      <div class="eyebrow rv">THE INBOX MOMENT</div>
+      <h2 class="rv d1">Connect your inbox once. Your last 90 days rebuild themselves.</h2>
+      <p class="lede rv d2">Career-site applications, assessment invites, interview rounds, offer letters:
+      your search already lives in your email. AmbitionBox reads only hiring mail, and says so in plain words.</p>
+      <div class="trustrow rv d3">
+        <span>Read-only access</span><span>Never shared</span><span>Revoke anytime</span>
+      </div>
+      <p class="lede rv d4" style="margin-top:22px;font-size:15px">This is the moment trust is won or lost.
+      The permission is asked when it unlocks visible value, never as a wall. Skip it, and Naukri tracking still works.</p>
+    </div>
+    <div class="phone rv d2"><div class="screen">
+      <div class="p-status"><span>9:41</span><span>◦◦◦ ⌁ ▮</span></div>
+      <div class="p-head"><div class="ham"><i></i><i></i><i></i></div><svg class="ab-wm ph"><use href="#ablogo"/></svg><div class="mag"></div></div>
+      <div class="rv-progress"><i></i></div>
+      <div class="rv-stat">
+        <p class="n">14</p>
+        <p class="l">applications found across 6 platforms</p>
+        <p class="s">847 emails scanned · Naukri, LinkedIn, Greenhouse, Lever, Workday, direct · matched against your Naukri history · <b>1 duplicate found (Swiggy) · merged</b></p>
+      </div>
+      <div style="padding:12px 12px 4px">
+        <div class="pl-item" style="margin:0 0 8px">
+          <div class="pl-top"><div><div class="pl-co">Uber</div><div class="pl-role">Senior SWE · Mobility</div></div><span class="pl-status alive">INTERVIEWING</span></div>
+          <span class="pl-src inbox">from your inbox</span>
+          <div class="pl-note">Two rounds done, from the calendar invites. <b>Round 3 has no date yet.</b></div>
+        </div>
+        <div class="pl-item" style="margin:0 0 8px">
+          <div class="pl-top"><div><div class="pl-co">Navi</div><div class="pl-role">Backend Engineer · Fintech</div></div><span class="pl-status wait">APPLIED</span></div>
+          <span class="pl-src inbox">from your inbox</span>
+          <div class="pl-note">Career-portal confirmation. <b>Naukri never saw this one.</b></div>
+        </div>
+        <div class="pl-item" style="margin:0">
+          <div class="pl-top"><div><div class="pl-co">Postman</div><div class="pl-role">SWE · API Platform</div></div><span class="pl-status ghost">GHOSTED</span></div>
+          <span class="pl-src inbox">from your inbox</span>
+          <div class="pl-note">Applied, acknowledged, then nothing for 21 days. <b>On the record.</b></div>
+        </div>
+      </div>
+      <div class="p-nav">
+        <div class="ni"><div class="ic"></div>Matches</div>
+        <div class="ni active"><div class="ic"></div>Tracker</div>
+        <div class="ni"><div class="ic"></div>Interview Qs</div>
+        <div class="ni"><div class="ic"></div>Profile</div>
+        <div class="ni"><div class="ic"></div>More</div>
+        <div class="nav-div"></div>
+        <div class="voidbtn"><i></i></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="foot-receipt">AHA 2 IN THE BLUEPRINT: "YOUR LAST 90 DAYS, RECONSTRUCTED" · READ-ONLY, HIRING MAIL ONLY, DPDP-FIRST</div>
+</section>
+
+<!-- ============ 8 · THE AGENT'S MOMENTS ============ -->
+<section class="slide" id="s8">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">08 / 13</div></div>
+  <div class="eyebrow rv">THE AGENT'S VOICE</div>
+  <h2 class="rv d1">Nobody touched the phone.</h2>
+  <p class="lede rv d1" style="margin-top:14px;max-width:44em">These three arrived on their own while the board sat open on the table. Each one moved a card into a new lane. <strong>In the demo, watch the board rearrange itself while nobody is holding it.</strong> That is the whole argument, and it needs no narration.</p>
+  <div class="moments">
+    <div class="toast rv d2">
+      <div class="t-top"><svg class="abmark sm"><use href="#abmark"/></svg><div class="t-app">AmbitionBox</div><div class="t-when">JUST NOW</div></div>
+      <div class="t-msg"><b>Uber moved you to Round 3</b></div>
+      <div class="t-msg" style="margin-top:5px;font-size:12.5px;color:var(--slate)">System design · Thu 4:00pm — found in your inbox just now</div>
+      <span class="t-act">Prep Round 3 →</span>
+    </div>
+    <div class="toast rv d3">
+      <div class="t-top"><svg class="abmark sm"><use href="#abmark"/></svg><div class="t-app">AmbitionBox</div><div class="t-when">JUST NOW</div></div>
+      <div class="t-msg"><b>Meesho shortlisted you</b></div>
+      <div class="t-msg" style="margin-top:5px;font-size:12.5px;color:var(--slate)">Spotted on Naukri just now</div>
+      <span class="t-act">See the loop Meesho runs →</span>
+    </div>
+    <div class="toast rv d4">
+      <div class="t-top"><svg class="abmark sm"><use href="#abmark"/></svg><div class="t-app">AmbitionBox</div><div class="t-when">JUST NOW</div></div>
+      <div class="t-msg"><b>CRED sent your offer letter</b></div>
+      <div class="t-msg" style="margin-top:5px;font-size:12.5px;color:var(--slate)">₹46L · in your inbox just now</div>
+      <div class="pb-track" style="margin:14px 0 7px">
+        <i class="pb-range" style="left:0;width:100%"></i>
+        <span class="pb-mark med" style="left:14%"></span>
+        <span class="pb-mark offer" style="left:57%"></span>
+      </div>
+      <div class="pb-labels"><span>₹38L</span><span>MEDIAN ₹40L</span><span>BAND TO ₹52L</span></div>
+      <div class="t-msg" style="margin-top:9px;font-size:12.5px;color:var(--slate)">₹46L is above CRED's median — <b style="color:var(--ink)">and there's still room.</b></div>
+      <span class="t-act">See the negotiation draft →</span>
+    </div>
+  </div>
+  <p class="lede rv d5" style="margin-top:30px">Silence is a feature: an empty day says nothing at all. Every ping type that annoys more than it helps gets switched off.</p>
+  <div class="foot-receipt">THESE ARE THE PROTOTYPE'S REAL SCRIPTED INBOX EVENTS · GHOSTED IS THE ONLY STATE WITH NO EMAIL BEHIND IT · THE AGENT INFERS IT FROM THE ABSENCE OF ONE</div>
+</section>
+
+<!-- ============ 8b · THE FLYWHEEL MOMENT ============ -->
+<section class="slide" id="s8b">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no"></div></div>
+  <div class="duo">
+    <div class="txt">
+      <div class="eyebrow rv">THE FLYWHEEL, MADE CONCRETE</div>
+      <h2 class="rv d1">Nobody else knows this moment is happening.</h2>
+      <p class="lede rv d2">A search just ended. The interview is fresh, and they are walking out of a job they held for three years.
+      <strong>It is the single best moment we will ever get to ask for content</strong>, and because the tracker watched the whole search, we are the only ones who know it has arrived.</p>
+      <div class="points">
+        <div class="point rv d3"><div class="pk">IN</div><div class="pv">The questions they prepped with came from <b>the last candidate who walked this loop.</b></div></div>
+        <div class="point rv d4"><div class="pk">OUT</div><div class="pv">Their debrief is what <b>the next candidate preps with</b>, and their review is written by the one person qualified to write it: someone leaving.</div></div>
+        <div class="point rv d5"><div class="pk">SO</div><div class="pv">Act 1 pays for Act 2. Every completed search <b>refreshes the corpus that made the verdicts possible</b>, asked at the one moment a person is both qualified and willing.</div></div>
+      </div>
+    </div>
+    <div class="phone rv d2"><div class="screen">
+      <div class="celebrate">
+        <div class="em">🎉</div>
+        <h3>You're going to CRED.</h3>
+        <p>Senior SWE · Fintech · Bengaluru. That's the search done — 3 rounds, and <b>you never once updated a spreadsheet.</b></p>
+      </div>
+      <div class="ask-label">Two minutes, while it's fresh</div>
+      <div class="asks">
+        <div class="ask">
+          <div class="at">🎤 Share your CRED interview</div>
+          <div class="ad">You just did 3 rounds. The questions you prepped with came from someone who did this — pass it on.</div>
+        </div>
+        <div class="ask">
+          <div class="at">✍️ Review Razorpay</div>
+          <div class="ad">You're leaving after 3 yrs. Nobody knows what it's really like there better than someone walking out the door.</div>
+        </div>
+      </div>
+      <div class="trust-line">Both anonymous · never tied to your profile</div>
+      <div class="p-nav">
+        <div class="ni"><div class="ic"></div>Matches</div>
+        <div class="ni active"><div class="ic"></div>Tracker</div>
+        <div class="ni"><div class="ic"></div>Interview Qs</div>
+        <div class="ni"><div class="ic"></div>Profile</div>
+        <div class="ni"><div class="ic"></div>More</div>
+        <div class="nav-div"></div>
+        <div class="voidbtn"><i></i></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="foot-receipt">THE ONE FLOW HERE THAT ISN'T ABOUT A JOB YOU APPLIED TO · REVIEWING THE COMPANY YOU'RE LEAVING IS HOW AB'S CORPUS REFILLS ITSELF</div>
+</section>
+
+<!-- ============ 9 · THE MOAT ============ -->
+<section class="slide" id="s9">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">09 / 13</div></div>
+  <div class="eyebrow rv">WHY ONLY AMBITIONBOX</div>
+  <h2 class="rv d1">Four corners. Nobody else holds more than one.</h2>
+  <div class="moat">
+    <div class="m rv d2"><div class="mk">CORNER 1</div><h3>The truth corpus</h3>
+      <p><b>5.7 Cr+ reviews · 1 Cr+ salaries · 4L+ interview accounts.</b> A decade of contributions. Every competitor's "fit score" is resume-vs-keyword because they lack this half of the equation.</p></div>
+    <div class="m rv d2"><div class="mk">CORNER 2</div><h3>Distribution</h3>
+      <p><b>72L monthly visits, about 15× the entire global candidate-tools category combined.</b> The startups burn venture money buying what we already have.</p></div>
+    <div class="m rv d3"><div class="mk">CORNER 3</div><h3>ToS-safe ingestion</h3>
+      <p>Reading the user's own inbox breaks no platform's rules. <b>Every scraping bot and auto-applier is one policy change from death.</b> About 23% get restricted within 90 days.</p></div>
+    <div class="m rv d3"><div class="mk">CORNER 4</div><h3>The family employer graph</h3>
+      <p><b>76,000+ corporate clients</b> already in the family. The reversal needs an employer side. Competitors must build one; we must only connect one.</p></div>
+  </div>
+  <div class="foot-receipt">THIS IS INFOEDGE'S STATED FLYWHEEL: CANDIDATE TOOLS FEEDING ENTERPRISE DATA PRODUCTS</div>
+</section>
+
+<!-- ============ 9b · THE COMPETITIVE MAP (2x2) ============ -->
+<section class="slide" id="s9b">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no"></div></div>
+  <div class="eyebrow rv">THE COMPETITIVE MAP</div>
+  <h2 class="rv d1">Everyone else has to move sideways.<br>We only have to move up.</h2>
+  <div class="map rv d2">
+    <div class="pole t">An agent that carries the search<small>continuous · it does the work</small></div>
+    <div class="pole b">A library you visit<small>episodic · you do the work</small></div>
+    <div class="pole l">The employer's ad<small>resume vs job post</small></div>
+    <div class="pole r">The employer's record<small>what they really pay,<br>really ask, really do</small></div>
+    <div class="map-plot">
+      <!-- top-left: the relationship, without the record -->
+      <div class="mk2" style="left:16%;top:16%"><div class="nm">Teal</div><div class="sub">15L VISITS · KEYWORD FIT</div></div>
+      <div class="mk2" style="left:28%;top:26%"><div class="nm">Standout</div><div class="sub">INFERS TRUTH FROM CALLS</div></div>
+      <div class="mk2" style="left:12%;top:37%"><div class="nm">TalentPluto</div><div class="sub">~2,600 VISITS</div></div>
+      <div class="mk2" style="left:35%;top:45%"><div class="nm">Sprout</div><div class="sub">OUR PRIMITIVES, NO TRUTH</div></div>
+      <div class="mk2" style="left:45%;top:57%"><div class="nm">Wobo</div><div class="sub">GLASSDOOR STAR AS VENEER</div></div>
+      <div class="mk2 incumbent" style="left:17%;top:57%"><div class="nm">LinkedIn</div><div class="sub">CUSTOMER: THE RECRUITER</div></div>
+      <div class="mk2" style="left:10%;top:70%"><div class="nm">Apuphi</div><div class="sub">PRE-LAUNCH · SCORES YOU</div></div>
+      <div class="mk2 incumbent" style="left:30%;top:83%"><div class="nm">Indeed</div><div class="sub">EARNS ON VOLUME</div></div>
+      <!-- bottom-right: the record, without the relationship. our twin. -->
+      <div class="mk2" style="left:71%;top:88%"><div class="nm">Glassdoor</div><div class="sub">FOLDED INTO INDEED, SEP 2025</div></div>
+      <div class="mk2 today" style="left:90%;top:86%"><div class="dot"></div><div class="nm">AmbitionBox today</div></div>
+      <!-- top-right: empty -->
+      <div class="mk2 target" style="left:88%;top:18%"><div class="nm">AmbitionBox</div></div>
+      <div class="map-ring" style="left:88%;top:18%;width:158px;height:76px"></div>
+      <div class="map-arrow" style="left:89.5%;top:24%;height:58%"></div>
+      <div class="map-note" style="left:44%;top:3%">Nobody is here. It needs a decade of company truth <em>and</em> a daily product.</div>
+      <div class="map-lead" style="left:67.5%;top:15%;width:9.9%"></div>
+    </div>
+  </div>
+  <p class="map-foot rv d5">The startups have the relationship without the audience. <b>We have the audience without the relationship.</b> Only two companies ever held an employer record like this, and in September 2025 the other one was folded into the company that earns on application volume.</p>
+  <div class="foot-receipt">NAUKRI IS FAMILY, NOT COMPETITION, AND IS DELIBERATELY NOT PLOTTED · NAUKRI OPENS THE DOORS; THIS MAP IS ABOUT WHO HELPS YOU CHOOSE WHICH ONE TO WALK THROUGH · COMPETITIVE LANDSCAPE §2, §3, §5</div>
+</section>
+
+<!-- ============ 10 · THE WINDOW ============ -->
+<section class="slide" id="s10">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">10 / 13</div></div>
+  <div class="eyebrow rv">THE WINDOW</div>
+  <h2 class="rv d1">The thesis is validated, twice-funded in 2026.<br>The position is still empty.</h2>
+  <div class="bars">
+    <div class="bar ab rv d2"><div class="bn">AmbitionBox</div><div class="bt"><i style="--w:100%"></i></div><div class="bv"><b>72,00,000</b>/mo</div></div>
+    <div class="bar rv d3"><div class="bn">Sprout</div><div class="bt"><i style="--w:6%"></i></div><div class="bv">4,31,700 · volume model</div></div>
+    <div class="bar rv d3"><div class="bn">Wobo</div><div class="bt"><i style="--w:1.4%"></i></div><div class="bv">49,700 · precision-washed</div></div>
+    <div class="bar rv d4"><div class="bn">Standout</div><div class="bt"><i style="--w:0.8%"></i></div><div class="bv">~10,000 · our thesis, no reach</div></div>
+    <div class="bar rv d4"><div class="bn">TalentPluto</div><div class="bt"><i style="--w:0.5%"></i></div><div class="bv">~2,600 · the reversal, tiny</div></div>
+  </div>
+  <p class="lede rv d5" style="margin-top:38px">The two that share our thesis have no distribution. The two with distribution have the wrong model.
+  The whole category runs on couch-cushion money, <strong>and nobody can build the truth data.</strong>
+  The building blocks are commoditizing; the first player to pair the real thing with real reach takes the seat.</p>
+  <div class="foot-receipt">SEMRUSH MONTHLY VISITS · JUL 2026 · FULL TEN-PLATFORM STUDY IN COMPETITIVE LANDSCAPE §5</div>
+</section>
+
+<!-- ============ 10b · FEATURE OVERLAP MATRIX ============ -->
+<section class="slide" id="s10b">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no"></div></div>
+  <div class="eyebrow rv">FEATURE OVERLAP · THE FIVE CLOSEST</div>
+  <h2 class="rv d1">Every building block exists somewhere.<br>The four that matter exist nowhere.</h2>
+  <div class="mx rv d2">
+    <div class="mx-head"><span style="justify-self:start"></span><span>Standout</span><span>TalentPluto</span><span>Sprout</span><span>Wobo</span><span>Apuphi</span><span class="sc">AmbitionBox</span></div>
+    <div class="mx-row"><div class="f">Watches the market, surfaces only a few</div><span class="cell y">✓</span><span class="cell y">✓</span><span class="cell n">✕</span><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell s">✓</span></div>
+    <div class="mx-row"><div class="f">Per-job fit verdict</div><span class="cell y">✓</span><span class="cell y">✓</span><span class="cell p">◐</span><span class="cell y">✓</span><span class="cell p">◐</span><span class="cell s">✓</span></div>
+    <div class="mx-row bet"><div class="f">Fit grounded in real company truth</div><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell s">✓</span></div>
+    <div class="mx-row"><div class="f">Honest "skip this one" verdicts</div><span class="cell p">◐</span><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell s">✓</span></div>
+    <div class="mx-row bet"><div class="f">Full-funnel tracker from your own inbox</div><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell s">✓</span></div>
+    <div class="mx-row bet"><div class="f">Offer &amp; notice-period intelligence</div><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell s">✓</span></div>
+    <div class="mx-row"><div class="f">Company-specific interview prep</div><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell p">◐</span><span class="cell s">✓</span></div>
+    <div class="mx-row"><div class="f">Employers approach candidates</div><span class="cell y">✓</span><span class="cell y">✓</span><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell p">◐</span><span class="cell s later">✓</span></div>
+    <div class="mx-row bet"><div class="f">Published proof of a higher shortlist rate</div><span class="cell p">◐</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell s later">✓</span></div>
+    <div class="mx-row"><div class="f">India</div><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell n">✕</span><span class="cell y">✓</span><span class="cell s">✓</span></div>
+    <div class="mx-legend">✓ HAS IT &nbsp;·&nbsp; ◐ PARTIAL &nbsp;·&nbsp; ✕ ABSENT &nbsp;·&nbsp; HIGHLIGHTED = OUR FOUR BETS, WHICH NEED DATA NOBODY ELSE HAS &nbsp;·&nbsp; SOLID BLUE = IN THE PROTOTYPE TODAY &nbsp;·&nbsp; DASHED = ACTS 2–3</div>
+  </div>
+  <div class="foot-receipt">FULL 14-ROW MATRIX WITH EVIDENCE PER CELL · COMPETITIVE LANDSCAPE §5 · APUPHI COLUMN = CLAIMS, NO SHIPPED PRODUCT</div>
+</section>
+
+<!-- ============ 11 · ROADMAP ============ -->
+<section class="slide" id="s11">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">11 / 13</div></div>
+  <div class="eyebrow rv">HOW WE GET THERE</div>
+  <h2 class="rv d1">The demo is built. Now the proof.</h2>
+  <div class="phases">
+    <div class="phase rv d2">
+      <div class="ph"><h3>Phase I</h3><div class="pm">MONTHS 0–3</div></div>
+      <div class="pt">"the agent that already knows"</div>
+      <ul>
+        <li><b>Naukri import:</b> pipeline + profile reconstructed in 60 seconds, zero typing<span class="dm">IN THE DEMO</span></li>
+        <li><b>Verdicts on Naukri inventory</b> + paste-any-link, with how-to-apply guidance<span class="dm">IN THE DEMO</span></li>
+        <li>One-tap logging for calls, referrals, WhatsApp leads</li>
+        <li>Daily / on-match digest, never padded</li>
+        <li>Long-lead started in parallel: inbox OAuth, classifier, telemetry ledger</li>
+      </ul>
+    </div>
+    <div class="phase rv d3">
+      <div class="ph"><h3>Phase II</h3><div class="pm">MONTHS 3–9</div></div>
+      <div class="pt">"the agent that sees everything"</div>
+      <ul>
+        <li><b>Full inbox connect:</b> your last 90 days, reconstructed on day one<span class="dm">IN THE DEMO</span></li>
+        <li>Silence &amp; ghost detection, follow-up nudges with drafts<span class="dm">IN THE DEMO</span></li>
+        <li><b>Interview intelligence:</b> reviews, company-specific mocks from our own bank<span class="dm">IN THE DEMO</span></li>
+        <li>Offer analyzer + 90-day multi-offer manager<span class="dm">IN THE DEMO</span></li>
+      </ul>
+    </div>
+    <div class="phase rv d4">
+      <div class="ph"><h3>Phase III</h3><div class="pm">MONTHS 9–18</div></div>
+      <div class="pt">"the agent that proves it"</div>
+      <ul>
+        <li>Jobs beyond Naukri inventory; referral-path finder<span class="dm">IN THE DEMO</span></li>
+        <li>WhatsApp voice channel; Void doors at emotional moments<span class="dm">IN THE DEMO</span></li>
+        <li><b>The proof loop:</b> guided vs unguided shortlist rate, pre-registered methodology</li>
+      </ul>
+    </div>
+  </div>
+  <p class="lede rv d5" style="margin-top:30px">Where we start: <strong>IT services + GCC professionals, 2–8 years, actively switching.</strong>
+  Large, churning, fully email-visible, and sitting exactly on AB's deepest data.</p>
+  <div class="foot-receipt">GREEN = ALREADY RUNNING IN THE PROTOTYPE YOU'RE ABOUT TO SEE · SEQUENCING IS THE PLAN, NOT THE DEMO: A SURFACE BEING DEMOABLE DOESN'T MOVE ITS SHIP DATE · PRODUCT BLUEPRINT v4</div>
+</section>
+
+<!-- ============ 12 · WHAT WE REFUSE ============ -->
+<section class="slide" id="s12">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">12 / 13</div></div>
+  <div class="eyebrow rv">THE SOUL OF THE PRODUCT</div>
+  <h2 class="rv d1">Six refusals, each learned from a named, studied failure.</h2>
+  <div class="refusals">
+    <div class="ref rv d2"><div class="rx">✕</div><div class="rt"><b>Never mass-apply.</b> Bulk applying converts at 0.5% and fuels the doom loop.</div></div>
+    <div class="ref rv d2"><div class="rx">✕</div><div class="rt"><b>No public candidate score.</b> Verdicts are private, explainable, advisory.</div></div>
+    <div class="ref rv d3"><div class="rx">✕</div><div class="rt"><b>No promises needing employer cooperation.</b> We infer from signals employers already emit.</div></div>
+    <div class="ref rv d3"><div class="rx">✕</div><div class="rt"><b>Employer money never touches verdicts.</b> The same wall reviews already keep.</div></div>
+    <div class="ref rv d4"><div class="rx">✕</div><div class="rt"><b>Never paywall the truth.</b> Tracking, verdicts, and the digest are free, always.</div></div>
+    <div class="ref rv d4"><div class="rx">✕</div><div class="rt"><b>Consent is existential.</b> Plain-language, revocable, DPDP-first from day zero.</div></div>
+  </div>
+  <p class="lede rv d5" style="margin-top:34px">Seven predecessors tried candidate advocacy with scores and feedback promises.
+  <strong>Every one pivoted to employers, got absorbed, or died.</strong> The refusals are how we don't join them.</p>
+  <div class="foot-receipt">THE GRAVEYARD: DEBUT · TRIPLEBYTE · HIRED/VETTERY · PYMETRICS · SONARA · WOO · COMPETITIVE LANDSCAPE §4.8</div>
+</section>
+
+<!-- ============ 13 · CLOSE ============ -->
+<section class="slide" id="s13">
+  <div class="chrome"><div class="wm"><svg class="ab-wm"><use href="#ablogo"/></svg></div><div class="no">13 / 13</div></div>
+  <svg class="abmark md rv"><use href="#abmark"/></svg>
+  <div style="height:36px"></div>
+  <h2 class="rv d1" style="max-width:13em">When every career agent needs verified ground truth, AmbitionBox is the layer the market runs on.</h2>
+  <div class="northstar">
+    <div class="ns rv d2"><div class="k">NORTH STAR · ACT 1</div><div class="v">Weekly active jobseekers</div></div>
+    <div class="ns rv d3"><div class="k">THE PROOF · ACT 2</div><div class="v">Shortlist-rate lift, published</div></div>
+    <div class="ns rv d4"><div class="k">THE MEASURE · ACT 3</div><div class="v">Matches that last 90 days</div></div>
+  </div>
+  <div class="brandline rv d5" style="margin-top:44px;display:flex;align-items:center;gap:14px">
+    <div style="width:44px;height:2px;background:var(--brand)"></div>
+    <p style="font-size:18px;color:var(--slate);font-weight:500">Naukri opens the doors. <b style="color:var(--ink)">AmbitionBox tells you which one to walk through.</b></p>
+  </div>
+  <div class="foot-receipt">AMBITIONBOX · NEW VISION WORKSTREAM · JULY 2026</div>
+</section>
+
+<nav class="dots" id="dots"></nav>
+
+<script>
+  const slides=[...document.querySelectorAll('section.slide')];
+  document.querySelectorAll('.chrome .no').forEach((n,i)=>{n.textContent=String(i+1).padStart(2,'0')+' / '+slides.length});
+  const dots=document.getElementById('dots');
+  slides.forEach((s,i)=>{const a=document.createElement('a');a.href='#'+s.id;dots.appendChild(a)});
+  const das=[...dots.children];
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('on');
+      das.forEach((d,i)=>d.classList.toggle('cur',slides[i]===e.target));}
+  })},{threshold:.45});
+  slides.forEach(s=>io.observe(s));
+  addEventListener('keydown',e=>{
+    const cur=slides.findIndex(s=>s.classList.contains('on')&&Math.abs(s.getBoundingClientRect().top)<innerHeight/2);
+    if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){e.preventDefault();slides[Math.min(cur+1,slides.length-1)]?.scrollIntoView({behavior:'smooth'})}
+    if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();slides[Math.max(cur-1,0)]?.scrollIntoView({behavior:'smooth'})}
+  });
+</script>
+</body>
+</html>

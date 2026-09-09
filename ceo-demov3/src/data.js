@@ -104,26 +104,86 @@ export const juspay = {
   initialReadiness: 10,
 }
 
-export const trackerStats = [
-  { value: 3, label: 'Need attention', tone: 'attention' },
-  { value: 4, label: 'Waiting', tone: 'waiting' },
-  { value: 8, label: 'Closed', tone: 'closed' },
+/*
+ * The pipeline Tracker renders, in order. Every item sits in exactly one stage, and the
+ * user can move it by hand — `journey.applicationStages` overrides these.
+ *
+ * `shortlisted` is the user's OWN shortlist: roles saved in Jobs that they have not
+ * applied to yet. It leads the pipeline on the owner's instruction 2026-08-19 — the
+ * search starts when you pick a role, not when you send the form. It is the only stage
+ * that is not an application, so it sits outside the 15 the scan reports.
+ *
+ * `recruiter-shortlist` is the other direction: they picked you. The word "shortlist"
+ * was doing three jobs at once (your saved roles, the recruiter picking you, and a
+ * likelihood chip), so the recruiter stage now names its actor and the chip says
+ * "Outlook" instead.
+ */
+export const applicationStages = [
+  { id: 'shortlisted', label: 'Shortlisted', hint: 'Saved from Jobs, not applied yet' },
+  { id: 'applied', label: 'Applied', hint: 'Sent, nothing back yet' },
+  { id: 'review', label: 'Recruiter review', hint: 'Someone is reading your profile' },
+  { id: 'recruiter-shortlist', label: 'Recruiter shortlist', hint: 'They picked you for the next round' },
+  { id: 'interviewing', label: 'Interviewing', hint: 'Rounds scheduled or under way' },
+  { id: 'offer', label: 'Offer', hint: 'A number is on the table' },
+  { id: 'closed', label: 'Closed', hint: 'Finished, either way' },
 ]
+
+/*
+ * The import-result summary. These add to the 15 the scan reports: 4 with something to do,
+ * 4 with nothing to do but wait, 7 already finished.
+ */
+export const trackerStats = [
+  { value: 4, label: 'Need attention', tone: 'attention' },
+  { value: 4, label: 'Waiting', tone: 'waiting' },
+  { value: 7, label: 'Closed', tone: 'closed' },
+]
+
+export const stageLabel = (id) => (applicationStages.find((stage) => stage.id === id) || {}).label || id
 
 export const applications = {
   attention: [
-    { company: 'PhonePe', role: 'Backend Engineer III', action: 'Reply to recruiter', when: 'Today', color: '#5f259f', preferenceMatch: 83, stage: 'Recruiter review', insight: 'Your fintech experience is relevant. A reply today keeps the conversation moving.' },
-    { company: 'CRED', role: 'Senior Backend Engineer', action: 'Review assessment', when: 'Due tomorrow', color: '#17192b', preferenceMatch: 81, stage: 'Recruiter review', insight: 'The role fits your backend preference. The assessment is the next shortlist step.' },
-    { company: 'Google', role: 'Software Engineer III', action: 'Choose interview slots', when: 'Overdue', color: '#4285f4', preferenceMatch: 78, stage: 'Interviewing', insight: 'The role is a stretch on level, but your distributed-systems experience is relevant.' },
+    { company: 'PhonePe', role: 'Backend Engineer III', action: 'Reply to recruiter', when: 'Today', color: '#5f259f', preferenceMatch: 83, stage: 'review', source: 'Gmail', insight: 'Your fintech experience is relevant. A reply today keeps the conversation moving.' },
+    { company: 'CRED', role: 'Senior Backend Engineer', action: 'Review assessment', when: 'Due tomorrow', color: '#17192b', preferenceMatch: 81, stage: 'recruiter-shortlist', source: 'Gmail', insight: 'Shortlisted for the take-home assessment. Finishing it is what moves you to interviews.' },
+    { company: 'Google', role: 'Software Engineer III', action: 'Choose interview slots', when: 'Overdue', color: '#4285f4', preferenceMatch: 78, stage: 'recruiter-shortlist', source: 'Gmail', insight: 'The role is a stretch on level, but your distributed-systems experience is relevant.' },
   ],
   waiting: [
-    { company: 'Amazon', role: 'SDE III', when: 'Applied 4d ago', preferenceMatch: 84, outlook: 'Promising', stage: 'Applied' },
-    { company: 'Flipkart', role: 'Lead Software Engineer', when: 'Recruiter viewed', preferenceMatch: 74, outlook: 'Competitive', stage: 'Recruiter review' },
-    { company: 'Swiggy', role: 'Backend Engineer', when: 'Applied 8d ago', preferenceMatch: 80, outlook: 'Promising', stage: 'Applied' },
-    { company: 'Zeta', role: 'Senior Software Engineer', when: 'Interview completed', preferenceMatch: 86, stage: 'Interviewing' },
+    { company: 'Amazon', role: 'SDE III', when: 'Applied 4d ago', preferenceMatch: 84, stage: 'applied', source: 'Naukri' },
+    { company: 'Flipkart', role: 'Lead Software Engineer', when: 'Recruiter viewed', preferenceMatch: 74, stage: 'review', source: 'Naukri' },
+    { company: 'Swiggy', role: 'Backend Engineer', when: 'Applied 8d ago', preferenceMatch: 80, stage: 'applied', source: 'Gmail' },
+    { company: 'Zeta', role: 'Senior Software Engineer', when: 'Interview completed', preferenceMatch: 86, stage: 'interviewing', source: 'Naukri' },
+  ],
+  /*
+   * The Tracker summary counts eight closed applications, so eight exist here. A stat
+   * that opens onto an empty panel is a stat the user cannot trust.
+   *
+   * These deliberately carry no match score and no action. The point of the Closed view
+   * is that these are finished — showing a percentage next to a rejection invites a
+   * second look at something there is nothing left to do about. Companies here are
+   * disjoint from the Jobs feed, so nothing a user was rejected from resurfaces as a
+   * role to find.
+   */
+  closed: [
+    { company: 'Navi', role: 'Senior Backend Engineer', outcome: 'Not selected after the final round', when: '6d ago', stage: 'closed', source: 'Gmail' },
+    { company: 'Dream11', role: 'Senior Backend Engineer', outcome: 'Not selected after the assessment', when: '12d ago', stage: 'closed', source: 'Gmail' },
+    { company: 'Uber', role: 'Senior Software Engineer', outcome: 'Role put on hold by the company', when: '18d ago', stage: 'closed', source: 'Gmail' },
+    { company: 'Pine Labs', role: 'Lead Backend Engineer', outcome: 'Role closed before your interview', when: '24d ago', stage: 'closed', source: 'Naukri' },
+    { company: 'Myntra', role: 'Backend Engineer III', outcome: 'Not selected after screening', when: '31d ago', stage: 'closed', source: 'Naukri' },
+    { company: 'BharatPe', role: 'Senior Backend Engineer', outcome: 'You withdrew', when: '38d ago', stage: 'closed', source: 'Gmail' },
+    { company: 'Ola', role: 'Backend Engineer III', outcome: 'No reply — closed after 45 days', when: '52d ago', stage: 'closed', source: 'Gmail' },
   ],
 }
 
+/*
+ * `salary` is what the employer advertised. `estSalary` is what AmbitionBox estimates the
+ * role actually pays, from employee-reported salaries — they are different claims from
+ * different sources, so the card labels both rather than blending them into one number.
+ * `estBasis` is the sample behind the estimate; an estimate without its n is an opinion.
+ *
+ * The three Highlights (pay / culture / profile fit) follow prototype/matches-2b.js. Each is a
+ * title plus a meta line that names where the claim came from. Nothing here asserts company
+ * news, funding or anything attributed to a publication — every line traces to a field in this
+ * file, which is the boundary agreed on 2026-08-19.
+ */
 export const jobs = [
   {
     ...juspay,
@@ -132,21 +192,132 @@ export const jobs = [
     sourceLabel: 'From Naukri',
     reason: 'Strong fit for your payments and distributed-systems background.',
     culture: 'High learning · Fast paced',
+    estSalary: '₹26.5L', estBasis: '212 employee-reported salaries',
+    cultureTitle: 'Ownership culture, strong stack',
+    cultureMeta: 'Pace can be demanding',
+    fitTitle: '10 of 15 requirements evidenced',
+    fitMeta: 'Based on your current profile',
   },
   {
     id: 'zeta', company: 'Zeta', initials: 'ZE', role: 'Senior Backend Engineer', location: 'Bengaluru', mode: 'Hybrid',
     salary: '₹25–32L', rating: '3.8', reviews: '1.2k reviews', preferenceMatch: 86, readiness: '9/14',
+    experience: '5–8 yrs', estSalary: '₹27L', estBasis: '96 employee-reported salaries',
     sourceLabel: 'From AmbitionBox', posted: '1d ago', reason: 'Your fintech domain depth stands out.', culture: 'Strong tech · Mixed WLB',
+    cultureTitle: 'High ownership, focused teams',
+    cultureMeta: 'Execution pace can be intense',
+    fitTitle: '9 of 14 requirements evidenced',
+    fitMeta: 'Based on your current profile',
   },
   {
     id: 'phonepe', company: 'PhonePe', initials: 'PP', role: 'Backend Engineer III', location: 'Bengaluru', mode: 'Office',
     salary: '₹28–36L', rating: '4.1', reviews: '3.4k reviews', preferenceMatch: 83, readiness: 'Applied',
+    experience: '6–10 yrs', estSalary: '₹31L', estBasis: '540 employee-reported salaries',
+    cultureTitle: 'Strong pay, high intensity',
+    cultureMeta: 'Long hours reported by some teams',
+    fitTitle: 'Application already in progress',
+    fitMeta: 'A recruiter is waiting on your reply',
     sourceLabel: 'Recruiter email', posted: 'Needs reply', reason: 'Already in conversation—replying is your highest-leverage move.', culture: 'Great pay · High intensity',
   },
   {
     id: 'razorline', company: 'Groww', initials: 'GR', role: 'Staff Backend Engineer', location: 'Bengaluru', mode: 'Hybrid',
     salary: '₹32–42L', rating: '3.7', reviews: '891 reviews', preferenceMatch: 76, readiness: '8/16',
+    experience: '8–12 yrs', estSalary: '₹34L', estBasis: '134 employee-reported salaries',
+    cultureTitle: 'High ownership, fast growth',
+    cultureMeta: 'Process still forming in places',
+    fitTitle: '8 of 16 requirements evidenced',
+    fitMeta: 'Based on your current profile',
     sourceLabel: 'Company careers', posted: 'Today', reason: 'Compelling stretch role; stronger leadership evidence would help.', culture: 'Ownership · Rapid growth',
+  },
+]
+
+/*
+ * Ten more listings, added 2026-08-19 so the feed is long enough to browse and — more
+ * usefully — so it carries the edge cases. AmbitionBox does not have depth on every
+ * company, and a card that pretends otherwise is worse than one that says so:
+ *
+ *   · no `estSalary`     → the pay row shows the employer's posted range alone
+ *   · no `cultureTitle`  → the culture row is left out rather than filled with a placeholder
+ *   · neither, and no posted range → the pay row disappears too
+ *
+ * Every rating and salary here is prototype fixture data, consistent with the four above.
+ */
+export const moreJobs = [
+  {
+    id: 'swiggy', company: 'Swiggy', initials: 'SW', role: 'Senior Backend Engineer', location: 'Bengaluru', mode: 'Hybrid',
+    salary: '₹26–34L', rating: '3.9', reviews: '2.1k reviews', preferenceMatch: 81, readiness: '9/15', experience: '5–9 yrs',
+    sourceLabel: 'From Naukri', posted: '3d ago', culture: 'Scale problems · Fast shipping',
+    estSalary: '₹29L', estBasis: '310 reported salaries',
+    cultureTitle: 'Real scale, quick decisions', cultureMeta: 'On-call load is frequently mentioned',
+    fitTitle: '9 of 15 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'zerodha', company: 'Zerodha', initials: 'ZR', role: 'Backend Engineer II', location: 'Bengaluru', mode: 'Office',
+    salary: '₹22–30L', rating: '4.3', reviews: '640 reviews', preferenceMatch: 79, readiness: '10/13', experience: '4–8 yrs',
+    sourceLabel: 'Company careers', posted: '5d ago', culture: 'Calm pace · Long tenure',
+    estSalary: '₹25L', estBasis: '88 reported salaries',
+    cultureTitle: 'Unusually calm for fintech', cultureMeta: 'Small teams, little process',
+    fitTitle: '10 of 13 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'meesho', company: 'Meesho', initials: 'ME', role: 'Senior Software Engineer', location: 'Bengaluru', mode: 'Hybrid',
+    salary: '₹28–38L', rating: '3.6', reviews: '1.1k reviews', preferenceMatch: 77, readiness: '8/15', experience: '5–9 yrs',
+    sourceLabel: 'From AmbitionBox', posted: '1d ago', culture: 'High growth · Mixed WLB',
+    estSalary: '₹32L', estBasis: '274 reported salaries',
+    cultureTitle: 'Fast growth, shifting priorities', cultureMeta: 'Work-life balance reviews are mixed',
+    fitTitle: '8 of 15 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'setu', company: 'Setu', initials: 'ST', role: 'Backend Engineer · Payments', location: 'Bengaluru', mode: 'Remote',
+    salary: '₹24–32L', rating: '4.0', reviews: '120 reviews', preferenceMatch: 84, readiness: '11/14', experience: '4–8 yrs',
+    sourceLabel: 'Company careers', posted: '2d ago', culture: 'Deep payments work',
+    estSalary: '₹27L', estBasis: '41 reported salaries',
+    cultureTitle: 'Deep payments work, small team', cultureMeta: 'Few reviews — read them yourself',
+    fitTitle: '11 of 14 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  // No salary estimate: too few reported salaries to publish one.
+  {
+    id: 'jupiter', company: 'Jupiter', initials: 'JU', role: 'Senior Backend Engineer', location: 'Bengaluru', mode: 'Hybrid',
+    salary: '₹25–33L', rating: '3.8', reviews: '210 reviews', preferenceMatch: 78, readiness: '9/15', experience: '5–8 yrs',
+    sourceLabel: 'From Naukri', posted: '4d ago', culture: 'Product-led · Small pods',
+    cultureTitle: 'Product-led, small pods', cultureMeta: 'Reviewers mention flat structure',
+    fitTitle: '9 of 15 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'khatabook', company: 'Khatabook', initials: 'KH', role: 'Backend Engineer III', location: 'Bengaluru', mode: 'Office',
+    salary: '₹20–28L', rating: '3.5', reviews: '380 reviews', preferenceMatch: 72, readiness: '8/14', experience: '4–7 yrs',
+    sourceLabel: 'From AmbitionBox', posted: '6d ago', culture: 'Bharat-scale problems',
+    cultureTitle: 'Bharat-scale problems', cultureMeta: 'Reviews note frequent re-prioritisation',
+    fitTitle: '8 of 14 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'slice', company: 'Slice', initials: 'SL', role: 'Senior Backend Engineer', location: 'Bengaluru', mode: 'Hybrid',
+    salary: '₹27–35L', rating: '3.7', reviews: '450 reviews', preferenceMatch: 75, readiness: '9/15', experience: '5–9 yrs',
+    sourceLabel: 'Company careers', posted: 'Today', culture: 'Consumer fintech pace',
+    cultureTitle: 'Consumer fintech pace', cultureMeta: 'Reviews split on management',
+    fitTitle: '9 of 15 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  // No culture read: not enough reviews to summarise.
+  {
+    id: 'perfios', company: 'Perfios', initials: 'PE', role: 'Lead Backend Engineer', location: 'Bengaluru', mode: 'Office',
+    salary: '₹30–40L', rating: '3.9', reviews: '58 reviews', preferenceMatch: 74, readiness: '10/16', experience: '7–11 yrs',
+    sourceLabel: 'From Naukri', posted: '2d ago',
+    estSalary: '₹33L', estBasis: '62 reported salaries',
+    fitTitle: '10 of 16 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  {
+    id: 'decentro', company: 'Decentro', initials: 'DE', role: 'Backend Engineer · APIs', location: 'Remote', mode: 'Remote',
+    salary: '₹22–29L', rating: '4.1', reviews: '34 reviews', preferenceMatch: 73, readiness: '9/13', experience: '4–7 yrs',
+    sourceLabel: 'Company careers', posted: '1d ago',
+    estSalary: '₹25L', estBasis: '19 reported salaries',
+    fitTitle: '9 of 13 requirements evidenced', fitMeta: 'Based on your current profile',
+  },
+  // Neither: a company AmbitionBox has no depth on yet.
+  {
+    // Neither a posted range nor an estimate, so this card carries no pay row at all.
+    id: 'nimbus', company: 'Nimbus Pay', initials: 'NP', role: 'Senior Backend Engineer', location: 'Pune', mode: 'Hybrid',
+    salary: null, rating: null, reviews: 'No reviews yet', preferenceMatch: 70, readiness: '8/15', experience: '5–8 yrs',
+    sourceLabel: 'Company careers', posted: 'Today',
+    fitTitle: '8 of 15 requirements evidenced', fitMeta: 'Based on your current profile',
   },
 ]
 
@@ -551,6 +722,7 @@ export const initialJourney = {
   emailConnected: false,
   importComplete: false,
   manualApplications: [],
+  applicationStages: {},
   phonepeReplied: false,
   naukriConnected: false,
   preferencesConfirmed: false,
@@ -559,6 +731,10 @@ export const initialJourney = {
   resumeReady: false,
   javaConfirmed: null,
   interviewInvited: false,
+  // The round has happened. Separate from `interviewInvited` because the screen's job
+  // flips at that point: before it, prepare; after it, tell us how it went.
+  interviewDone: false,
+  interviewLogged: false,
   roundConfirmed: null,
   prepDecisionsCovered: 0,
   prepComplete: false,
@@ -573,11 +749,18 @@ export const initialJourney = {
 
 export const journeyPresets = {
   baseline: initialJourney,
-  tracker: { ...initialJourney, emailConnected: true, importComplete: true },
-  matches: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true },
+  tracker: { ...initialJourney, emailConnected: true, importComplete: true, savedJobs: ['zerodha', 'setu'] },
+  matches: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['zerodha', 'setu'] },
   readiness: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['juspay'] },
   resume: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['juspay'], readiness: 14, resumeReady: true },
   interview: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['juspay'], readiness: 14, resumeReady: true, javaConfirmed: false, interviewInvited: true },
+  // Additive, for the states board: the onboarding handoff is otherwise unreachable by
+  // URL, because `?preset=` bypasses session storage and every other preset ships
+  // firstHomeArrival: false. Nothing else reads it.
+  firstopen: { ...initialJourney, emailConnected: true, importComplete: true, firstHomeArrival: true, onboardingProfileConfirmed: true, onboardingPreferencesConfirmed: true, onboardingComplete: true },
+  // The morning after the round. Prep is complete, the interview has happened, and
+  // nothing has been logged about it yet.
+  postinterview: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['juspay'], readiness: 14, resumeReady: true, javaConfirmed: false, interviewInvited: true, roundConfirmed: 'confirmed', prepDecisionsCovered: 5, prepComplete: true, interviewDone: true },
   offer: { ...initialJourney, emailConnected: true, importComplete: true, phonepeReplied: true, naukriConnected: true, preferencesConfirmed: true, savedJobs: ['juspay'], readiness: 14, resumeReady: true, javaConfirmed: false, interviewInvited: true, roundConfirmed: 'confirmed', prepDecisionsCovered: 5, prepComplete: true, offerDetected: true },
 }
 

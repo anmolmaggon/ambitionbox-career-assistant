@@ -29,10 +29,11 @@
   --h-quiet: #6b7390;
   --h-line: #e1e5f0;
   background: var(--ab-color-canvas);
-  /* Clears the bottom sheet (handle + chips + ask pill + tabs), which is taller than
-     the shared tab bar `.screen` reserves for. Measured at 230px; the extra is breathing
-     room so the last line never sits flush against the sheet's edge. */
-  padding-bottom: 272px;
+  /* Clears the bottom sheet (handle + ask pill + tabs), which is taller than the shared
+     tab bar `.screen` reserves for. Re-measured at 178px once the suggestion chips left
+     the dock on 2026-08-19 — it had been 230px with them; the extra is breathing room so
+     the last line never sits flush against the sheet's edge. */
+  padding-bottom: 220px;
 }
 
 /* The eyebrow is set in caps on the live direction: it is a timestamp, and small caps
@@ -213,10 +214,11 @@
 /* The avatar itself is 36px and comes from styles.css, where it is shared with every
    other screen's Topbar. Home cannot resize it without moving the whole app, so it
    grows the hit area around it to the 44px floor instead. */
-/* Home only: the wordmark is set in one ink. The blue "Box" is the app-wide treatment
-   from styles.css; here the mark carries the brand colour and the word stays quiet, so
-   the first colour the eye lands on is the pick rather than the header. */
-.home-screen .brand > span:last-child span { color: inherit; }
+/* The wordmark is set in one ink wherever it heads a screen. The mark carries the brand
+   colour and the word stays quiet, so the first colour the eye lands on is the content
+   rather than the header. */
+.home-screen .brand > span:last-child span,
+.app-header .brand > span:last-child span { color: inherit; }
 
 .home-avatar-button { padding: 4px; border: 0; background: none; line-height: 0; cursor: pointer; }
 /* .avatar is authored for a <button>; as a span it needs the box laid out explicitly. */
@@ -404,26 +406,6 @@
 }
 .home-screen.home--composer .home-action-hero h2 { max-width: none; }
 
-.capability-index { margin-top: var(--h-5); }
-.capability-index .composer-label { display: block; }
-.capability-list { border: 1px solid #dfe3ed; border-radius: 22px; overflow: hidden; background: var(--ab-color-white); }
-.capability-list button {
-  width: 100%; min-height: 80px; padding: var(--h-4); border: 0;
-  display: flex; align-items: center; gap: var(--h-4);
-  background: var(--ab-color-white); text-align: left; cursor: pointer;
-}
-.capability-list button + button { border-top: 1px solid #eef0f6; }
-.capability-list button:hover { background: #fafbff; }
-.capability-icon {
-  width: 44px; height: 44px; flex: 0 0 auto; border-radius: 14px;
-  display: grid; place-items: center; color: var(--ab-color-primary); background: #eef1ff;
-}
-.capability-copy { min-width: 0; flex: 1; }
-.capability-copy strong, .capability-copy small { display: block; }
-.capability-copy strong { font-size: var(--h-action); letter-spacing: -.02em; }
-.capability-copy small { margin-top: 5px; color: #70788f; font-size: var(--h-small); line-height: 1.4; }
-.capability-list button > svg { flex: 0 0 auto; color: #b3bacb; }
-
 .home--composer .composer-search { padding-top: var(--h-8); }
 
 /* ---------- The actionable carousel ----------
@@ -460,6 +442,11 @@
   scroll-snap-align: start;
   box-shadow: 0 12px 30px rgba(26,33,66,.07), 0 1px 3px rgba(26,33,66,.05), 0 0 0 1px rgba(26,33,66,.035);
 }
+
+/* The set-aside leave. Duration is kept in step with LEAVE_MS in Home.jsx — the timer
+   removes the card from Home's list, this fades it, and the two have to agree. */
+.action-card.is-leaving { opacity: 0; transform: scale(.94); pointer-events: none; transition: opacity .3s ease, transform .3s ease; }
+@media (prefers-reduced-motion: reduce) { .action-card.is-leaving { transition: none; } }
 
 .action-card-top { display: flex; align-items: center; gap: var(--h-2); padding-right: 40px; min-height: 28px; }
 
@@ -509,6 +496,73 @@
 
 .action-card-note { margin-top: var(--h-3); display: flex; align-items: center; gap: 6px; color: var(--h-quiet); font-size: var(--h-meta); line-height: 1.35; }
 
+/* ---------- The six card middles ----------
+   The shell above and the action below never vary. What varies is how the middle
+   composes, because the content differs in kind: a recruiter's message, a booked date,
+   an offer figure, a role's evidence, a task, a setup step.
+
+   The leash — no shape may introduce a size, radius or elevation the others do not
+   have. If one needs that to work, the treatment is wrong, not the shell. */
+
+.card-mid { display: flex; flex-direction: column; }
+.card-mid > p { margin: var(--h-2) 0 0; color: #5a6178; font-size: 12.5px; line-height: 1.5; }
+
+/* 1 · Reply — the quote leads behind a rule and the sender signs it underneath, the
+   order an email actually arrives in. */
+.card-quote {
+  margin: var(--h-4) 0 0; padding-left: var(--h-3);
+  border-left: 2px solid #d9dff5;
+  font-size: 16px; font-weight: 700; line-height: 1.34; letter-spacing: -.022em;
+  color: var(--ab-color-ink);
+}
+.card-byline { margin-top: var(--h-4); }
+.card-source { margin-top: var(--h-2); color: var(--h-quiet); font-size: 10.5px; font-weight: 700; }
+
+/* 2 · Interview — the only hard date in the search, so it is drawn as a date. */
+.card-when { margin-top: var(--h-4); display: flex; align-items: center; gap: var(--h-3); }
+.card-datebox {
+  width: 44px; flex: 0 0 auto; padding: 5px 0; border-radius: 12px;
+  display: grid; justify-items: center; background: #efebfa; color: #5a3fa8;
+}
+.card-datebox b { font-size: 9.5px; font-weight: 800; letter-spacing: .08em; }
+.card-datebox i { font-size: 17px; font-weight: 800; font-style: normal; line-height: 1.15; letter-spacing: -.03em; }
+.card-when-detail { min-width: 0; }
+.card-when-detail strong, .card-when-detail small { display: block; }
+.card-when-detail strong { font-size: var(--h-small); letter-spacing: -.015em; }
+.card-when-detail small { margin-top: 2px; color: var(--h-quiet); font-size: 10.5px; }
+.card-entity-line { margin: 6px 0 0 !important; color: var(--h-quiet) !important; font-size: 11px !important; font-weight: 700; }
+
+/* 3 · Offer — leading with CTC alone flatters the offer, so the split sits with it. */
+.card-figure { margin-top: var(--h-3); }
+.card-figure b { display: block; font-size: 32px; font-weight: 800; line-height: 1.05; letter-spacing: -.045em; color: #0e6a55; }
+.card-figure small { display: block; margin-top: 5px; color: var(--h-quiet); font-size: 10.5px; font-weight: 700; }
+.card-band {
+  margin-top: var(--h-3); padding-top: var(--h-3); border-top: 1px solid #eef0f6;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.card-band span { color: #5a6178; font-size: 11px; font-weight: 700; }
+
+/* 4 · Role — evidence in columns instead of a wrapped grey sentence. */
+.card-stats {
+  margin-top: var(--h-4); padding-top: var(--h-3); border-top: 1px solid #eef0f6;
+  display: flex; gap: var(--h-3);
+}
+.card-stats span { min-width: 0; flex: 1; display: grid; gap: 3px; }
+.card-stats b { font-size: var(--h-small); font-weight: 800; letter-spacing: -.02em; color: var(--ab-color-ink); }
+.card-stats span:first-child b { color: var(--ab-color-primary); }
+.card-stats i {
+  color: var(--h-quiet); font-size: 9px; font-weight: 800; font-style: normal;
+  letter-spacing: .05em; text-transform: uppercase; line-height: 1.25;
+}
+
+/* 5 · Task — the action is the claim, and the stage says where it sits in the pipeline. */
+.card-taskmeta { margin-top: var(--h-4); padding-top: var(--h-3); border-top: 1px solid #eef0f6; display: flex; align-items: center; gap: var(--h-2); }
+.card-due, .card-stage { padding: 4px 9px; border-radius: 8px; font-size: 10px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+.card-due { color: #5a6178; background: #eef0f6; }
+.card-due--overdue { color: #b0424f; background: #fbeaec; }
+.card-due--due-tomorrow, .card-due--today { color: #b96a12; background: #fbf0e0; }
+.card-stage { color: var(--h-quiet); background: transparent; box-shadow: inset 0 0 0 1px #e6e9f2; }
+
 /* Pushed to the floor of the card so the actions line up across a sequence whose
    cards hold different amounts of evidence. */
 /* The action is pinned to the floor of the card so a sequence of cards holding
@@ -550,7 +604,146 @@
 }
 .action-card-menu button:hover { background: #f3f5fb; }
 
-.carousel-empty { margin: 0; padding-top: var(--h-5); padding-bottom: var(--h-5); color: var(--h-quiet); font-size: var(--h-body); line-height: 1.5; }
+/* ==========================================================================
+   Coloured fields — MOB-HOME-004 (Strava)
+   ==========================================================================
+
+   Learned: category expressed as a saturated field, with a glassy diagonal sheen for
+   depth. Not copied: the stacked-deck effect (our cards scroll as peers, and a stack
+   implies a pile you work through), the vivid palette, or Strava's model of colour
+   meaning "the mode you picked" — here it means what the card *is*.
+
+   Deep and muted rather than bright: these sit beside AmbitionBox blue, and a vivid
+   field would beat the CTA on every card. The sheen is layered into `background`
+   rather than a pseudo-element so it cannot paint over the card's own content.
+
+   Every field clears AA for white body text. Amber is the one that had to move: the
+   #b96a12 the mark uses is legible at 28px on white but fails as a field, so the card
+   takes a deeper bronze. */
+
+.action-card--field {
+  color: #fff;
+  box-shadow: 0 16px 34px rgba(20,26,54,.20), 0 1px 3px rgba(20,26,54,.14);
+}
+
+/* Money on the table. */
+.action-card--field.action-card--offer {
+  background:
+    linear-gradient(122deg, rgba(255,255,255,.15), rgba(255,255,255,0) 46%),
+    linear-gradient(158deg, #126655, #0a4034);
+}
+/* A booked date. Keeps the field prep-v3.css established, warm highlight and all, so
+   the interview beat reads the same wherever it appears. */
+.action-card--field.action-card--interview {
+  background:
+    radial-gradient(circle at 88% 4%, rgba(255,196,110,.30), transparent 42%),
+    linear-gradient(122deg, rgba(255,255,255,.14), rgba(255,255,255,0) 46%),
+    linear-gradient(152deg, #322a5e, #533ba0);
+}
+/* Someone waiting on you. Indigo rather than the brand blue the marks use — a blue
+   field would fight its own CTA, which is the one control that has to win. */
+.action-card--field.action-card--reply {
+  background:
+    linear-gradient(122deg, rgba(255,255,255,.14), rgba(255,255,255,0) 46%),
+    linear-gradient(158deg, #2a3675, #1a2350);
+}
+/* A clock running on someone else's process. Terracotta rather than a literal dark
+   amber: the mark's #b96a12 goes muddy brown when it is stretched over a whole card,
+   and this is the one tone that can appear two or three times in a row, so it had to
+   survive being seen next to itself. */
+.action-card--field.action-card--update {
+  background:
+    linear-gradient(122deg, rgba(255,255,255,.13), rgba(255,255,255,0) 46%),
+    linear-gradient(158deg, #8f4410, #5a2807);
+}
+
+/* --- Inverted ink. One block, because the shell is one shell. --- */
+
+.action-card--field .action-card-mark { color: #fff; background: rgba(255,255,255,.17); }
+.action-card--field .action-card-kicker,
+.action-card--field .time-chip { color: rgba(255,255,255,.82); }
+.action-card--field .pulse-dot { background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.22); }
+
+.action-card--field h2,
+.action-card--field .action-card-entity strong,
+.action-card--field .card-when-detail strong { color: #fff; }
+/* .88 and .82, not the .78/.66 a white-on-dark set usually takes: measured against the
+   lightest stop of the lightest field, .78 body text came out at 4.16:1 and failed AA.
+   These clear 5.8:1 and 5.2:1 on the worst case, and the fields themselves all sit
+   between 6.9:1 and 15:1 against white. */
+.action-card--field > p,
+.action-card--field .card-mid > p { color: rgba(255,255,255,.88); }
+.action-card--field .action-card-entity small,
+.action-card--field .card-when-detail small,
+.action-card--field .action-card-note,
+.action-card--field .card-source,
+.action-card--field .card-figure small { color: rgba(255,255,255,.82); }
+.action-card--field .card-entity-line { color: rgba(255,255,255,.82) !important; }
+
+/* Rules that separated sections on white have to become light, not disappear — the
+   grouping they carry is the reason the middles read as composed. */
+.action-card--field .action-card-facts,
+.action-card--field .card-band,
+.action-card--field .card-stats,
+.action-card--field .card-taskmeta { border-top-color: rgba(255,255,255,.18); }
+.action-card--field .action-card-facts span,
+.action-card--field .card-band span { color: rgba(255,255,255,.88); }
+.action-card--field .action-card-facts span:first-child,
+.action-card--field .card-stats b,
+.action-card--field .card-stats span:first-child b,
+.action-card--field .card-figure b { color: #fff; }
+.action-card--field .card-stats i { color: rgba(255,255,255,.82); }
+
+.action-card--field .card-quote { color: #fff; border-left-color: rgba(255,255,255,.38); }
+.action-card--field .card-datebox { color: #fff; background: rgba(255,255,255,.17); }
+
+/* The due pill loses its tinted backgrounds — on a coloured field two saturated
+   surfaces stack into mud. Overdue keeps a distinct ink so the one state that is
+   genuinely worse still reads as worse. */
+.action-card--field .card-due { color: rgba(255,255,255,.9); background: rgba(255,255,255,.15); }
+.action-card--field .card-due--overdue { color: #ffd7dc; background: rgba(255,255,255,.15); }
+.action-card--field .card-due--today,
+.action-card--field .card-due--due-tomorrow { color: #ffe6bd; background: rgba(255,255,255,.15); }
+.action-card--field .card-stage { color: rgba(255,255,255,.84); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+
+/* The action inverts to white so it stays the loudest thing on the card. The `--pick`
+   rule below sets brand blue, which on a green or violet field would recede. */
+.action-card--field .action-card-cta,
+.action-card--field.action-card--pick .action-card-cta { color: #17203c; background: #fff; }
+
+.action-card--field .action-card-dismiss { color: rgba(255,255,255,.82); }
+.action-card--field .action-card-dismiss:hover { color: #fff; background: rgba(255,255,255,.16); }
+
+/* ---------- The contribution card ----------
+   The only card that asks the user for something rather than telling them something,
+   and it is drawn to say so. Dotted and unfilled: solid means AmbitionBox ranked this
+   for you, and the two colour states say whether a thing is happening to you or waiting
+   for you to choose. This is neither, so it takes a border treatment rather than a fifth
+   hue — the colour language stays two-state and this sits outside it.
+
+   Must stay after the base `.action-card` rules: it ties on specificity with them, so
+   source order is what lets it drop the fill and the shadow. */
+.action-card--contribute {
+  border: 1.5px dashed #ccd3e4;
+  background: none;
+  box-shadow: none;
+}
+.action-card--contribute .action-card-mark { color: #7b8399; background: #eceff7; }
+.action-card--contribute h2 { font-size: 16px; color: #2b3149; }
+/* Outlined, not filled: a solid button would make the quietest card on the screen carry
+   the loudest control on it. */
+.action-card--contribute .action-card-cta {
+  color: #35406b; background: none; box-shadow: inset 0 0 0 1.5px #ccd3e4;
+}
+.action-card--contribute .action-card-cta:hover { color: var(--ab-color-primary); box-shadow: inset 0 0 0 1.5px #b9c4ec; }
+
+/* Placed after the base card rules on purpose: several of these overrides tie on
+   specificity with the white-card rule they replace (`.action-card h2`, `.time-chip`),
+   so source order is what decides them. Moving this block up will silently un-invert
+   the headline and the timestamp. */
+
+/* .carousel-empty removed 2026-08-19 — the greeting states the all-clear now, so the
+   carousel renders nothing rather than restating it underneath. */
 
 .home-carousel-section .home-timejump { margin-top: var(--h-4); }
 
@@ -563,10 +756,9 @@
    The mark is set large and very pale and sits behind the first line, which is what
    makes the block read as considered rather than as another label. */
 
+/* No rule above it: the whitespace is the separation. A hairline made the quote read as
+   a section boundary rather than as the page simply ending. */
 .home-quote { position: relative; margin: 0; padding-top: var(--h-8); padding-bottom: var(--h-2); }
-/* A hairline the width of the text column, so the section reads as the page's footer
-   rather than as one more thing in the stack. */
-.home-quote::before { content: ''; position: absolute; top: 0; left: 20px; right: 20px; height: 1px; background: #e5e9f2; }
 .home-quote-label {
   display: block; margin-bottom: 42px;
   color: #9aa2b8; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
@@ -608,18 +800,30 @@
    rounded at the top, lifted by a shadow, with a grab handle. Solid, so nothing shows
    through the tabs, and the raised edge is what says "there is more here". */
 .home-dock {
+  /* The dock is app-wide chrome now, so it carries its own scale rather than borrowing
+     the custom properties `.home-screen` declares — on any other screen those resolve to
+     nothing and the pill loses its margins and type sizes. */
+  --h-1: 4px;  --h-2: 8px;  --h-3: 12px; --h-4: 16px;
+  --h-5: 20px; --h-6: 24px; --h-8: 32px;
+  --h-body: 14px; --h-small: 13px; --h-meta: 11px;
+  --h-quiet: #6b7390;
   position: fixed; z-index: 30; bottom: 0; width: 100%; max-width: 430px;
   box-sizing: border-box; padding: 0 0 0;
-  display: flex; flex-direction: column; gap: var(--h-3);
+  /* 4px, not 12px: with the chips gone the handle sits directly on the pill, and the
+     old gap had been sized to separate two stacked rows that no longer exist. The tab
+     bar takes its own top padding back, so only the space above the pill closes up. */
+  display: flex; flex-direction: column; gap: var(--h-1);
   border-radius: 28px 28px 0 0;
   background: var(--ab-color-white);
   box-shadow: 0 -14px 38px rgba(26,33,66,.10), 0 -1px 0 rgba(26,33,66,.05);
 }
 
 /* Full width and 44px tall: the handle is the swipe target, so the whole strip above
-   the chips has to be grabbable, not just the 4px bar drawn in it. */
+   the pill has to be grabbable, not just the 4px bar drawn in it. The height is the
+   touch-target floor and stays; the bottom padding is what went, which pulls the bar
+   down toward the pill rather than leaving it marooned in its own band. */
 .home-dock-handle {
-  width: 100%; min-height: 44px; padding: var(--h-3) 0 var(--h-2);
+  width: 100%; min-height: 44px; padding: var(--h-3) 0 0;
   border: 0; background: none; display: grid; place-items: center; cursor: pointer;
 }
 .home-dock-handle > i { width: 38px; height: 4px; border-radius: 2px; background: #dde2ee; }
@@ -669,7 +873,9 @@
    cluster is — so it drops its own positioning, field and blur and just lays out. */
 .home-dock .bottom-nav {
   position: static; width: auto; max-width: none; height: auto;
-  padding: 0 13px calc(var(--h-2) + env(safe-area-inset-bottom));
+  /* Owns its own top inset now that the cluster gap is 4px, so tightening the space
+     above the pill does not drag the tabs up against it too. */
+  padding: var(--h-2) 13px calc(var(--h-2) + env(safe-area-inset-bottom));
   background: none; -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 
@@ -683,7 +889,9 @@
 /* The wrapper only positions; each row carries its own pill chrome, so the control
    still floats rather than becoming a full-width bar. */
 .home-design-switcher {
-  position: fixed; z-index: 40; bottom: 236px; width: 100%; max-width: 430px;
+  /* Sits just clear of the dock, so it tracks the dock's height rather than a number
+     that silently stops meaning anything when the cluster changes. */
+  position: fixed; z-index: 40; bottom: 186px; width: 100%; max-width: 430px;
   display: flex; flex-direction: column; align-items: center; gap: var(--h-1);
   pointer-events: none;
 }
@@ -702,19 +910,155 @@
 
 /* ---------- Assistant sheet ---------- */
 
-.home-assistant-mark { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--ab-color-white); box-shadow: 0 0 0 1px #e3e7f3; }
-.home-assistant-mark-img { width: 32px; height: 32px; display: block; }
-.home-assistant-sheet h2 { margin-top: var(--h-4); }
-.home-assistant-suggestions { margin: var(--h-5) 0 var(--h-4); display: flex; flex-wrap: wrap; gap: var(--h-2); }
-.home-assistant-suggestions button { min-height: 48px; padding: 0 var(--h-4); border: 1px solid #d7defb; border-radius: 14px; color: #4054c7; background: #f2f4ff; font-size: var(--h-small); font-weight: 700; text-align: left; cursor: pointer; }
-.home-assistant-composer { min-height: 62px; padding: var(--h-2) var(--h-2) var(--h-2) var(--h-4); border: 1px solid #dce1ec; border-radius: 18px; display: flex; align-items: center; gap: var(--h-3); background: #fafbfe; }
-.home-assistant-composer input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font-size: var(--h-body); }
-.home-assistant-composer button { width: 46px; height: 46px; border: 0; border-radius: 14px; display: grid; place-items: center; color: #fff; background: var(--ab-color-primary); cursor: pointer; }
-.home-assistant-composer button:disabled { color: #a7adbd; background: #e5e8ef; }
-.home-assistant-answer { margin-top: var(--h-4); padding: var(--h-5); border: 1px solid #dce2f5; border-radius: 18px; background: #f5f7ff; }
+/*
+ * MOB-HOME-002 (Natural AI) + MOB-HOME-003 (Gemini). Two halves rather than one stack.
+ *
+ * The old sheet led with a mark, a title and a grounding paragraph, then put chat
+ * suggestions and navigation rows in the same contained list. Nothing read as itself.
+ * Now the sheet is split by what the two halves are for: the top is where you go, the
+ * bottom is where you type, and the composer is anchored so the input is always the
+ * thing under your thumb.
+ *
+ * Learned from Natural AI: an uncontained menu — grey glyph, plain label, air between
+ * rows — reads as a set of destinations rather than a settings screen. Learned from
+ * Gemini: a composer earns its weight from being a real field with its controls on a
+ * second line, not from being a pill.
+ * Not copied: Natural AI's imagery cards, Gemini's model switcher and attachment rail.
+ */
+
+/* Full page rather than a partial sheet: this is the assistant's own surface, and at
+   partial height the menu and the composer were competing for the same few hundred
+   pixels. The close control is absolutely positioned at the top-right, so the stage
+   below it takes enough head room that the first menu row never runs under it. */
+.home-assistant-sheet {
+  /* The assistant opens from Home, Jobs and Job Detail, so like the dock it carries its
+     own scale rather than borrowing the properties `.home-screen` declares — off Home
+     those resolve to nothing and the sheet loses its gaps and head room. */
+  --h-1: 4px;  --h-2: 8px;  --h-3: 12px; --h-4: 16px;
+  --h-5: 20px; --h-6: 24px; --h-8: 32px;
+  --h-body: 14px; --h-small: 13px; --h-meta: 11px;
+  --h-quiet: #6b7390; --h-line: #e1e5f0;
+  height: 100dvh; max-height: none; overflow: hidden; border-radius: 0;
+  display: flex; flex-direction: column; gap: var(--h-4); padding-top: var(--h-3);
+}
+/* A full-page surface is not something you drag, and it carries its own header, so the
+   grab handle every other sheet draws would be a control that does nothing here. */
+.home-assistant-sheet .sheet-handle { display: none; }
+
+/* Back on the left, history on the right — the assistant's own chrome, replacing the
+   floating Close the shared Sheet puts in the corner. Back is a real back: it returns
+   to the menu from a thread or from history, and only leaves once the menu is showing. */
+.assistant-bar { flex: 0 0 auto; margin: 0 calc(var(--h-2) * -1); display: flex; align-items: center; justify-content: space-between; }
+.assistant-bar button {
+  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  display: grid; place-items: center; color: #3d4565; background: none; cursor: pointer;
+}
+.assistant-bar button:hover { background: #f1f3fa; }
+
+/* The stage owns the scroll — the sheet itself must not, or a full-height sheet gets
+   two scrollers. It grows so the composer stays at the bottom whether the menu is
+   showing or an answer has replaced it.
+   The scroller is a child rather than the stage itself so the fade can sit pinned to
+   the stage's bottom edge instead of scrolling away with the content it covers. */
+.assistant-stage { position: relative; flex: 1; min-height: 0; display: flex; }
+.assistant-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.assistant-scroll::-webkit-scrollbar { display: none; }
+
+/* Rendered only while something is genuinely below the fold. Long — around three rows
+   deep — so the dissolve is unmistakable rather than something you have to notice: at
+   96px only the last row softened, which still read as a list that had simply ended.
+   Solid for the bottom sixth, then eased out over the rest; a single linear alpha ramp
+   bands visibly across this distance. */
+.assistant-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 170px;
+  background: linear-gradient(to top,
+    var(--ab-color-white) 0%,
+    var(--ab-color-white) 16%,
+    rgba(255,255,255,.94) 34%,
+    rgba(255,255,255,.74) 54%,
+    rgba(255,255,255,.4) 76%,
+    rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+/* ---------- Top half · navigation ---------- */
+
+/* No container, no chevrons, no per-row hover card: the rows float on the sheet and
+   the only chrome is the glyph. Anything more turns a menu back into a list. */
+.assistant-menu { display: flex; flex-direction: column; }
+.assistant-menu button {
+  width: 100%; min-height: 56px; padding: var(--h-3) 0; border: 0;
+  display: flex; align-items: center; gap: var(--h-4);
+  background: none; text-align: left; cursor: pointer;
+}
+/* Grey, not brand: five saturated glyphs in a column would read as five priorities. */
+.assistant-menu button > svg { flex: 0 0 auto; color: #98a0b5; transition: color .15s ease; }
+.assistant-menu button > span { min-width: 0; flex: 1; color: var(--ab-color-ink); font-size: 17px; font-weight: 650; letter-spacing: -.02em; }
+.assistant-menu button:hover > svg { color: var(--ab-color-primary); }
+.assistant-menu button:hover > span { color: var(--ab-color-primary); }
+
+/* The only label on the surface. It earns its place by separating rows that leave the
+   sheet from rows that answer inside it — two behaviours that look identical otherwise. */
+.assistant-group { display: block; margin: var(--h-5) 0 var(--h-2); color: #98a0b5; font-size: var(--h-meta); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.assistant-chats > .assistant-group:first-child { margin-top: 0; }
+
+/* History rows carry a timestamp, so unlike the menu they are two lines — but they keep
+   the same uncontained treatment, because they are still a list of places to land. */
+.assistant-chats { display: flex; flex-direction: column; }
+.assistant-chats button {
+  width: 100%; padding: var(--h-3) 0; border: 0;
+  display: flex; align-items: flex-start; gap: var(--h-4);
+  background: none; text-align: left; cursor: pointer;
+}
+.assistant-chats button > svg { flex: 0 0 auto; margin-top: 2px; color: #98a0b5; }
+.assistant-chats button > span { min-width: 0; flex: 1; }
+.assistant-chats strong, .assistant-chats small { display: block; }
+.assistant-chats strong { color: var(--ab-color-ink); font-size: var(--h-body); font-weight: 650; line-height: 1.35; letter-spacing: -.01em; }
+.assistant-chats small { margin-top: 3px; color: #8189a1; font-size: var(--h-meta); }
+.assistant-chats button:hover > svg, .assistant-chats button:hover strong { color: var(--ab-color-primary); }
+
+/* ---------- The answer, when one has been asked ---------- */
+
+.assistant-asked { margin: 0 0 var(--h-4); padding: var(--h-3) var(--h-4); width: fit-content; max-width: 100%; margin-left: auto; border-radius: 18px 18px 6px 18px; color: #272d50; background: #eef1f8; font-size: var(--h-body); line-height: 1.45; font-weight: 600; }
+.home-assistant-answer { padding: var(--h-5); border: 1px solid #dce2f5; border-radius: 18px; background: #f5f7ff; }
 .home-assistant-answer > span { color: var(--ab-color-primary); font-size: var(--h-meta); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .home-assistant-answer p { margin: var(--h-3) 0 var(--h-4); color: #4f5872; font-size: var(--h-body); line-height: 1.6; }
 .home-assistant-answer small { display: flex; align-items: center; gap: 7px; color: #6e7690; font-size: var(--h-meta); }
+
+/* ---------- Bottom half · the composer ---------- */
+
+/* No edge fade here — `.assistant-fade` is measured and covers this, and two stacked
+   gradients read as a seam. */
+.assistant-composer-shell { flex: 0 0 auto; display: flex; flex-direction: column; gap: var(--h-3); }
+
+/* No suggestion chips in here. The dock already shows them on the way in, so repeating
+   them once the sheet is open spent the composer's headroom restating the entry point.
+
+   The composer shell keeps its own block so the composer stays out of the scroll. */
+/* A rectangle, not a pill: the question can run to two lines and the controls sit on
+   their own row underneath, so the field reads as somewhere to write. */
+.assistant-composer {
+  padding: var(--h-4) var(--h-4) var(--h-3);
+  border: 1px solid #dce1ec; border-radius: 22px;
+  display: flex; flex-direction: column; gap: var(--h-3);
+  background: #fafbfe;
+}
+.assistant-composer:focus-within { border-color: #c3cdf7; background: var(--ab-color-white); box-shadow: 0 0 0 4px #eef1ff; }
+.assistant-composer input { width: 100%; min-height: 30px; border: 0; outline: 0; background: transparent; color: var(--ab-color-ink); font-size: 16px; line-height: 1.35; font-weight: 500; }
+.assistant-composer input::placeholder { color: #8d95ab; font-weight: 500; }
+.assistant-composer-foot { display: flex; align-items: center; gap: var(--h-3); }
+.assistant-composer-mark { width: 22px; height: 22px; flex: 0 0 auto; display: block; }
+/* The grounding is fine print on the control row, so it is legible without competing
+   with the question the user is typing above it. */
+.assistant-composer-foot small { min-width: 0; flex: 1; color: #8189a1; font-size: var(--h-meta); line-height: 1.3; }
+.assistant-composer-foot button { width: 38px; height: 38px; flex: 0 0 auto; border: 0; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--ab-color-ink); cursor: pointer; }
+.assistant-composer-foot button:disabled { color: #a7adbd; background: #e5e8ef; cursor: default; }
+
+/* Inside the desktop phone shell the backdrop centres its sheet with a 20px inset, so a
+   literal 100dvh would overflow the shell it is supposed to fill. */
+@media (min-width: 700px) {
+  .home-assistant-sheet { height: calc(100dvh - 40px); border-radius: 26px; }
+}
 
 /* ---------- 360px ----------
    Only the display step comes down; body, action and metadata hold their size
@@ -728,5 +1072,23 @@
   .home-dock-ask > svg:first-child { width: 15px; height: 15px; }
   .home-question-row { margin-left: -16px; margin-right: -16px; padding-left: var(--h-4); padding-right: var(--h-4); }
   .home-screen.home--answer .home-action-hero h2 { font-size: 25px; }
-  .capability-list button { padding: var(--h-3); gap: var(--h-3); }
+  /* Buys back a row of the menu on the shortest screen before the fold does. */
+  .assistant-menu button { min-height: 52px; padding: 10px 0; }
+  .assistant-menu button > span { font-size: 16px; }
+  .assistant-composer-foot small { font-size: 10px; }
 }
+
+/* ---------- Post-interview debrief ----------
+   Two steps: the outcome, then the questions. The second only appears once the first is
+   answered, so the ask is never the price of entry. */
+.debrief-outcomes { margin: var(--h-5) 0 0; display: flex; flex-wrap: wrap; gap: var(--h-2); }
+.debrief-outcomes button {
+  min-height: 46px; padding: 0 var(--h-4); border: 1px solid #dce1ee; border-radius: 999px;
+  color: #384063; background: var(--ab-color-white);
+  font-size: var(--h-small); font-weight: 700; cursor: pointer;
+}
+.debrief-outcomes button:hover { border-color: #c3cdf3; color: var(--ab-color-primary); }
+.debrief-outcomes button.is-chosen { color: #fff; background: var(--ab-color-ink); border-color: var(--ab-color-ink); }
+.debrief-questions { margin-top: var(--h-6); padding-top: var(--h-5); border-top: 1px solid #eceff6; }
+.debrief-questions h3 { margin: 0; font-size: var(--h-title); letter-spacing: -.03em; }
+.debrief-questions > p { margin: var(--h-2) 0 var(--h-4); color: var(--ab-color-muted); font-size: var(--h-small); line-height: 1.55; }

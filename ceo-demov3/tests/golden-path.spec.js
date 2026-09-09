@@ -12,9 +12,9 @@ test('Arjun’s golden path runs from empty tracker to reviewed offer', async ({
   await expect(page.getByRole('heading', { name: '15 applications found' })).toBeVisible()
   await page.getByRole('button', { name: 'See what needs your attention' }).click()
   await expect(page.getByRole('heading', { name: '15 applications', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Juspay Senior Backend Engineer/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Juspay Senior Backend Engineer — Prepare for interview/ })).toBeVisible()
 
-  await page.getByRole('button', { name: /PhonePe Backend Engineer III/ }).click()
+  await page.getByRole('button', { name: /PhonePe Backend Engineer III — Reply to recruiter/ }).click()
   await expect(page.getByRole('heading', { name: 'Review before sending' })).toBeVisible()
   await page.getByRole('button', { name: 'Send reply' }).click()
   await expect(page.getByText('BEST NEXT OPPORTUNITY')).toBeVisible()
@@ -23,30 +23,46 @@ test('Arjun’s golden path runs from empty tracker to reviewed offer', async ({
   // The tab was relabelled Matches -> Jobs on 2026-08-19; the route is unchanged.
   await page.getByRole('link', { name: 'Jobs', exact: true }).click()
   await expect(page.getByText('From Naukri')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Connect Naukri' }).click()
+  // The full-bleed connect card was removed on 2026-08-20 so the tab stops restructuring
+  // itself by journey state. Connecting a board now starts where boards are listed.
+  await page.getByRole('button', { name: /job board.* connected/ }).click()
+  await page.getByRole('dialog', { name: 'Job boards' }).getByRole('button', { name: 'Connect' }).first().click()
   await page.getByRole('button', { name: 'Connect in one tap' }).click()
   await page.getByRole('button', { name: 'Review and edit preferences' }).click()
   await page.getByLabel('Minimum target salary').fill('₹22L+')
   await page.getByRole('button', { name: 'Confirm preferences' }).click()
   await expect(page.getByRole('heading', { name: 'Your matches just got sharper' })).toBeVisible()
   await page.getByRole('button', { name: 'See ranked matches' }).click()
-  await expect(page.getByText('4 sources connected')).toBeVisible()
-  await expect(page.getByText('Reply sent')).toBeVisible()
+  // The sources strip became job boards only on 2026-08-19 — AmbitionBox is not a board
+  // and recruiter email is an inbox, so neither is counted.
+  await expect(page.getByText('2 job boards connected')).toBeVisible()
+  // Applied roles left the jobs feed on 2026-08-19 — PhonePe is an application to track,
+  // not a job to find, so its absence here is the contract now.
+  await expect(page.getByText('PhonePe')).toHaveCount(0)
 
   await page.getByRole('heading', { name: 'Senior Backend Engineer' }).first().click()
   await expect(page.getByText('PREFERENCE MATCH')).toBeVisible()
-  await expect(page.getByText('10/15', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Improve my application' }).click()
-  await page.getByRole('button', { name: 'Use demo evidence' }).click()
-  await page.getByRole('button', { name: 'Review my evidence' }).click()
-  await expect(page.getByText('31% fewer callback failures at peak volume')).toBeVisible()
+  // Job detail was ported to the 1B design on 2026-08-19; it now spells the count out
+  // and shows which requirements are which, so the locator follows the wording.
+  await expect(page.getByText('10 of 15')).toBeVisible()
+  // Job detail took 1B's dock on 2026-08-19: the assistant is the way forward from this
+  // screen, so the chrome is the assistant rather than a generic primary button.
+  await page.getByRole('button', { name: /Close gaps · tailor your résumé/ }).click()
+  // The evidence step became 1B's four-question sequence on 2026-08-19: one requirement at
+  // a time, each answer classified before anything is claimed.
+  for (let i = 0; i < 4; i++) {
+    await page.getByRole('button', { name: /Use Arjun’s demo answer/ }).click()
+    await page.getByRole('button', { name: /Send answer/ }).click()
+  }
+  await expect(page.getByText('System-design ownership evidenced')).toBeVisible()
+  await expect(page.getByText('Hands-on Kubernetes ownership evidenced')).toBeVisible()
   await page.getByRole('button', { name: 'Tailor my résumé for Juspay' }).click()
   await expect(page.getByText('RÉSUMÉ READY')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Profile Readiness is now 14/15.' })).toBeVisible()
   await page.getByRole('button', { name: 'Not quite' }).click()
   await expect(page.getByText(/résumé remains honest/i)).toBeVisible()
   await page.getByRole('button', { name: 'Return to job' }).click()
-  await expect(page.getByText('14/15', { exact: true })).toBeVisible()
+  await expect(page.getByText('14 of 15')).toBeVisible()
 
   await page.getByRole('button', { name: 'See my next move' }).click()
   await page.getByRole('button', { name: 'Jump ahead 3 days' }).click()
@@ -106,14 +122,75 @@ test('tracker supports another email and manual application entry', async ({ pag
   await expect(page.getByText('Atlassian')).toBeVisible()
 })
 
-test('tracker switches between list and kanban board views', async ({ page }) => {
+// Seven stages, led by the user's own shortlist: 2 saved + 15 applications.
+const PIPELINE = ['2', '2', '2', '2', '2', '0', '7']
+
+test('list and board render the same pipeline with the same counts', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
+  expect(await page.locator('.stage-head__count').allInnerTexts()).toEqual(PIPELINE)
+  const chips = (await page.locator('.stage-chips button').allInnerTexts()).map((text) => text.replace(/\s+/g, ' ').trim())
+  expect(chips).toEqual([
+    'All 17', 'Shortlisted 2', 'Applied 2', 'Recruiter review 2', 'Recruiter shortlist 2', 'Interviewing 2', 'Offer 0', 'Closed 7',
+  ])
   await page.getByRole('button', { name: 'Board' }).click()
-  await expect(page.getByRole('heading', { name: 'Application board' })).toBeVisible()
   await expect(page.getByLabel('Application board')).toBeVisible()
-  await expect(page.getByRole('button', { name: /Juspay Senior Backend Engineer/ })).toBeVisible()
+  expect(await page.locator('.kanban-column > header strong').allInnerTexts()).toEqual(PIPELINE)
   await page.getByRole('button', { name: 'List' }).click()
-  await expect(page.getByRole('heading', { name: '3 things need you' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'From shortlist to offer' })).toBeVisible()
+})
+
+test('stage sections collapse, and Closed starts closed', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  // Closed holds seven finished applications and should not stand in the way on arrival.
+  await expect(page.locator('.application-card--closed')).toHaveCount(0)
+  await page.locator('.stage-head', { hasText: 'Closed' }).click()
+  await expect(page.locator('.application-card--closed')).toHaveCount(7)
+  await expect(page.getByText('Not selected after the final round')).toBeVisible()
+  // A live stage collapses the other way.
+  await page.locator('.stage-head', { hasText: 'Applied' }).click()
+  await expect(page.getByRole('button', { name: 'Move Amazon SDE III to another stage' })).toHaveCount(0)
+})
+
+test('chips filter the list down to one stage', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  await page.locator('.stage-chips button', { hasText: 'Interviewing' }).click()
+  await expect(page.locator('.stage-group')).toHaveCount(1)
+  await expect(page.locator('.application-card')).toHaveCount(2)
+  await page.locator('.stage-chips button', { hasText: 'All' }).click()
+  await expect(page.locator('.stage-group')).toHaveCount(7)
+})
+
+test('the pipeline leads with saved roles, which are not counted as applications', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  const stages = await page.locator('.stage-head__title').allInnerTexts()
+  expect(stages[0]).toBe('Shortlisted')
+  await expect(page.getByRole('heading', { name: '15 applications', exact: true })).toBeVisible()
+  await expect(page.getByText('+ 2 saved roles you have not applied to')).toBeVisible()
+  await expect(page.getByText('Tracked from')).toBeVisible()
+})
+
+test('an application can be moved from one stage to another', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  await page.getByRole('button', { name: 'Move Amazon SDE III to another stage' }).click()
+  await expect(page.getByRole('dialog', { name: 'Move Amazon' })).toBeVisible()
+  await page.locator('.stage-picker button', { hasText: 'Recruiter shortlist' }).click()
+  await expect(page.getByText('Amazon moved to Recruiter shortlist.')).toBeVisible()
+  // Applied loses one, Recruiter shortlist gains one, the total is untouched.
+  expect(await page.locator('.stage-head__count').allInnerTexts()).toEqual(['2', '1', '2', '3', '2', '0', '7'])
+})
+
+test('tracker search finds anything in the pipeline, including saved roles', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  await page.getByLabel('Search applications').fill('flipkart')
+  await expect(page.getByRole('heading', { name: '1 result for “flipkart”' })).toBeVisible()
+  await expect(page.getByText('Lead Software Engineer')).toBeVisible()
+  // A closed application and a saved role are both reachable from the same field.
+  await page.getByLabel('Search applications').fill('navi')
+  await expect(page.getByRole('heading', { name: '1 result for “navi”' })).toBeVisible()
+  await page.getByLabel('Search applications').fill('zerodha')
+  await expect(page.getByRole('heading', { name: '1 result for “zerodha”' })).toBeVisible()
+  await page.getByRole('button', { name: 'Clear search' }).click()
+  await expect(page.getByRole('heading', { name: 'From shortlist to offer' })).toBeVisible()
 })
 
 test('tailored résumé downloads as a real PDF', async ({ page }) => {

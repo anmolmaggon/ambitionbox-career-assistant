@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
-  ArrowLeft, ArrowRight, Bell, Bookmark, BriefcaseBusiness, Building2, Check, CheckCircle2,
+  ArrowLeft, ArrowLeftRight, ArrowRight, Bookmark, BriefcaseBusiness, Building2, Check, CheckCircle2,
   ChevronDown, ChevronRight, CircleDollarSign, CircleUserRound, Clock3, Copy, ExternalLink,
-  FileCheck2, Home, Info, Link2, Mail, MapPin, MessageCircle, MoreHorizontal, Pencil,
-  Play, Plus, RefreshCcw, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Star, Target,
+  FileCheck2, Home, IndianRupee, Info, Link2, Mail, MapPin, MessageCircle, MoreHorizontal, Pencil,
+  LayoutGrid, Play, Plus, RefreshCcw, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, Star, Target,
   TrendingUp, UserRoundCheck, Users, X,
 } from 'lucide-react'
 import {
-  applications, candidate, chapters, interviewIntel, jobs, juspay, offer, offerDecision, trackerStats,
+  applicationStages, applications, candidate, chapters, interviewIntel, jobs, journeyPresets, juspay, moreJobs, offer,
+  offerDecision, stageLabel, trackerStats,
 } from './data'
 import { useJourney } from './store'
+// Exported from Home rather than moved: the sheet is wired to Home's answer engine, and
+// relocating that to serve two more screens would put the most contract-bound screen in
+// the app at risk for no gain.
+import { HomeAssistantSheet, contextualCapabilities } from './Home'
 import { OnboardingScreen, ProfileScreen } from './Onboarding'
 import { HomeScreen } from './Home'
 import {
-  AssistantDock, CompanyLogo, Logo, Pill, ProgressRing, Screen, Sheet, Topbar, go,
+  AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, Pill, ProgressRing, Sheet, Topbar, go,
 } from './AppUI'
 
 function useLocation() {
@@ -32,6 +37,7 @@ function App() {
   const routes = {
     '/': DemoLauncher,
     '/demo': DemoLauncher,
+    '/states': StatesBoard,
     '/onboarding': OnboardingScreen,
     '/home': HomeScreen,
     '/profile': ProfileScreen,
@@ -44,7 +50,129 @@ function App() {
   }
   const Component = routes[pathname] || DemoLauncher
   const openingStory = pathname === '/offer/juspay' && new URLSearchParams(search).get('story') === 'opening'
+  // The states board is a wall of phones, so it is the one route that renders outside
+  // the phone shell rather than inside it.
+  if (pathname === '/states') return <StatesBoard />
   return <div className={`stage ${openingStory ? 'stage--presenter' : ''}`}><div className="phone-shell"><a className="skip-link" href="#main-content">Skip to content</a><Component key={`${pathname}${search}`} /></div>{openingStory && <PresenterRail />}</div>
+}
+
+/*
+ * Every Home state, side by side — for showing the screen to a room.
+ *
+ * Live iframes rather than screenshots, on purpose: the board cannot go stale, and
+ * during a presentation any tile can be opened full-size and driven for real. Each
+ * tile is the actual app at 390x844, scaled down by transform so the layout inside is
+ * identical to a phone rather than a squeezed desktop rendering.
+ */
+const HOME_STATES = [
+  {
+    id: 'baseline', name: 'No inbox yet', flags: 'emailConnected: false',
+    note: 'Useful before a single integration. The card that leads is the connection that unlocks the rest — and the only one that cannot be set aside.',
+  },
+  {
+    id: 'firstopen', name: 'The first open', query: '&arrival=first', flags: 'firstHomeArrival: true',
+    note: 'The handoff out of onboarding is its own moment. The greeting answers the promise onboarding just made.',
+  },
+  {
+    id: 'tracker', name: 'A recruiter is waiting', flags: 'emailConnected: true',
+    note: 'A person waiting outranks everything not on a clock. The message leads the card — quote first, then who sent it.',
+  },
+  {
+    id: 'matches', name: 'Replied, nothing urgent', flags: 'phonepeReplied: true',
+    note: 'The ranking is real: with nothing happening to you, a browsable role leads, and it is white.',
+  },
+  {
+    id: 'resume', name: 'Résumé ready', flags: 'resumeReady: true · readiness: 14',
+    note: 'Evidence closed to 14/15, so the screen offers the next move in time. The only state showing the time jump.',
+  },
+  {
+    id: 'interview', name: 'Interview booked', flags: 'interviewInvited: true',
+    note: 'A fixed date outranks an open message, and the card is drawn as a date.',
+  },
+  {
+    id: 'postinterview', name: 'The morning after', flags: 'interviewDone: true',
+    note: 'The round has happened and only Arjun knows how it went, so the Tracker is stale until he says. Answering opens the ask for the questions that came up.',
+  },
+  {
+    id: 'offer', name: 'An offer on the table', flags: 'offerDetected: true',
+    note: 'A decision window outranks everything. The figure leads, but the split sits with it.',
+  },
+]
+
+const FIELD_LEGEND = [
+  ['#126655', 'Green', 'money on the table'],
+  ['#533ba0', 'Violet', 'a date booked'],
+  ['#2a3675', 'Indigo', 'a person waiting'],
+  ['#8f4410', 'Terracotta', "someone else's clock"],
+  ['#ffffff', 'White', 'yours to choose'],
+]
+
+function StatesBoard() {
+  const [zoom, setZoom] = useState(null)
+  const url = (state) => `/home?preset=${state.id}${state.query || ''}`
+
+  return (
+    <main id="main-content" className="states-board">
+      <header className="states-head">
+        <div>
+          <span className="eyebrow">PRESENTER MODE</span>
+          <h1>Home, every state.</h1>
+          <p>The same screen reading a different day. Nothing here is a screenshot — every tile is the live app, so the board cannot go stale. Open any one to drive it full size.</p>
+        </div>
+        <AppLink className="secondary-button" to="/demo"><ArrowLeft size={17} /> Back to chapters</AppLink>
+      </header>
+
+      <div className="states-legend" aria-label="What the card colours mean">
+        {FIELD_LEGEND.map(([hex, name, meaning]) => (
+          <span key={name}><i style={{ background: hex, boxShadow: hex === '#ffffff' ? 'inset 0 0 0 1px #d7dbe8' : 'none' }} /><b>{name}</b> {meaning}</span>
+        ))}
+      </div>
+
+      <div className="states-grid">
+        {HOME_STATES.map((state, index) => (
+          <article className="state-tile" key={state.id}>
+            <div className="state-tile-frame">
+              <iframe src={url(state)} title={state.name} loading={index < 3 ? 'eager' : 'lazy'} />
+              <button className="state-tile-open" onClick={() => setZoom(state)} aria-label={`Open ${state.name} full size`} />
+            </div>
+            <div className="state-tile-copy">
+              <span className="state-tile-num">{String(index + 1).padStart(2, '0')}</span>
+              <strong>{state.name}</strong>
+              <code>?preset={state.id}</code>
+              <small>{state.flags}</small>
+              <p>{state.note}</p>
+              <button className="light-button" onClick={() => { applyPresetAndGo(state) }}>Open in the demo <ArrowRight size={15} /></button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {zoom && (
+        <div className="states-zoom" role="dialog" aria-modal="true" aria-label={zoom.name}>
+          <button className="states-zoom-scrim" onClick={() => setZoom(null)} aria-label="Close" />
+          <div className="states-zoom-phone">
+            <iframe src={url(zoom)} title={zoom.name} />
+          </div>
+          <div className="states-zoom-side">
+            <strong>{zoom.name}</strong>
+            <small>{zoom.flags}</small>
+            <p>{zoom.note}</p>
+            <button className="light-button" onClick={() => applyPresetAndGo(zoom)}>Open in the demo <ArrowRight size={15} /></button>
+            <button className="secondary-button" onClick={() => setZoom(null)}>Close</button>
+          </div>
+        </div>
+      )}
+    </main>
+  )
+}
+
+// The board runs outside the JourneyProvider's screens, so opening a state seeds the
+// same session storage the app reads on load rather than relying on the iframe's copy.
+function applyPresetAndGo(state) {
+  try {
+    sessionStorage.setItem('ambitionbox-ceo-demov3-journey-v1', JSON.stringify(journeyPresets[state.id]))
+  } catch { /* private mode */ }
+  go(`/home?preset=${state.id}${state.query || ''}`)
 }
 
 function PresenterRail() {
@@ -85,6 +213,9 @@ function DemoLauncher() {
             </button>
           ))}
         </div>
+        {/* The board is presenter chrome, so it sits with the chapters rather than
+            behind a URL only the person who built it knows. */}
+        <AppLink className="secondary-button states-link" to="/states"><LayoutGrid size={17} /> See every Home state side by side</AppLink>
         <button className="secondary-button reset-button" onClick={resetDemo}>
           {resetDone ? <Check size={18} /> : <RefreshCcw size={17} />}{resetDone ? 'Demo reset' : 'Reset all demo data'}
         </button>
@@ -94,35 +225,105 @@ function DemoLauncher() {
   )
 }
 
+/*
+ * Tracker rebuilt 2026-08-19 on owner feedback. The screen used to carry three organising
+ * models at once — a stat row that filtered, a Do Next section, and a kanban behind a
+ * toggle — and they disagreed with each other. There is now one model: the pipeline.
+ * List renders it vertically, Board renders the same stages horizontally, and an
+ * application sits in exactly one stage that the user can change by hand.
+ */
 function TrackerScreen() {
   const { journey, update } = useJourney()
+  const reduceMotion = useReducedMotion()
   const params = new URLSearchParams(window.location.search)
   const initialStep = params.get('step') || null
   const [step, setStep] = useState(initialStep)
   const [progress, setProgress] = useState(0)
-  const [section, setSection] = useState('attention')
   const [viewMode, setViewMode] = useState(params.get('view') === 'board' ? 'board' : 'list')
   const [emailProvider, setEmailProvider] = useState('gmail')
-  const [searchOpen, setSearchOpen] = useState(false)
+  const [query, setQuery] = useState('')
   const [manualOpen, setManualOpen] = useState(false)
+  const [moving, setMoving] = useState(null)
+  // Closed lands collapsed — seven finished applications should not stand between the
+  // user and the stages that still need them. Everything else opens.
+  const [collapsed, setCollapsed] = useState(() => ({ closed: true }))
+  const [stageFilter, setStageFilter] = useState(null)
   const [actionNotice, setActionNotice] = useState('')
+  const [assistant, setAssistant] = useState(null)
   const manualApplications = journey.manualApplications || []
   const hasTrackerContent = journey.emailConnected || manualApplications.length > 0
-  const attentionCount = journey.emailConnected ? (journey.phonepeReplied ? 2 : 3) + (journey.interviewInvited ? 1 : 0) : 0
-  const totalApplications = (journey.emailConnected ? 15 : 0) + manualApplications.length
-  const visibleAttention = applications.attention
-    .filter((item) => !(journey.phonepeReplied && item.company === 'PhonePe'))
-    .slice(0, Math.max(0, attentionCount - 1))
-  const displayStats = trackerStats.map((stat) => ({
-    ...stat,
-    value: !journey.emailConnected
-      ? (stat.tone === 'waiting' ? manualApplications.length : 0)
-      : stat.tone === 'attention'
-        ? attentionCount
-        : stat.tone === 'waiting'
-          ? stat.value + manualApplications.length
-          : stat.value,
-  }))
+  const moved = journey.applicationStages || {}
+
+  /*
+   * One list, built once. Juspay is synthetic — it is the golden path's interview and
+   * has never lived in the fixture — so it is assembled here rather than in `data.js`.
+   * A user move wins over the imported stage; nothing else rewrites it.
+   */
+  const allApplications = useMemo(() => {
+    if (!hasTrackerContent) return []
+    const fromEmail = journey.emailConnected ? [
+      {
+        company: 'Juspay', role: 'Senior Backend Engineer', initials: 'JP', color: '#183f44',
+        preferenceMatch: 89, stage: journey.offerDetected ? 'offer' : 'interviewing', source: 'Gmail',
+        when: journey.offerDetected ? '₹28L offer' : 'Tue 11:00', flag: 'Interview detected',
+        readiness: '10/15 profile evidence',
+        insight: journey.offerDetected ? 'The offer is in. See what it means before you answer.' : 'See what to expect and start tailored prep',
+      },
+      ...applications.attention,
+      ...applications.waiting,
+      ...applications.closed,
+    ] : []
+    const manual = manualApplications.map((item, index) => ({
+      ...item, id: `manual-${index}`, stage: item.stage || 'applied', source: 'Added by you', when: 'Added by you',
+    }))
+    return [...fromEmail, ...manual].map((item) => ({
+      ...item,
+      id: item.id || item.company.toLowerCase().replace(/\s+/g, '-'),
+      initials: item.initials || item.company.slice(0, 2).toUpperCase(),
+    })).map((item) => ({ ...item, stage: moved[item.id] || item.stage }))
+  }, [hasTrackerContent, journey.emailConnected, journey.offerDetected, manualApplications, moved])
+
+  /*
+   * Stage 1 is the user's own shortlist: roles saved in Jobs that they have not applied
+   * to. These are not applications, so they stay out of the 15 the scan reports and out
+   * of the Tracked-from counts — a saved role has no source to trace, the user picked it.
+   * A saved role whose company already has an application is dropped: it is being
+   * tracked further down the pipeline and would otherwise appear twice.
+   */
+  const shortlistedJobs = useMemo(() => {
+    if (!journey.savedJobs?.length) return []
+    const applied = new Set(allApplications.map((item) => item.company))
+    return [...jobs, ...moreJobs]
+      .filter((job) => journey.savedJobs.includes(job.id) && !applied.has(job.company))
+      .map((job) => ({
+        id: `saved-${job.id}`, company: job.company, role: job.role, initials: job.initials,
+        preferenceMatch: job.preferenceMatch, stage: moved[`saved-${job.id}`] || 'shortlisted',
+        when: `${job.location} · ${job.mode}`, source: 'Saved by you', jobId: job.id,
+      }))
+  }, [journey.savedJobs, allApplications, moved])
+
+  const everything = useMemo(() => [...shortlistedJobs, ...allApplications], [shortlistedJobs, allApplications])
+
+  const sourceCounts = useMemo(() => {
+    const counts = new Map()
+    allApplications.forEach((item) => counts.set(item.source, (counts.get(item.source) || 0) + 1))
+    return [...counts.entries()].map(([name, count]) => ({ name, count }))
+  }, [allApplications])
+  const toggleStage = (id) => setCollapsed((current) => ({ ...current, [id]: !current[id] }))
+
+  // Search runs across the whole pipeline, not one stage — finding a half-remembered
+  // application should not depend on guessing which stage it ended up in.
+  const searching = query.trim().length > 0
+  const searchResults = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    if (!needle) return []
+    return everything.filter((item) => `${item.company} ${item.role}`.toLowerCase().includes(needle))
+  }, [query, everything])
+
+  const grouped = useMemo(() => applicationStages.map((stage) => ({
+    ...stage, items: everything.filter((item) => item.stage === stage.id),
+  })), [everything])
+  const shownGroups = stageFilter ? grouped.filter((stage) => stage.id === stageFilter) : grouped
 
   useEffect(() => {
     if (step !== 'scanning') return
@@ -151,7 +352,12 @@ function TrackerScreen() {
   const addManualApplication = (application) => {
     update({ manualApplications: [...manualApplications, application] })
     setManualOpen(false)
-    setSection('waiting')
+  }
+
+  const moveApplication = (item, stage) => {
+    update({ applicationStages: { ...moved, [item.id]: stage } })
+    setMoving(null)
+    setActionNotice(`${item.company} moved to ${stageLabel(stage)}.`)
   }
 
   const openJuspayInterview = () => {
@@ -159,71 +365,150 @@ function TrackerScreen() {
     go('/prep/juspay?stage=invite&round=open')
   }
 
+  const cardAction = (item) => {
+    if (item.jobId) {
+      return item.jobId === 'juspay' ? { label: 'View role', onClick: () => go('/jobs/juspay') } : null
+    }
+    if (item.company === 'Juspay') {
+      return { label: journey.prepComplete ? 'Review interview prep' : 'Prepare for interview', onClick: openJuspayInterview, primary: true }
+    }
+    if (!item.action) return null
+    return {
+      label: item.action,
+      onClick: () => item.company === 'PhonePe'
+        ? go('/home?action=phonepe')
+        : setActionNotice(`${item.company} details are ready in the connected email.`),
+    }
+  }
+
+  const renderCard = (item) => (
+    <ApplicationCard key={item.id} item={item} action={cardAction(item)} onMove={() => setMoving(item)} />
+  )
+
   return (
-    <Screen active="tracker" className="tracker-screen">
-      <Topbar title="AmbitionBox" right={<button className="icon-button" aria-label="Notifications"><Bell size={20} /></button>} />
-      <div className="tracker-tools page-pad" aria-label="Tracker tools">
-        <button className="tracker-search" onClick={() => setSearchOpen(true)}><Search size={17} /><span>Search applications</span></button>
-        <button className="tracker-add" onClick={() => setManualOpen(true)} aria-label="Add an application"><Plus size={18} /><span>Add</span></button>
+    <main id="main-content" className="screen tracker-screen">
+      {/* The same header Home and Jobs use — wordmark on the canvas, the avatar as the
+          door to Profile. */}
+      <div className="app-header page-pad">
+        <Logo />
+        <span className="app-header-tools">
+          <button className="app-avatar-button" onClick={() => go('/profile')} aria-label="Your profile">
+            <span className="avatar" aria-hidden="true">{candidate.initials}</span>
+          </button>
+        </span>
       </div>
       {!hasTrackerContent ? (
         <section className="empty-state tracker-onboarding page-pad">
           <div className="empty-illustration" aria-hidden="true">
             <span className="mail-card mail-card--one"><Mail size={22} /></span>
             <span className="mail-card mail-card--two"><BriefcaseBusiness size={22} /></span>
-            <span className="empty-spark"><Sparkles size={18} /></span>
           </div>
           <h1>Every application. One smart Tracker.</h1>
           <p>Connect the email you use to apply. AmbitionBox will organise the last 90 days and keep your next move visible.</p>
           <div className="tracker-benefits">
             <div><span><Mail size={17} /></span><p><strong>Everything updates itself</strong><small>Applications and status changes stay organised.</small></p></div>
             <div><span><Clock3 size={17} /></span><p><strong>Important moments rise first</strong><small>Recruiter replies, deadlines, and interviews are prioritised.</small></p></div>
-            <div><span><Sparkles size={17} /></span><p><strong>Know what to do next</strong><small>Get timely follow-ups, preparation, and company context.</small></p></div>
+            <div><span><Target size={17} /></span><p><strong>Know what to do next</strong><small>Get timely follow-ups, preparation, and company context.</small></p></div>
           </div>
           <div className="email-connect-label">Connect the email you use to apply</div>
           <button className="primary-button" onClick={() => connectEmail('gmail')}><span className="gmail-mini">G</span> Continue with Gmail</button>
           <button className="secondary-button email-secondary" onClick={() => connectEmail('other')}><Mail size={17} /> Connect another email</button>
           <div className="trust-line"><ShieldCheck size={16} /><span>Only job-search emails · Read only · Disconnect anytime</span></div>
+          {/* The manual path has to survive the empty state — it is the only way in for
+              someone who never connects an inbox. */}
+          <button className="tracker-add-link" onClick={() => setManualOpen(true)}><Plus size={16} /> Add an application yourself</button>
         </section>
       ) : (
         <section className="page-pad tracker-content">
+          {/* One surface: the count, and directly beneath it where the count came from.
+              Provenance shares the border rather than floating in a second card. */}
           <div className="tracker-summary">
-            <div className="tracker-summary-top"><div><span className="tracker-period">Based on the last 90 days</span><h1>{totalApplications} application{totalApplications === 1 ? '' : 's'}</h1></div><span className="sync-badge"><span /> Synced</span></div>
-            <div className="stat-row">
-              {displayStats.map((stat) => <button key={stat.label} className={`stat ${section === stat.tone ? 'is-selected' : ''}`} onClick={() => setSection(stat.tone)}><strong>{stat.value}</strong><span>{stat.label}</span></button>)}
+            <div className="tracker-summary-top">
+              <div>
+                <span className="tracker-period">Based on the last 90 days</span>
+                <h1>{allApplications.length} application{allApplications.length === 1 ? '' : 's'}</h1>
+                {/* Saved roles are in the pipeline but are not applications, so the
+                    headline stays the scan's number and the shortlist is named beside
+                    it rather than folded into it. */}
+                {shortlistedJobs.length > 0 && <span className="tracker-shortlist-line">+ {shortlistedJobs.length} saved role{shortlistedJobs.length === 1 ? '' : 's'} you have not applied to</span>}
+              </div>
+              <span className="sync-badge"><span /> Synced</span>
+            </div>
+            <div className="tracker-sources">
+              <span className="tracker-sources__label">Tracked from</span>
+              <span className="tracker-sources__list">
+                {sourceCounts.map(({ name, count }) => (
+                  <span className="tracker-source" key={name}>
+                    <i className={`tracker-source__mark tracker-source__mark--${name === 'Naukri' ? 'naukri' : name === 'Gmail' ? 'gmail' : 'manual'}`} aria-hidden="true">
+                      {name === 'Naukri' ? 'n' : name === 'Gmail' ? 'G' : <Plus size={11} />}
+                    </i>
+                    {name} <b>{count}</b>
+                  </span>
+                ))}
+              </span>
             </div>
           </div>
-          <div className="content-heading tracker-view-heading"><div><span className="eyebrow">{viewMode === 'board' ? 'YOUR PIPELINE' : section === 'attention' ? 'DO NEXT' : section.toUpperCase()}</span><h2>{viewMode === 'board' ? 'Application board' : section === 'attention' ? `${attentionCount} thing${attentionCount === 1 ? '' : 's'} need you` : section === 'waiting' ? 'Waiting for an update' : 'Nothing left to do'}</h2></div><div className="tracker-view-toggle" role="group" aria-label="Tracker view"><button className={viewMode === 'list' ? 'is-active' : ''} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')}>List</button><button className={viewMode === 'board' ? 'is-active' : ''} aria-pressed={viewMode === 'board'} onClick={() => setViewMode('board')}>Board</button></div></div>
-          {viewMode === 'board' ? (
-            <TrackerBoard journey={journey} attentionCount={attentionCount} visibleAttention={visibleAttention} manualApplications={manualApplications} onJuspay={openJuspayInterview} />
-          ) : section === 'attention' ? (
-            <div className="application-list">
-              {journey.emailConnected && (
-                <article className="application-card application-card--interview">
-                  <div className="application-card-head"><CompanyLogo initials="JP" /><span className="application-copy"><span className="smart-label">Interview detected</span><strong>Juspay</strong><small>Senior Backend Engineer</small></span><span className="due due--interview">Tue 11:00</span></div>
-                  <div className="application-signals"><span><b>89%</b> preference match</span><span><b>10/15</b> profile evidence</span></div>
-                  <p className="application-insight">See what to expect and start tailored prep</p>
-                  <button className="card-action card-action--primary" aria-label={`Juspay Senior Backend Engineer — ${journey.prepComplete ? 'Review interview prep' : 'Prepare for interview'}`} onClick={openJuspayInterview}>{journey.prepComplete ? 'Review interview prep' : 'Prepare for interview'} <ArrowRight size={14} /></button>
-                </article>
-              )}
-              {visibleAttention.map((item) => (
-                <article className="application-card" key={item.company}>
-                  <div className="application-card-head"><CompanyLogo initials={item.company.slice(0, 2).toUpperCase()} color={item.color} /><span className="application-copy"><strong>{item.company}</strong><small>{item.role}</small></span><span className={`due ${item.when === 'Overdue' ? 'due--urgent' : ''}`}>{item.when}</span></div>
-                  <div className="application-signals"><span><b>{item.preferenceMatch}%</b> preference match</span><span>{item.stage}</span></div>
-                  <p className="application-insight">{item.insight}</p>
-                  <button className="card-action" aria-label={`${item.company} ${item.role} — ${item.action}`} onClick={() => item.company === 'PhonePe' ? go('/home?action=phonepe') : setActionNotice(`${item.company} assessment details are ready in the connected email.`)}>{item.action} <ArrowRight size={14} /></button>
-                </article>
-              ))}
-              {actionNotice && <div className="tracker-action-notice" role="status"><CheckCircle2 size={17} />{actionNotice}</div>}
-              {journey.phonepeReplied && <div className="inline-success"><CheckCircle2 size={20} /><span><strong>PhonePe reply sent</strong><small>Moved to Waiting</small></span></div>}
-            </div>
-          ) : section === 'waiting' ? (
-            <div className="application-list">
-              {manualApplications.map((item, index) => <div className="application-card" key={`${item.company}-${index}`}><CompanyLogo initials={item.company.slice(0, 2).toUpperCase()} /><span className="application-copy"><strong>{item.company}</strong><small>{item.role}</small><span className="muted-line">Added manually · Tracking</span></span></div>)}
-              {journey.emailConnected && applications.waiting.map((item) => <div className="application-card" key={item.company}><CompanyLogo initials={item.company.slice(0, 2).toUpperCase()} /><span className="application-copy"><strong>{item.company}</strong><small>{item.role}</small><span className="muted-line">{item.when}</span></span></div>)}
-            </div>
+
+          <div className="tracker-tools" aria-label="Tracker tools">
+            <label className="job-search">
+              <Search size={18} />
+              <input name="tracker-search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search company or role" aria-label="Search applications" />
+              {query && <button className="job-search__clear" onClick={() => setQuery('')} aria-label="Clear search"><X size={16} /></button>}
+            </label>
+            <button className="tracker-add" onClick={() => setManualOpen(true)} aria-label="Add an application"><Plus size={18} /><span>Add</span></button>
+          </div>
+
+          {actionNotice && <div className="tracker-action-notice" role="status"><CheckCircle2 size={17} />{actionNotice}</div>}
+
+          {searching ? (
+            <>
+              <div className="content-heading"><div><span className="eyebrow">SEARCH</span><h2>{searchResults.length} result{searchResults.length === 1 ? '' : 's'} for “{query.trim()}”</h2></div></div>
+              <div className="application-list">
+                {searchResults.map(renderCard)}
+                {!searchResults.length && <p className="job-feed__empty">No application matches that. Check the spelling, or add it yourself.</p>}
+              </div>
+            </>
           ) : (
-            <div className="closed-state"><CheckCircle2 size={28} /><h3>{journey.emailConnected ? '8 applications closed' : 'Nothing closed yet'}</h3><p>Archived automatically from status emails. Nothing needs your attention here.</p></div>
+            <>
+              <div className="content-heading tracker-view-heading">
+                <div><span className="eyebrow">YOUR PIPELINE</span><h2>From shortlist to offer</h2></div>
+                <div className="tracker-view-toggle" role="group" aria-label="Tracker view">
+                  <button className={viewMode === 'list' ? 'is-active' : ''} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
+                  <button className={viewMode === 'board' ? 'is-active' : ''} aria-pressed={viewMode === 'board'} onClick={() => setViewMode('board')}>Board</button>
+                </div>
+              </div>
+              {/* Every stage is reachable from the top without scrolling the whole
+                  pipeline, using the Jobs feed's chip shape. */}
+              {viewMode === 'list' && (
+                <div className="stage-chips" aria-label="Jump to a stage">
+                  <button className={stageFilter ? '' : 'is-on'} aria-pressed={!stageFilter} onClick={() => setStageFilter(null)}>All <b>{everything.length}</b></button>
+                  {grouped.map((stage) => (
+                    <button key={stage.id} className={stageFilter === stage.id ? 'is-on' : ''} aria-pressed={stageFilter === stage.id}
+                      onClick={() => { setStageFilter(stageFilter === stage.id ? null : stage.id); setCollapsed((current) => ({ ...current, [stage.id]: false })) }}>
+                      <i className={`stage-dot stage-dot--${stage.id}`} aria-hidden="true" />{stage.label} <b>{stage.items.length}</b>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {viewMode === 'board' ? (
+                <TrackerBoard grouped={grouped} onMove={setMoving} action={cardAction} />
+              ) : (
+                <div className="stage-list">
+                  {shownGroups.map((stage) => (
+                    <section className={`stage-group ${collapsed[stage.id] ? 'is-collapsed' : ''}`} key={stage.id} aria-label={stage.label}>
+                      <button className={`stage-head stage-head--${stage.id}`} aria-expanded={!collapsed[stage.id]} onClick={() => toggleStage(stage.id)}>
+                        <span className="stage-head__title"><i className={`stage-dot stage-dot--${stage.id}`} />{stage.label}</span>
+                        <span className="stage-head__count">{stage.items.length}</span>
+                        <ChevronDown className="stage-head__chevron" size={18} />
+                      </button>
+                      {!collapsed[stage.id] && (stage.items.length
+                        ? <div className="application-list">{stage.items.map(renderCard)}</div>
+                        : <p className="stage-empty">Nothing at this stage yet. {stage.hint}.</p>)}
+                    </section>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
       )}
@@ -232,42 +517,119 @@ function TrackerScreen() {
         {step === 'account' && <EmailAccountSheet provider={emailProvider} onContinue={() => setStep('scanning')} onClose={() => setStep(null)} />}
         {step === 'scanning' && <GmailScanning progress={progress} onSkip={finishImport} />}
         {step === 'result' && <GmailResult onDone={() => setStep(null)} />}
-        {searchOpen && <TrackerSearchSheet connected={journey.emailConnected} manualApplications={manualApplications} onClose={() => setSearchOpen(false)} onAdd={() => { setSearchOpen(false); setManualOpen(true) }} />}
         {manualOpen && <ManualApplicationSheet onClose={() => setManualOpen(false)} onAdd={addManualApplication} />}
+        {moving && <MoveStageSheet item={moving} onClose={() => setMoving(null)} onMove={(stage) => moveApplication(moving, stage)} />}
+        {assistant !== null && <HomeAssistantSheet journey={journey} initialQuestion={assistant} onClose={() => setAssistant(null)} index={contextualCapabilities({ journey }, { openAddInterview: () => go('/home?action=add-interview'), openOfferStart: () => go('/home') }, 'tracker')} />}
       </AnimatePresence>
-    </Screen>
+
+      {/* Same chrome as Home and Jobs. Tracker is where the questions are most concrete —
+          what a status means, what to say back, who has gone quiet. */}
+      <AssistantDock
+        active="tracker"
+        label="Ask AmbitionBox about your applications"
+        examples={['What should I do first today?', 'Has anyone gone quiet on me?', 'What does “shortlisted” mean here?', 'Draft a follow-up to PhonePe']}
+        reduceMotion={reduceMotion}
+        onOpen={(question) => setAssistant(question || '')}
+      />
+    </main>
   )
 }
 
-function TrackerBoard({ journey, manualApplications, onJuspay }) {
-  const waitingItems = [...manualApplications.map((item) => ({ ...item, when: 'Added manually', preferenceMatch: null, outlook: 'Not assessed' })), ...(journey.emailConnected ? applications.waiting : [])]
-  const offerCount = journey.offerDetected ? 1 : 0
-  const stages = [
-    { id: 'applied', label: 'Applied', count: journey.emailConnected ? 4 : manualApplications.length, items: waitingItems.filter((item) => !item.stage || item.stage === 'Applied').slice(0, 2) },
-    { id: 'review', label: 'Recruiter review', count: journey.emailConnected ? 3 : 0, items: journey.emailConnected ? applications.attention.filter((item) => item.stage === 'Recruiter review').slice(0, 2) : [] },
-    { id: 'interviewing', label: 'Interviewing', count: journey.emailConnected ? 2 : 0, items: journey.emailConnected ? [{ company: 'Juspay', role: 'Senior Backend Engineer', when: 'Tue · 11:00', preferenceMatch: 89, readiness: '10/15 evidence', priority: true }, ...waitingItems.filter((item) => item.stage === 'Interviewing').slice(0, 1)] : [] },
-    { id: 'offer', label: 'Offer', count: offerCount, items: offerCount ? [{ company: 'Juspay', role: 'Senior Backend Engineer', when: '₹28L offer', preferenceMatch: 89, offer: true }] : [] },
-    { id: 'closed', label: 'Closed', count: journey.emailConnected ? 6 - offerCount : 0, items: [] },
-  ]
+/*
+ * One card shape for every application at every stage, typeset to match the Jobs feed's
+ * `JobCard`: company at 13px, the role as the 15px line that carries the eye, metadata at
+ * 11px, and a full-pill 44px action. The old Tracker card ran a 14px company over an 11px
+ * role with a 38px rounded-rectangle button, which is why the two tabs read as two products.
+ */
+function ApplicationCard({ item, action, onMove }) {
+  const closed = item.stage === 'closed'
+  return (
+    <article className={`application-card ${closed ? 'application-card--closed' : ''} ${item.flag ? 'application-card--flagged' : ''}`}>
+      <div className="application-card__id">
+        <CompanyLogo initials={item.initials} color={item.color} />
+        <span className="application-card__copy">
+          {item.flag && <span className="smart-label">{item.flag}</span>}
+          <span className="application-card__company">{item.company}</span>
+          <h3 className="application-card__role">{item.role}</h3>
+          <span className="application-card__meta">{item.outcome || item.when} · {item.source}</span>
+        </span>
+        {!closed && item.preferenceMatch
+          ? <span className="job-score"><b>{item.preferenceMatch}%</b><i>Match</i></span>
+          : null}
+      </div>
+      {/* Only signals that trace to something. `readiness` is `journey.readiness`; the
+          match % is the confirmed preferences; the meta line is the scanned email. An
+          "outlook" chip used to sit here reading "Promising" / "Competitive" — three
+          hardcoded adjectives with no derivation behind them, removed 2026-08-19. */}
+      {item.readiness && <div className="application-signals"><span>{item.readiness}</span></div>}
+      {item.insight && <p className="application-insight">{item.insight}</p>}
+      <div className="application-card__actions">
+        {/* The answer to "how do I move this?" is on every card, at every stage. */}
+        <button className="job-action job-action--move" onClick={onMove} aria-label={`Move ${item.company} ${item.role} to another stage`}>
+          <ArrowLeftRight size={15} /> Move
+        </button>
+        {action && (
+          <button
+            className={`job-action ${action.primary ? 'job-action--view' : 'job-action--secondary'}`}
+            aria-label={`${item.company} ${item.role} — ${action.label}`}
+            onClick={action.onClick}
+          >{action.label} <ArrowRight size={15} /></button>
+        )}
+      </div>
+    </article>
+  )
+}
+
+/*
+ * Board is the same `grouped` pipeline List renders, laid out horizontally — and it now
+ * renders the same `ApplicationCard`. It used to have a card of its own, which is how the
+ * two views drifted: the match score was a `.job-score` block in List and a small grey
+ * chip in Board. Sharing the component makes that class of drift impossible, the same way
+ * sharing `grouped` made the counts impossible to disagree.
+ */
+function TrackerBoard({ grouped, onMove, action }) {
   return (
     <div className="kanban-board" aria-label="Application board">
-      {stages.map((stage) => (
+      {grouped.map((stage) => (
         <section className={`kanban-column kanban-column--${stage.id}`} key={stage.id}>
-          <header><span><i /> {stage.label}</span><strong>{stage.count}</strong></header>
+          <header><span><i /> {stage.label}</span><strong>{stage.items.length}</strong></header>
           <div className="kanban-cards">
-            {stage.items.map((item, index) => {
-              const card = <><span className="kanban-company"><CompanyLogo initials={item.company.slice(0, 2).toUpperCase()} color={item.color} /><span><strong>{item.company}</strong><small>{item.role}</small></span></span><div className="kanban-signals">{item.preferenceMatch && <span><b>{item.preferenceMatch}%</b> match</span>}{item.outlook && <span>Shortlist: <b>{item.outlook}</b></span>}{item.readiness && <span>{item.readiness}</span>}</div><b>{item.when}</b>{item.priority && <em>Prepare for interview <ArrowRight size={13} /></em>}{item.offer && <em>Understand this offer <ArrowRight size={13} /></em>}</>
-              if (item.priority) return <button className="kanban-card kanban-card--priority" key={`${stage.id}-${item.company}-${index}`} onClick={onJuspay}>{card}</button>
-              if (item.offer) return <button className="kanban-card kanban-card--offer" key={`${stage.id}-${item.company}-${index}`} onClick={() => go('/offer/juspay?stage=decision&story=finale')}>{card}</button>
-              return <article className="kanban-card" key={`${stage.id}-${item.company}-${index}`}>{card}</article>
-            })}
-            {stage.id !== 'closed' && stage.count > stage.items.length && <div className="kanban-more">+{stage.count - stage.items.length} more application{stage.count - stage.items.length === 1 ? '' : 's'}</div>}
-            {!stage.items.length && stage.id !== 'closed' && <div className="kanban-empty"><span>{stage.id === 'offer' ? 'No offers yet' : 'No applications here'}</span><small>New email updates will move applications automatically.</small></div>}
-            {stage.id === 'closed' && <div className="kanban-closed-summary"><CheckCircle2 size={24} /><strong>{stage.count} applications archived</strong><p>Completed journeys stay here without competing for your attention.</p></div>}
+            {stage.items.map((item) => (
+              <ApplicationCard key={item.id} item={item} action={action(item)} onMove={() => onMove(item)} />
+            ))}
+            {!stage.items.length && <div className="kanban-empty"><span>Nothing here</span><small>{stage.hint}.</small></div>}
           </div>
         </section>
       ))}
     </div>
+  )
+}
+
+/*
+ * Moving an application is a deliberate act, so it gets a sheet rather than a drag: a
+ * five-column kanban on a 430px phone has no honest drop target, and the user told us
+ * they could not find the affordance at all.
+ */
+function MoveStageSheet({ item, onClose, onMove }) {
+  return (
+    <Sheet label={`Move ${item.company}`} onClose={onClose} bottom className="tracker-tool-sheet">
+      <h2>Move {item.company}</h2>
+      <p className="sheet-lead">{item.role} — currently in {stageLabel(item.stage)}.</p>
+      <div className="stage-picker">
+        {applicationStages.map((stage) => (
+          <button
+            key={stage.id}
+            className={stage.id === item.stage ? 'is-current' : ''}
+            aria-current={stage.id === item.stage}
+            disabled={stage.id === item.stage}
+            onClick={() => onMove(stage.id)}
+          >
+            <span><strong>{stage.label}</strong><small>{stage.hint}</small></span>
+            {stage.id === item.stage ? <Check size={17} /> : <ArrowRight size={16} />}
+          </button>
+        ))}
+      </div>
+    </Sheet>
   )
 }
 
@@ -342,16 +704,6 @@ function GmailResult({ onDone }) {
   )
 }
 
-function TrackerSearchSheet({ connected, manualApplications, onClose, onAdd }) {
-  const [query, setQuery] = useState('')
-  const searchable = [
-    ...(connected ? [{ company: 'Juspay', role: 'Senior Backend Engineer', action: 'Interview invite' }, ...applications.attention, ...applications.waiting] : []),
-    ...manualApplications,
-  ]
-  const results = searchable.filter((item) => `${item.company} ${item.role}`.toLowerCase().includes(query.toLowerCase()))
-  return <Sheet label="Search applications" onClose={onClose} bottom className="tracker-tool-sheet"><h2>Search your Tracker</h2><label className="tracker-search-field"><Search size={18} /><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Company or role" /></label>{searchable.length ? <div className="tracker-search-results">{results.map((item, index) => <button key={`${item.company}-${index}`} onClick={onClose}><CompanyLogo initials={item.company.slice(0, 2).toUpperCase()} /><span><strong>{item.company}</strong><small>{item.role}</small></span><ChevronRight size={17} /></button>)}</div> : <div className="tracker-tool-empty"><Search size={24} /><strong>No applications to search yet</strong><p>Connect your email for automatic tracking, or add an application yourself.</p><button className="secondary-button" onClick={onAdd}><Plus size={16} /> Add an application</button></div>}</Sheet>
-}
-
 function ManualApplicationSheet({ onClose, onAdd }) {
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
@@ -360,58 +712,219 @@ function ManualApplicationSheet({ onClose, onAdd }) {
 
 function MatchesScreen() {
   const { journey, update, toggleSaved } = useJourney()
+  /*
+   * `naukriConnected` is only ever set by the connect flow on this screen. Onboarding's
+   * Naukri path sets `onboardingNaukriImported` instead, so anyone who imported their
+   * profile during sign-up arrived here being told Naukri was not connected and offered
+   * a flow they had already completed. One source of truth for the whole screen.
+   */
+  const naukriConnected = journey.naukriConnected || journey.onboardingNaukriImported
+  const reduceMotion = useReducedMotion()
   const params = new URLSearchParams(window.location.search)
   const [flow, setFlow] = useState(params.get('flow') === 'naukri' && !journey.naukriConnected ? 'trust' : null)
   const [sort, setSort] = useState('Best match')
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState(null)
+  const [assistant, setAssistant] = useState(null)
   const [savedOpen, setSavedOpen] = useState(false)
 
   const visibleJobs = useMemo(() => {
-    const available = journey.naukriConnected ? jobs : jobs.filter((job) => ['zeta', 'razorline'].includes(job.id))
-    return available.map((job) => job.id === 'phonepe' && journey.phonepeReplied
-      ? { ...job, posted: 'Reply sent', reason: 'Your recruiter conversation is active and now waiting on PhonePe.' }
-      : job)
-  }, [journey.naukriConnected, journey.phonepeReplied])
+    // A role you have already applied to is not a job to find — it is an application to
+    // track, and Tracker owns it. Showing it here asks the user to do something they have
+    // already done, so anything with a live application drops out of the feed entirely.
+    const applied = new Set([...applications.attention, ...applications.waiting].map((item) => item.company))
+    const full = [...jobs, ...moreJobs].filter((job) => !applied.has(job.company))
+    // Before Naukri is connected the feed is not two hand-picked rows — it is everything
+    // AmbitionBox and company careers already know about. What Naukri actually adds is the
+    // listings sourced from it, so those are what appear when it connects. Arriving here
+    // from Home used to show a near-empty screen, which read as the tab being broken.
+    return naukriConnected ? full : full.filter((job) => job.sourceLabel !== 'From Naukri')
+  }, [naukriConnected])
+
+  // The filters do real work — a chip that only looks like a filter is worse than none.
+  const shownJobs = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    let list = visibleJobs
+    if (needle) list = list.filter((job) => `${job.role} ${job.company} ${job.location}`.toLowerCase().includes(needle))
+    if (filter === 'Remote') list = list.filter((job) => job.mode === 'Remote')
+    if (filter === 'Hybrid') list = list.filter((job) => job.mode === 'Hybrid')
+    if (filter === '₹30L+') list = list.filter((job) => Number(String(job.estSalary || job.salary || '').replace(/[^0-9.]/g, '').slice(0, 2)) >= 30)
+    if (filter === 'Saved') list = list.filter((job) => journey.savedJobs.includes(job.id))
+    return sort === 'Newest' ? [...list].reverse() : list
+  }, [visibleJobs, query, filter, sort, journey.savedJobs])
 
   const confirmPreferences = () => { update({ naukriConnected: true, preferencesConfirmed: true }); setFlow('success') }
 
   return (
-    <Screen active="matches" className="matches-screen">
-      <Topbar title="Matches" right={<button className="icon-button" onClick={() => setSavedOpen(true)} aria-label="Saved jobs"><Bookmark size={20} /></button>} />
-      <section className="page-pad matches-intro"><span className="eyebrow">CURATED FOR ARJUN</span><h1>{journey.naukriConnected ? 'The roles worth your time.' : 'Better matches start with context.'}</h1><p>{journey.naukriConnected ? 'One ranked view across every place opportunities find you.' : 'Your AmbitionBox profile gives us a start. Connect Naukri to add skills and preferences.'}</p></section>
-
-      {!journey.naukriConnected && <section className="page-pad"><div className="connect-card"><div className="connect-visual"><span className="naukri-logo">n</span><span className="link-line"><Link2 size={16} /></span><span className="ab-mini"><Logo small /></span></div><div><Pill tone="soft">FUTURE CONNECTION</Pill><h2>Bring your Naukri profile</h2><p>One tap imports your latest skills and job preferences. You review everything before it shapes matches.</p></div><button className="primary-button" onClick={() => setFlow('trust')}>Connect Naukri <ArrowRight size={17} /></button></div></section>}
-
-      {journey.naukriConnected && <section className="page-pad source-strip"><div><span className="source-avatars"><i>N</i><i>AB</i><i>@</i><i>+</i></span><span><strong>4 sources connected</strong><small>Ranked to your preferences</small></span></div><button className="icon-button" onClick={() => setFlow('sources')} aria-label="Manage sources"><MoreHorizontal size={19} /></button></section>}
+    <main id="main-content" className="screen matches-screen">
+      {/* The wordmark alone, with saved jobs and the profile door on the right — the same
+          header Home uses, so the two tabs read as one product. */}
+      <div className="app-header page-pad">
+        <Logo />
+        <span className="app-header-tools">
+          <button className="icon-button" onClick={() => setSavedOpen(true)} aria-label="Saved jobs"><Bookmark size={20} /></button>
+          <button className="app-avatar-button" onClick={() => go('/profile')} aria-label="Your profile">
+            <span className="avatar" aria-hidden="true">{candidate.initials}</span>
+          </button>
+        </span>
+      </div>
+      {/* The whole strip is the control, not a ⋯ button hiding at the end of it. Always
+          present, and counted rather than asserted — the tab used to become a
+          different screen depending on which preset you arrived with. */}
+      <div className="page-pad">
+        <button className="source-strip" onClick={() => setFlow('sources')}>
+          <span className="source-avatars">{naukriConnected && <i>N</i>}<i>+</i></span>
+          <span className="source-strip__copy">
+            <strong>{naukriConnected ? 2 : 1} job board{naukriConnected ? 's' : ''} connected</strong>
+            <small>{naukriConnected ? 3 : 4} more you can add</small>
+          </span>
+          <ChevronRight size={18} />
+        </button>
+      </div>
 
       <section className="page-pad feed-section">
-        <div className="feed-toolbar"><span><strong>{visibleJobs.length} high-signal roles</strong><small>{journey.naukriConnected ? 'Across every connected source' : 'From AmbitionBox and company careers'}</small></span><button className="filter-button" onClick={() => setSort(sort === 'Best match' ? 'Newest' : 'Best match')}>{sort} <ChevronDown size={15} /></button></div>
+        <label className="job-search">
+          <Search size={18} />
+          <input name="job-search" autoComplete="off" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search role, company or city" aria-label="Search jobs" />
+          {query && <button className="job-search__clear" onClick={() => setQuery('')} aria-label="Clear search"><X size={16} /></button>}
+        </label>
+        <div className="job-filters" aria-label="Filter jobs">
+          {['Remote', 'Hybrid', '₹30L+', 'Saved'].map((name) => (
+            <button key={name} className={filter === name ? 'is-on' : ''} aria-pressed={filter === name} onClick={() => setFilter(filter === name ? null : name)}>{name}</button>
+          ))}
+        </div>
+        {/* The count was a label nobody acts on. The row now says what the control does. */}
+        <div className="feed-toolbar"><span className="feed-toolbar__label">Sort jobs by</span><button className="filter-button" onClick={() => setSort(sort === 'Best match' ? 'Newest' : 'Best match')}>{sort} <ChevronDown size={15} /></button></div>
         <div className="job-feed">
-          {visibleJobs.map((job, index) => <JobCard key={job.id} job={job} index={index} saved={journey.savedJobs.includes(job.id)} onSave={() => toggleSaved(job.id)} onOpen={() => job.id === 'juspay' ? go('/jobs/juspay') : null} />)}
+          {shownJobs.length
+            ? shownJobs.map((job, index) => <JobCard key={job.id} job={job} index={index} saved={journey.savedJobs.includes(job.id)} onSave={() => toggleSaved(job.id)} onOpen={job.id === 'juspay' ? () => go('/jobs/juspay') : null} />)
+            : <p className="job-feed__empty">No roles match that yet. Try a different search or clear the filter.</p>}
         </div>
       </section>
-      <AssistantDock onClick={() => go('/assistant/juspay')} label="Help me compare these" />
+      {/* Same chrome as Home. The pill names the role in view, which is what
+          prototype/matches-2b does, and it opens the assistant that is actually about it. */}
+      <AssistantDock
+        active="matches"
+        label="Ask AmbitionBox about Juspay"
+        examples={['Show me remote roles only', 'Which of these pays above ₹30L?', 'Who is hiring for payments?', 'Which role fits me best?']}
+        reduceMotion={reduceMotion}
+        onOpen={(question) => setAssistant(question || '')}
+      />
 
       <AnimatePresence>
         {flow === 'trust' && <NaukriTrust onClose={() => setFlow(null)} onContinue={() => setFlow('profile')} />}
         {flow === 'profile' && <NaukriProfile onBack={() => setFlow('trust')} onContinue={() => setFlow('preferences')} />}
         {flow === 'preferences' && <NaukriPreferences onBack={() => setFlow('profile')} onContinue={confirmPreferences} />}
         {flow === 'success' && <NaukriSuccess onDone={() => setFlow(null)} />}
-        {flow === 'sources' && <SourcesSheet onClose={() => setFlow(null)} />}
+        {flow === 'sources' && <SourcesSheet onClose={() => setFlow(null)} naukriConnected={naukriConnected} onConnectNaukri={() => setFlow('trust')} />}
+        {assistant !== null && <HomeAssistantSheet journey={journey} initialQuestion={assistant} onClose={() => setAssistant(null)} index={contextualCapabilities({ journey }, { openAddInterview: () => go('/home?action=add-interview'), openOfferStart: () => go('/home') }, 'jobs')} />}
         {savedOpen && <SavedJobsSheet saved={journey.savedJobs} onClose={() => setSavedOpen(false)} />}
       </AnimatePresence>
-    </Screen>
+    </main>
   )
+}
+
+/*
+ * The job card — ported from prototype/matches-2b.html on 2026-08-19.
+ *
+ * The card's spine is the Highlights list: pay, culture and profile fit, each a title plus
+ * a meta line naming where the claim came from. That is the AmbitionBox core — a job board
+ * can list a role; only this can tell you what it actually pays, what it is like inside,
+ * and how much of it you can already evidence.
+ *
+ * AmbitionBox does not have depth on every company. A highlight with no data is left out
+ * rather than filled with a placeholder — an empty row still occupies the reader's
+ * attention and teaches them nothing.
+ *
+ * Pay is one figure with its source attached. AmbitionBox's own estimate wears the badge,
+ * which is what makes it legible as an estimate rather than a quoted fact; the employer's
+ * posted range sits underneath as the other side of the claim. Where the employer posted
+ * nothing, the estimate stands alone and says so. Where neither exists, there is no row.
+ */
+function payHighlight(job) {
+  const posted = job.salary
+  const estimate = job.estSalary
+  if (estimate) {
+    return {
+      kind: 'pay', label: 'Pay', icon: IndianRupee, title: estimate, badge: 'AmbitionBox estimate',
+      meta: posted ? `${job.company} posted ${posted}${job.estBasis ? ` · from ${job.estBasis}` : ''}` : `No range posted by ${job.company}${job.estBasis ? ` · from ${job.estBasis}` : ''}`,
+    }
+  }
+  if (posted) return { kind: 'pay', label: 'Pay', icon: IndianRupee, title: posted, meta: `Posted by ${job.company}` }
+  return null
+}
+
+function jobHighlights(job) {
+  return [
+    payHighlight(job),
+    job.cultureTitle ? { kind: 'culture', label: 'Culture', icon: Building2, title: job.cultureTitle, meta: job.cultureMeta } : null,
+    job.fitTitle ? { kind: 'fit', label: 'Profile fit', icon: Target, title: job.fitTitle, meta: job.fitMeta } : null,
+  ].filter(Boolean)
 }
 
 function JobCard({ job, index, saved, onSave, onOpen }) {
   return (
-    <motion.article className={`job-card ${index === 0 ? 'job-card--featured' : ''}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * .05 }}>
-      <div className="job-source"><span>{job.sourceLabel}</span><span>{job.posted}</span></div>
-      <div className="job-head"><CompanyLogo initials={job.initials} /><button className="job-title-button" onClick={onOpen} disabled={!onOpen}><h3>{job.role}</h3><p>{job.company} · {job.rating} <Star size={12} fill="currentColor" /> <span>{job.reviews}</span></p></button><button className="save-button" onClick={onSave} aria-label={saved ? `Unsave ${job.company}` : `Save ${job.company}`}><Bookmark size={19} fill={saved ? 'currentColor' : 'none'} /></button></div>
-      <div className="job-meta"><span>{job.salary}</span><span>{job.location}</span><span>{job.mode}</span></div>
-      <div className="match-row"><div className="match-score"><strong>{job.preferenceMatch}%</strong><span>Preference Match</span></div><div className="readiness-mini"><span>{job.readiness}</span><small>{job.readiness === 'Applied' ? 'status' : 'Profile Readiness'}</small></div></div>
-      <p className="job-reason"><Sparkles size={15} /> {job.reason}</p>
-      {onOpen ? <button className="culture-row culture-row--button" onClick={onOpen}><span>{job.culture}</span><ArrowRight size={17} /></button> : <div className="culture-row"><span>{job.culture}</span></div>}
+    <motion.article
+      className={`match-card ${onOpen ? 'match-card--open' : ''}`}
+      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index, 6) * .04 }}
+      /* The whole card is the target. The inner controls stop propagation so Save and the
+         explicit CTA still do their own thing. */
+      onClick={onOpen || undefined}
+      role={onOpen ? 'link' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onKeyDown={onOpen ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen() } } : undefined}
+    >
+      <div className="match-card__strip">
+        <span className="match-card__source">{job.sourceLabel} · {job.posted}</span>
+      </div>
+
+      <div className="match-card__body">
+        <div className="job-id">
+          <CompanyLogo initials={job.initials} color={job.color} />
+          <span className="job-id__copy">
+            <span className="job-id__companyline">
+              <span className="job-id__company">{job.company}</span>
+              {job.rating
+                ? <span className="job-id__rating">
+                    <span className="job-id__star"><Star size={10} fill="currentColor" strokeWidth={0} />{job.rating}</span>
+                    <span>{job.reviews}</span>
+                  </span>
+                : <span className="job-id__rating"><span>{job.reviews}</span></span>}
+            </span>
+            <h3 className="job-id__role">{job.role}</h3>
+            <span className="job-id__meta">{job.location} · {job.mode}{job.experience ? ` · ${job.experience}` : ''}</span>
+          </span>
+          {/* The score was a line of white text in the strip and read as a caption. It is
+              the card's verdict, so it is set as a figure and given the brand colour. */}
+          <span className="job-score"><b>{job.preferenceMatch}%</b><i>Match</i></span>
+        </div>
+
+        <h4 className="highlights-title">Highlights</h4>
+        <ul className="highlights">
+          {jobHighlights(job).map(({ kind, label, icon: Icon, title, badge, meta }) => (
+            <li key={kind} className={`highlight highlight--${kind}`}>
+              <span className="highlight__icon"><Icon size={17} /></span>
+              <span className="highlight__content">
+                <span className="highlight__label">{label}</span>
+                <span className="highlight__title">{title}{badge && <em className="highlight__badge">{badge}</em>}</span>
+                <span className="highlight__meta">{meta}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="match-card__actions">
+          <button className="job-action job-action--save" onClick={(event) => { event.stopPropagation(); onSave() }} aria-pressed={saved} aria-label={saved ? `Unsave ${job.company}` : `Save ${job.company}`}>
+            <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} />
+          </button>
+          {/* Same CTA on every card, and never drawn as disabled — a greyed-out button on
+              ten of eleven cards makes the feed look broken rather than unfinished. Only
+              Juspay has a detail screen in this prototype, so only Juspay responds. */}
+          <button className="job-action job-action--view" onClick={(event) => { event.stopPropagation(); onOpen?.() }}>
+            View job <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
     </motion.article>
   )
 }
@@ -431,45 +944,324 @@ function NaukriPreferences({ onBack, onContinue }) {
   return <Sheet label="Confirm job preferences" onClose={onBack} wide><div className="sheet-step">2 OF 2 · YOUR PREFERENCES</div><h2>What should a great next move look like?</h2><p className="sheet-lead">These shape ranking—not eligibility. You can change them anytime.</p><div className="form-stack"><label><span>Target role</span><div className="input-shell">Senior Backend Engineer <Pencil size={15} /></div></label><label><span>Minimum target salary</span><input name="minimum-salary" autoComplete="off" inputMode="text" value={salary} onChange={(e) => setSalary(e.target.value)} /></label><fieldset><legend>Work mode</legend><div className="choice-row">{['Remote', 'Light hybrid', 'Office'].map((mode) => <button type="button" key={mode} className={workModes.includes(mode) ? 'is-selected' : ''} onClick={() => toggleMode(mode)}>{mode}</button>)}</div></fieldset><label><span>Preferred location</span><div className="input-shell">Bengaluru <Pill tone="soft">+ Remote</Pill></div></label><label><span>Home city <small>Used only for move estimates</small></span><div className="input-shell">{candidate.hometown} <Pill tone="soft">Provided by you</Pill></div></label></div><button className="primary-button" onClick={onContinue}><Check size={17} /> Confirm preferences</button></Sheet>
 }
 
-function SourcesSheet({ onClose }) {
-  const sources = [
-    ['Naukri', 'Profile + job listings', 'Connected'],
-    ['AmbitionBox', 'Company intelligence + jobs', 'Always on'],
-    ['Recruiter email', 'Application conversations', 'Via Gmail'],
-    ['Company careers', 'Direct employer listings', 'Indexed'],
+/*
+ * Job boards, reshaped 2026-08-19.
+ *
+ * Only things that actually list jobs belong here. AmbitionBox is not a job board — it is
+ * the intelligence layer applied on top of them — and recruiter email is an inbox, not a
+ * source of listings; both were making the list mean less. Boards that are not connected
+ * are named with the action to connect them, because that is the question the sheet is
+ * opened to answer: what is this watching, and what could it watch.
+ *
+ * `bottom` matters: without it the shared Sheet centres itself on wide viewports and
+ * reads as a modal rather than something you pulled up from the bottom edge.
+ */
+function SourcesSheet({ onClose, naukriConnected, onConnectNaukri }) {
+  const boards = [
+    naukriConnected
+      ? { name: 'Naukri', detail: 'Profile, preferences and job listings', state: 'on', status: 'Connected', mark: 'n', color: '#2769dd' }
+      : { name: 'Naukri', detail: 'Profile, preferences and job listings', state: 'off', mark: 'n', color: '#2769dd', onConnect: onConnectNaukri },
+    { name: 'Company careers', detail: 'Listings taken straight from employers', state: 'on', status: 'Indexed', mark: '+', color: '#4c6075' },
+    { name: 'iimjobs', detail: 'Mid and senior roles', state: 'off', mark: 'ii', color: '#00457c' },
+    { name: 'Hirist', detail: 'Technology roles', state: 'off', mark: 'H', color: '#e8502e' },
+    { name: 'Instahyre', detail: 'Curated product and startup roles', state: 'off', mark: 'In', color: '#0a9c8c' },
   ]
-  return <Sheet label="Connected opportunity sources" onClose={onClose}><Pill tone="soft">SOURCE TRANSPARENCY</Pill><h2>Every match says where it came from.</h2><p className="sheet-lead">Sources add discovery context. AmbitionBox applies the same preference and readiness logic across them.</p><div className="source-list">{sources.map(([name, detail, status]) => <div key={name}><span className="source-check"><Check size={14} /></span><span><strong>{name}</strong><small>{detail}</small></span><Pill tone="success">{status}</Pill></div>)}</div><button className="primary-button" onClick={onClose}>Done</button></Sheet>
+  return (
+    <Sheet label="Job boards" onClose={onClose} bottom>
+      <h2>Job boards</h2>
+      <p className="sheet-lead">Every board you connect adds listings. AmbitionBox applies the same preference and readiness logic across all of them.</p>
+      <div className="board-list">
+        {boards.map(({ name, detail, state, status, mark, color, onConnect }) => (
+          <div key={name} className={`board-row board-row--${state}`}>
+            <span className="board-mark" style={{ background: color }}>{mark}</span>
+            <span className="board-copy"><strong>{name}</strong><small>{detail}</small></span>
+            {state === 'on'
+              ? <span className="board-status board-status--on">{status}</span>
+              : <button className="board-connect" onClick={onConnect}>Connect</button>}
+          </div>
+        ))}
+      </div>
+    </Sheet>
+  )
 }
 
 function SavedJobsSheet({ saved, onClose }) {
   const savedItems = jobs.filter((job) => saved.includes(job.id))
-  return <Sheet label="Saved jobs" onClose={onClose}><Pill tone="soft">YOUR SHORTLIST</Pill><h2>{savedItems.length ? `${savedItems.length} saved ${savedItems.length === 1 ? 'role' : 'roles'}` : 'Nothing saved yet'}</h2><p className="sheet-lead">Save a match to keep it here while you compare.</p><div className="saved-list">{savedItems.length ? savedItems.map((job) => <button key={job.id} onClick={() => job.id === 'juspay' && go('/jobs/juspay')}><CompanyLogo initials={job.initials} /><span><strong>{job.company}</strong><small>{job.role} · {job.salary}</small></span><ChevronRight size={17} /></button>) : <div className="closed-state"><Bookmark size={26} /><p>Your saved roles will appear here.</p></div>}</div><button className="secondary-button" onClick={onClose}>Keep browsing</button></Sheet>
+  return <Sheet label="Saved jobs" onClose={onClose}><Pill tone="soft">YOUR SHORTLIST</Pill><h2>{savedItems.length ? `${savedItems.length} saved ${savedItems.length === 1 ? 'role' : 'roles'}` : 'Nothing saved yet'}</h2><p className="sheet-lead">Save a match to keep it here while you compare.</p><div className="saved-list">{savedItems.length ? savedItems.map((job) => <button key={job.id} onClick={() => job.id === 'juspay' && go('/jobs/juspay')}><CompanyLogo initials={job.initials} /><span><strong>{job.company}</strong><small>{job.role}{job.salary ? ` · ${job.salary}` : ''}</small></span><ChevronRight size={17} /></button>) : <div className="closed-state"><Bookmark size={26} /><p>Your saved roles will appear here.</p></div>}</div><button className="secondary-button" onClick={onClose}>Keep browsing</button></Sheet>
 }
 
 function NaukriSuccess({ onDone }) {
   return <Sheet label="Naukri connected"><div className="success-burst"><Check size={28} /></div><Pill tone="success">PROFILE CONNECTED</Pill><h2>Your matches just got sharper</h2><p className="sheet-lead">We reranked opportunities using your current skills, salary target, and work preferences.</p><div className="rerank-card"><div><span className="rank-arrow">↑3</span><CompanyLogo initials="JP" /><span><strong>Juspay</strong><small>Senior Backend Engineer</small></span></div><Pill tone="success">89% match</Pill></div><button className="primary-button" onClick={onDone}>See ranked matches <ArrowRight size={17} /></button></Sheet>
 }
 
+/*
+ * Job detail — ported from prototype/job-detail-1b.html on 2026-08-19.
+ *
+ * The 1B composition, in order: identity, the two actions, the Preference match card, and
+ * Profile Readiness. Readiness is the screen's real content — a segmented meter over the
+ * fifteen requirements, then three groups you can open: what already fits, what to
+ * strengthen, and what may hold you back. A flat bar said "10/15" and stopped; this says
+ * which ten, which four, and which one, which is the whole point of the screen.
+ *
+ * Requirement lists are 1B's verbatim. Readiness moves 10 → 14 on tailoring and 15 only
+ * when Java is confirmed in prep, which is the existing journey contract.
+ */
+const FITS_BASE = [
+  '6 years backend engineering', 'Payments & fintech systems', 'REST & gRPC API design',
+  'Microservices architecture', 'PostgreSQL & data modelling', 'Redis & caching',
+  'Kafka & event-driven systems', 'AWS production systems', 'Monitoring & incident response',
+  'Code reviews & mentoring',
+]
+const FITS_ADDED = [
+  'System-design ownership', 'Scale & throughput metrics', 'Cross-team technical leadership',
+  'Hands-on Kubernetes ownership',
+]
+
+function ReadinessGroup({ tone, count, name, sub, rows, defaultOpen }) {
+  const [open, setOpen] = useState(Boolean(defaultOpen))
+  const disabled = !rows.length
+  return (
+    <div className={`b-grp b-grp--${tone} ${open ? 'is-open' : ''}`}>
+      <button className="b-grp__head" aria-expanded={open} disabled={disabled} onClick={() => setOpen((v) => !v)}>
+        <span className="b-grp__count">{count}</span>
+        <span className="b-grp__title"><span className="b-grp__name">{name}</span><span className="b-grp__sub">{sub}</span></span>
+        <ChevronDown className="b-grp__chev" size={18} />
+      </button>
+      {open && !disabled && (
+        <div className="b-grp__panel">
+          {rows.map((row) => (
+            <div className="row" key={row}><span className={`row__ind row__ind--${tone}`} /><span className="row__title">{row}</span></div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function JobDetailScreen() {
   const { journey, toggleSaved } = useJourney()
+  // The assistant here is the same drawer Home opens, capability index and all. It used to
+  // navigate straight into the résumé chat, so the index was unreachable from this screen.
+  const [assistant, setAssistant] = useState(null)
+  const [applyOpen, setApplyOpen] = useState(false)
+  const assistantSheets = {
+    openAddInterview: () => go('/home?action=add-interview'),
+    openOfferStart: () => go('/home'),
+  }
   const saved = journey.savedJobs.includes('juspay')
   const readiness = journey.readiness
+  const javaConfirmed = readiness >= 15
+  const tailored = readiness >= 14
+
+  const fits = javaConfirmed ? [...FITS_BASE, ...FITS_ADDED, 'Production Java ownership'] : (tailored ? [...FITS_BASE, ...FITS_ADDED] : FITS_BASE)
+  const strengthen = tailored ? [] : FITS_ADDED
+  const missing = javaConfirmed ? [] : ['Java production experience']
+  const meter = [
+    ...Array(fits.length).fill('ok'),
+    ...Array(strengthen.length).fill('need'),
+    ...Array(missing.length).fill('miss'),
+  ]
+
   return (
     <main id="main-content" className="detail-screen screen">
       <Topbar back="/matches" title="Job details" right={<button className="icon-button" onClick={() => toggleSaved('juspay')} aria-label={saved ? 'Unsave job' : 'Save job'}><Bookmark size={20} fill={saved ? 'currentColor' : 'none'} /></button>} />
-      <section className="job-hero page-pad"><div className="job-company-row"><CompanyLogo initials="JP" /><span><h1>Senior Backend Engineer</h1><p>Juspay · Bengaluru</p></span></div><div className="job-hero-meta"><span>₹24–30L</span><span>Hybrid</span><span>6–9 yrs</span></div><div className="job-source-line"><span className="naukri-dot">n</span> Found on Naukri · Posted 2 days ago</div></section>
 
-      <section className="score-panel page-pad"><div className="score-card"><ProgressRing value={89} /><div><span className="eyebrow">PREFERENCE MATCH</span><h2>This role fits what you want.</h2><p>Pay, seniority, location, and domain align strongly.</p></div></div><div className="fit-chips"><Pill tone="success"><Check size={13} /> ₹24–30L</Pill><Pill tone="success"><Check size={13} /> Senior role</Pill><Pill tone="success"><Check size={13} /> Payments</Pill><Pill tone="attention">Hybrid · 3 days</Pill></div></section>
+      <section className="identity page-pad">
+        <div className="id-row">
+          <span className="id-logo">JP</span>
+          <div className="id-titlewrap">
+            <h1 className="id-title">{juspay.role}</h1>
+            <div className="id-companyline">
+              <span className="id-company">{juspay.company}</span>
+              <span className="rating" aria-label={`AmbitionBox rating ${juspay.rating} out of 5, based on ${juspay.reviews}`}>
+                <span className="rating__tile"><Star size={12} fill="currentColor" strokeWidth={0} /></span>
+                <span className="rating__num">{juspay.rating}</span>
+                <span className="rating__meta">· {juspay.reviews}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <p className="id-meta"><span className="src">via Naukri</span> · Posted 2 days ago</p>
+      </section>
 
-      <section className="page-pad readiness-section"><div className="readiness-card"><div className="readiness-head"><ProgressRing value={readiness} total={15} label={`${readiness}/15`} color="var(--teal)" /><div><span className="eyebrow">PROFILE READINESS</span><h2>{readiness >= 14 ? 'Your strongest evidence is now visible.' : 'The fit is strong. The proof can be stronger.'}</h2></div></div><div className="readiness-bar"><motion.span animate={{ width: `${(readiness / 15) * 100}%` }} /></div><p>{readiness >= 14 ? 'Your tailored résumé now covers scale, ownership, and payments impact.' : 'We found five requirements. Your résumé clearly proves ten of fifteen evidence signals.'}</p>{readiness < 14 ? <button className="secondary-button" onClick={() => go('/assistant/juspay')}>Close the evidence gap <Sparkles size={16} /></button> : <button className="secondary-button" onClick={() => go('/assistant/juspay?stage=resume')}>View tailored résumé <FileCheck2 size={16} /></button>}</div></section>
+      <div className="actions page-pad">
+        <button className="act-save" onClick={() => toggleSaved('juspay')} aria-pressed={saved}>
+          <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} /> {saved ? 'Saved' : 'Save'}
+        </button>
+        {/* Applying happens on Naukri, not here. The sheet says so rather than the button
+            quietly leading somewhere else — it was opening the résumé chat. */}
+        <button className="act-apply" onClick={() => setApplyOpen(true)}>
+          <ExternalLink size={16} /> Apply on Naukri
+        </button>
+      </div>
 
-      <section className="page-pad insight-section"><div className="section-heading"><div><span className="eyebrow">WHY THIS ROLE</span><h2>The full picture</h2></div></div><div className="insight-list"><div><span className="insight-icon mint"><Check size={18} /></span><span><strong>Your advantage</strong><small>6 years in payments and distributed systems maps directly to the core team.</small></span></div><div><span className="insight-icon amber"><TrendingUp size={18} /></span><span><strong>Worth strengthening</strong><small>Show measurable ownership of reliability at high transaction volume.</small></span></div><div><span className="insight-icon lilac"><Info size={18} /></span><span><strong>Culture signal</strong><small>Employees praise learning and ownership; work-life balance is mixed.</small></span></div></div></section>
+      <section className="b-pref" aria-label={`Preference match ${juspay.preferenceMatch} percent`}>
+        <div className="b-pref__head">
+          <span className="b-pref__title">PREFERENCE MATCH</span>
+          <span className="b-pref__score">{juspay.preferenceMatch}%</span>
+        </div>
+        <div className="b-chips">
+          <span className="b-chip b-chip--ok"><Check size={14} /> {juspay.salary} · above ₹22L target</span>
+          <span className="b-chip b-chip--ok"><Check size={14} /> {juspay.location}</span>
+          <span className="b-chip b-chip--ok"><Check size={14} /> Fintech</span>
+          <span className="b-chip b-chip--ok"><Check size={14} /> Senior</span>
+          <span className="b-chip b-chip--warn">Hybrid · 3 days</span>
+          <span className="b-chip b-chip--neutral">{juspay.type}</span>
+        </div>
+        {/* 1B's match-breakdown row. It opens the assistant with the question rather than
+            being a label that looks like a control. */}
+        {/* Asks the assistant why this matches — it used to open the résumé chat, which
+            answers a different question entirely. */}
+        <button className="b-cta" onClick={() => setAssistant('Why is Juspay a good match for me?')}>
+          See match breakdown <ChevronRight size={18} />
+        </button>
+      </section>
 
-      <section className="page-pad company-intel"><div className="intel-head"><div><span className="eyebrow">AMBITIONBOX INTELLIGENCE</span><h2>Juspay at a glance</h2></div><span className="rating-box">4.0 <Star size={13} fill="currentColor" /></span></div><div className="intel-grid"><div><strong>4.2</strong><span>Skill development</span></div><div><strong>3.7</strong><span>Work-life balance</span></div><div><strong>4.0</strong><span>Company culture</span></div></div><p>Based on 847 employee reviews · Updated 3 days ago</p></section>
+      <section className="b-ready">
+        <div className="b-ready__top">
+          <h2 className="ready__title">Profile Readiness</h2>
+          <p className="ready__count"><b>{readiness} of 15</b> requirements evidenced</p>
+          <div className="seg" role="img" aria-label={`Of 15 requirements: ${fits.length} confirmed matches, ${strengthen.length} need evidence, ${missing.length} mismatch`}>
+            {meter.map((tone, index) => <span key={index} className={`seg__b seg__b--${tone}`} />)}
+          </div>
+        </div>
+        <div className="b-groups">
+          <ReadinessGroup tone="ok" count={fits.length} name="What already fits" sub="Clear, relevant evidence" rows={fits} />
+          <ReadinessGroup tone="need" count={strengthen.length} name="What to strengthen" sub={tailored ? 'No unresolved evidence' : '3 need stronger proof · 1 needs confirmation'} rows={strengthen} defaultOpen={!tailored} />
+          <ReadinessGroup tone="miss" count={missing.length} name="What may hold you back" sub={javaConfirmed ? 'No confirmed gaps' : 'A confirmed gap against the role'} rows={missing} defaultOpen={!javaConfirmed} />
+        </div>
+        {/* 1B closes the readiness card with its own action, so the card that names the
+            gaps is also the one that offers to close them. */}
+        {/* The dock is the assistant, always. The forward step lives on the card that
+            names what is standing in its way. */}
+        <button className="b-ready__cta" onClick={() => go(!tailored ? '/assistant/juspay' : journey.interviewInvited ? '/prep/juspay' : '/home')}>
+          <span className="b-ready__cta-lead"><AssistantMark className="b-ready__cta-orb" /> {!tailored ? 'Close gaps · tailor your résumé' : journey.interviewInvited ? 'Prepare for interview' : 'See my next move'}</span>
+          <ChevronRight size={18} />
+        </button>
+      </section>
 
-      <div className="sticky-cta"><button className="save-cta" onClick={() => toggleSaved('juspay')} aria-label={saved ? 'Unsave job' : 'Save job'}><Bookmark size={20} fill={saved ? 'currentColor' : 'none'} /></button><button className="primary-button" onClick={() => go(readiness < 14 ? '/assistant/juspay' : journey.interviewInvited ? '/prep/juspay' : '/home')}>{readiness < 14 ? 'Improve my application' : journey.interviewInvited ? 'Prepare for interview' : 'See my next move'} <ArrowRight size={17} /></button></div>
+      {/* 1B's dock: the assistant is the way forward from this screen, so the chrome is the
+          assistant rather than a generic primary button. Save already lives in the actions
+          row and the topbar, so it does not appear a third time. */}
+      <div className="detail-dock">
+        {/* The dock is the assistant on every screen that has one, so it opens the drawer
+            rather than navigating. The page's forward step lives on the readiness card. */}
+        <button className="detail-dock-ask" onClick={() => setAssistant('')}>
+          <AssistantMark className="detail-dock-mark" />
+          <span>Ask about this role</span>
+          <span className="detail-dock-send"><Send size={16} /></span>
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {assistant !== null && <HomeAssistantSheet journey={journey} initialQuestion={assistant} onClose={() => setAssistant(null)} index={contextualCapabilities({ journey }, assistantSheets, 'job')} />}
+        {applyOpen && <Sheet label="Apply on Naukri" onClose={() => setApplyOpen(false)} bottom>
+          <h2>Applying happens on Naukri</h2>
+          <p className="sheet-lead">This listing came from Naukri, so the application is submitted there. AmbitionBox never applies on your behalf.</p>
+          <div className="permission-list">
+            <div><FileCheck2 size={18} /><span><strong>Take your tailored résumé</strong><small>Download it here first — it is the version written against this role.</small></span></div>
+            <div><ShieldCheck size={18} /><span><strong>Nothing is sent from here</strong><small>No application, message or document leaves AmbitionBox without you.</small></span></div>
+          </div>
+        </Sheet>}
+      </AnimatePresence>
     </main>
   )
+}
+
+/*
+ * The evidence conversation — ported from prototype/job-detail-1b.html on 2026-08-19.
+ *
+ * Four requirements, one question at a time. Each answer is classified before anything is
+ * claimed, and the order of the checks is the whole point:
+ *
+ *   negation first → a "never used it in production" can never become confirmed evidence
+ *   then complete  → clear personal ownership, so a receipt is issued and we move on
+ *   then on-topic  → mixed or unclear, so one counter-question rather than an assumption
+ *   otherwise      → restate the question; nothing is recorded
+ *
+ * The receipts describe only what the user actually said. Nothing is inferred, and an
+ * explicit "no" leaves the requirement unclaimed rather than quietly softened.
+ */
+const FP_NEG = /\b(i|we)\s+never\b|\b(i|we)\s+(did|do|does|had|have|was|were|am|are)\s*n[o’']?t\b|\b(i|we)\s+(did|do|does|had|have|was|were|am|are)\s+not\b|\b(i|we)\s+(have|had)\s+no\b|\b(did|do|does|had|have)\s*n[o’']?t\s+(own|use|used|build|built|manage|managed|run|ran|handle|handled|operate|operated|work|worked|deploy|deployed)\b|\bno\s+(?:\w+\s+){0,2}(experience|exposure|background|involvement|ownership)\b|\bnot\s+(really\s+)?(hands[-\s]?on|responsible|the\s+owner|an?\s+owner|involved|mine)\b|\b(only|just)\s+(observed|watched|assisted|helped|supported|shadowed|monitored|reviewed|saw)\b|\bnever\s+(used|owned|worked|touched|ran|managed|operated|deployed|built)\b/i
+
+const wordCount = (text) => text.trim().split(/\s+/).filter(Boolean).length
+
+const EVIDENCE_QUESTIONS = [
+  {
+    id: 'system-design',
+    requirement: 'System-design ownership',
+    from: 'Evidence needed',
+    ask: 'What backend system did you personally own from design through production?',
+    hint: 'Tell me what it was, which design decisions were yours, and how far you took it.',
+    sample: 'At Razorpay, I led the end-to-end redesign of our payment webhook delivery platform. I wrote the design RFC, chose the service boundaries and Kafka-based retry model, aligned the rollout plan with dependent teams, and owned the production rollout.',
+    receiptTitle: 'System-design ownership evidenced',
+    receiptDetail: 'End-to-end ownership is now clear: RFC, architecture decisions, cross-team alignment, and production rollout.',
+    counter: 'Which design decision was personally yours, and did you own the production rollout?',
+    restate: 'I don’t think that covers this one yet. I’m asking about a backend system you owned from design through production — what was it, and which decisions were yours?',
+    no: 'Understood — I won’t claim end-to-end system ownership you didn’t have. If there’s a smaller piece you did own from design to production, tell me and I’ll use only that.',
+    topic: /(system|service|platform|backend|design|architect|rebuild|redesign|rewrote|rewrite|api|pipeline|feature|module|rfc|built|build|migration|infrastructure)/i,
+    complete: (s) => wordCount(s) >= 12
+      && /(design|redesign|architect|rfc|boundaries|retry model|data model|owned|own\b|built|led|drove|chose|defined|wrote)/.test(s)
+      && /(production|rollout|roll out|launch|deploy|shipped|went live|in prod|end.?to.?end|end to end)/.test(s),
+  },
+  {
+    id: 'scale',
+    requirement: 'Scale & throughput metrics',
+    from: 'Evidence needed',
+    ask: 'What scale did that system run at, and what changed after your work?',
+    hint: 'Volume it handled, plus any change in delivery success, latency, or reliability — with numbers.',
+    sample: 'It handled about 12 million webhook events a day. The redesign improved successful delivery from 98.8% to 99.95% and cut p99 processing latency from 420 ms to 240 ms.',
+    receiptTitle: 'Scale and throughput evidenced',
+    receiptDetail: 'I’ll use the volume, delivery-success, and latency figures exactly as you provided them.',
+    counter: 'What changed after the redesign — delivery success, latency, or reliability?',
+    restate: 'That doesn’t give me the scale yet. Roughly what volume did it handle, and did delivery, latency, or reliability change — with numbers?',
+    no: 'Understood — I won’t invent scale or reliability numbers. If you have figures you can stand behind, share them; otherwise I’ll leave this unquantified.',
+    topic: /(\d|scale|volume|throughput|traffic|latenc|reliab|uptime|users?|requests?|events?|per day|a day|per second|rps|qps|million|thousand|percent|%|\bms\b|p9|delivery|success)/i,
+    complete: (s) => wordCount(s) >= 10 && (s.match(/\d[\d,.]*/g) || []).length >= 2,
+  },
+  {
+    id: 'leadership',
+    requirement: 'Cross-team technical leadership',
+    from: 'Evidence needed',
+    ask: 'Who did you lead beyond your own team to make it happen?',
+    hint: 'The teams outside yours you aligned, and the decision or rollout you drove.',
+    sample: 'I coordinated the rollout across Payments, Risk, Reconciliation, and Developer Experience. I ran design reviews, tracked migration risks with the tech leads, and mentored three engineers who implemented the new services.',
+    receiptTitle: 'Cross-team technical leadership evidenced',
+    receiptDetail: 'Your evidence covers four teams, design and migration leadership, and mentoring three engineers.',
+    counter: 'Which teams outside your own did you align, and what technical decision or rollout did you drive?',
+    restate: 'I still need the cross-team picture. Which teams beyond your own did you lead, and what did you coordinate across them?',
+    no: 'Understood — I won’t imply cross-team leadership you didn’t have. If you led even one team beyond your own, tell me and I’ll use just that.',
+    topic: /(team|teams|led|lead|coordinat|mentor|align|stakeholder|engineers?|people|rollout|cross|manage|guided|drove|ran|reviews?)/i,
+    complete: (s) => wordCount(s) >= 10
+      && /(led|lead|coordinat|mentor|drove|ran|aligned|managed|guided|owned)/.test(s)
+      && ((s.match(/payments|risk|reconciliation|developer experience|devex|platform|infrastructure|infra|sre|frontend|data|qa|security/g) || []).length >= 2
+        || /(cross.?team|several teams|multiple teams|other teams|two teams|three teams|four teams|\bteams\b)/.test(s)),
+  },
+  {
+    id: 'kubernetes',
+    requirement: 'Hands-on Kubernetes ownership',
+    from: 'Needs confirmation',
+    ask: 'How hands-on were you with Kubernetes in production?',
+    hint: 'What you personally operated — and what stayed with the platform team.',
+    sample: 'I owned Kubernetes deployment and runtime operations for six payment services on EKS. I maintained Helm charts, configured probes, resource limits and autoscaling, ran rollouts and rollbacks, and debugged pods during incidents. The platform team owned control-plane upgrades and cluster networking.',
+    receiptTitle: 'Hands-on Kubernetes ownership evidenced',
+    receiptDetail: 'I’ll describe your service-workload ownership precisely — not cluster administration or the control plane.',
+    counter: 'What did you personally handle — Helm, rollouts, scaling, or incident debugging?',
+    restate: 'I want to be precise about Kubernetes. What did you personally operate in production, versus what the platform team owned?',
+    no: 'Understood. I won’t add Kubernetes ownership to your résumé or imply experience you don’t have.',
+    topic: /(kubernetes|k8s|eks|helm|kubectl|pod|container|cluster|deploy|orchestrat|docker|node|namespace|autoscal|rollout)/i,
+    complete: (s) => wordCount(s) >= 10
+      && /(kubernetes|k8s|eks|helm|kubectl)/.test(s)
+      && /(deploy|rollout|roll out|rollback|roll back|probe|autoscal|scaling|resource limit|\bpod|runtime|operat|incident|debug|helm chart)/.test(s),
+  },
+]
+
+function classifyEvidence(question, text) {
+  const s = text.toLowerCase()
+  if (FP_NEG.test(s)) return 'no'
+  if (question.complete(s)) return 'complete'
+  if (question.topic.test(s)) return 'partial'
+  return 'offtopic'
 }
 
 function AssistantScreen() {
@@ -478,11 +1270,61 @@ function AssistantScreen() {
   const requested = params.get('stage')
   const [stage, setStage] = useState(['question', 'insight', 'resume'].includes(requested) ? requested : (journey.resumeReady ? 'resume' : 'question'))
   const [answer, setAnswer] = useState('')
+  const [step, setStep] = useState(0)
+  const [receipts, setReceipts] = useState([])
+  const [done, setDone] = useState(false)
+  // The thread is the screen. Every turn appends; nothing is ever rewritten, so what the
+  // assistant said earlier stays on the record exactly as it was said.
+  const [thread, setThread] = useState(() => [
+    { kind: 'findings' },
+    { kind: 'question', index: 0, question: EVIDENCE_QUESTIONS[0] },
+  ])
+  const threadRef = useRef(null)
+  // A thread that does not follow itself makes the user hunt for the reply they just got.
+  useEffect(() => {
+    const node = threadRef.current
+    if (node) node.scrollTop = node.scrollHeight
+  }, [thread])
   const [tailoring, setTailoring] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [javaChoice, setJavaChoice] = useState(journey.javaConfirmed)
 
-  const submitEvidence = () => answer.trim() && setStage('insight')
+  /*
+   * One answer, one classification. A negative keeps the requirement unclaimed and still
+   * moves on — the user has told us something true and being asked again would be nagging.
+   * Anything unclear asks once more rather than assuming.
+   */
+  const question = EVIDENCE_QUESTIONS[step]
+  const submitEvidence = () => {
+    const text = answer.trim()
+    if (!text || done) return
+    const verdict = classifyEvidence(question, text)
+    const turns = [{ kind: 'user', text }]
+    setAnswer('')
+
+    // Unclear or off-topic asks once more. The question stays live, nothing is recorded,
+    // and the user's own words remain on the thread above the follow-up.
+    if (verdict === 'partial' || verdict === 'offtopic') {
+      setThread((current) => [...current, ...turns, { kind: 'note', text: verdict === 'partial' ? question.counter : question.restate }])
+      return
+    }
+
+    const receipt = verdict === 'complete'
+      ? { kind: 'receipt', id: question.id, claimed: true, title: question.receiptTitle, detail: question.receiptDetail }
+      : { kind: 'receipt', id: question.id, claimed: false, title: `${question.requirement} — left unclaimed`, detail: question.no }
+    setReceipts((current) => [...current, receipt])
+    turns.push(receipt)
+
+    if (step + 1 < EVIDENCE_QUESTIONS.length) {
+      const next = step + 1
+      setStep(next)
+      turns.push({ kind: 'question', index: next, question: EVIDENCE_QUESTIONS[next] })
+    } else {
+      setDone(true)
+      turns.push({ kind: 'done' })
+    }
+    setThread((current) => [...current, ...turns])
+  }
   const tailor = () => {
     setTailoring(true)
     setTimeout(() => { update({ readiness: 14, resumeReady: true }); setTailoring(false); setStage('resume') }, 1700)
@@ -518,32 +1360,132 @@ function AssistantScreen() {
   }
 
   return (
+    stage === 'resume' ? (
     <main id="main-content" className="assistant-screen screen">
-      <Topbar back="/jobs/juspay" title="Career Copilot" eyebrow="JUSPAY APPLICATION" right={<span className="online-badge"><span /> Live context</span>} />
+      <Topbar back="/jobs/juspay" title="Career Assistant" eyebrow="JUSPAY APPLICATION" right={<span className="online-badge"><span /> Live context</span>} />
       <section className="assistant-thread page-pad">
-        {stage === 'question' && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="copilot-intro"><span className="assistant-orb large"><Sparkles size={20} /></span><div><Pill tone="soft">EVIDENCE CHECK</Pill><h1>You match the role. Let’s make the proof unmistakable.</h1><p>Juspay repeatedly asks for ownership of reliable, high-volume systems. Your résumé mentions Kafka, but not the outcome.</p></div></div>
-          <div className="evidence-compare"><div><span>JUSPAY NEEDS</span><strong>“Own reliable payment systems at scale”</strong></div><ArrowRight size={18} /><div><span>YOUR RÉSUMÉ SAYS</span><strong>“Worked on Kafka-based services”</strong></div></div>
-          <label className="answer-field"><span>What changed because of your work?</span><textarea name="evidence-answer" autoComplete="off" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Describe the system, your ownership, and a measurable result…" /></label>
-          <button className="demo-answer" onClick={() => setAnswer('I led a Kafka-based retry service for payment callbacks, added idempotency and observability, and reduced callback failures by 31% during peak volume.')}><Sparkles size={15} /> Use demo evidence</button>
-          <button className="primary-button" disabled={!answer.trim()} onClick={submitEvidence}>Review my evidence <ArrowRight size={17} /></button>
-        </motion.div>}
-
-        {stage === 'insight' && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="copilot-intro"><span className="assistant-orb large success"><Check size={20} /></span><div><Pill tone="success">STRONG EVIDENCE FOUND</Pill><h1>This is the story your résumé was missing.</h1><p>It proves system ownership, payment relevance, and measurable reliability impact.</p></div></div>
-          <div className="evidence-receipt"><div className="receipt-row"><Check size={17} /><span><strong>System</strong><small>Kafka-based payment callback retry service</small></span></div><div className="receipt-row"><Check size={17} /><span><strong>Your ownership</strong><small>Led design, idempotency, and observability</small></span></div><div className="receipt-row"><Check size={17} /><span><strong>Outcome</strong><small>31% fewer callback failures at peak volume</small></span></div></div>
-          <div className="honesty-note"><ShieldCheck size={17} /><p><strong>You control the evidence.</strong> We only use what you confirmed and never invent a metric.</p></div>
-          <button className="primary-button" onClick={tailor} disabled={tailoring}>{tailoring ? <><span className="spinner" /> Tailoring résumé…</> : <>Tailor my résumé for Juspay <Sparkles size={17} /></>}</button>
-        </motion.div>}
-
         {stage === 'resume' && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          {/* The screen's job is to hand over a file, so Download is the only primary and
+              everything above it exists to justify pressing it: what the number moved to,
+              which requirements moved it, and what the document now says. */}
           <div className="copilot-intro"><span className="assistant-orb large success"><FileCheck2 size={20} /></span><div><Pill tone="success">RÉSUMÉ READY</Pill><h1>Profile Readiness is now {journey.readiness}/15.</h1><p>Your strongest evidence is where a Juspay recruiter will look for it.</p></div></div>
+
+          <div className="r-score">
+            <div className="r-score__row"><b>{journey.readiness} of 15</b><span>requirements evidenced</span><em>+{journey.readiness - 10} since you started</em></div>
+            <div className="seg" role="img" aria-label={`${journey.readiness} of 15 requirements evidenced`}>
+              {Array.from({ length: 15 }, (_, index) => <span key={index} className={`seg__b seg__b--${index < journey.readiness ? 'ok' : 'miss'}`} />)}
+            </div>
+          </div>
+
+          <h2 className="r-heading">Changes in this version</h2>
+          <div className="r-changes">
+            {FITS_ADDED.map((item) => (
+              <div className="r-change" key={item}><Check size={15} /><span>{item}</span></div>
+            ))}
+          </div>
+
           <div className="resume-preview"><div className="resume-toolbar"><span><FileCheck2 size={17} /> Arjun_Mehta_Juspay.pdf</span><Pill tone="success">Tailored</Pill></div><div className="resume-paper"><div className="resume-name">ARJUN MEHTA</div><div className="resume-role">Senior Backend Engineer · {candidate.location}</div><div className="resume-rule" /><strong>RAZORPAY · SENIOR BACKEND ENGINEER</strong><p className="highlight-line">Designed idempotent payment workflows processing high-volume retries safely.</p><p className="highlight-line">Led reliability improvements that reduced payment callback failures by 31%.</p><p>Built Kafka-based event processing with clear observability and ownership.</p></div></div>
+
           <div className="correction-card"><div><span className="eyebrow">ONE HONEST CHECK</span><h3>Did you personally own production Java services for 3+ years?</h3><p>Juspay lists this explicitly. Confirm only if it’s accurate.</p></div><div className="choice-row"><button className={javaChoice === true ? 'is-selected' : ''} onClick={() => confirmJava(true)}>Yes, I did</button><button className={javaChoice === false ? 'is-selected' : ''} onClick={() => confirmJava(false)}>Not quite</button></div>{javaChoice === false && <p className="correction-result"><ShieldCheck size={15} /> Kept at 14/15. The gap stays visible—your résumé remains honest.</p>}{javaChoice === true && <p className="correction-result success"><Check size={15} /> Confirmed. Profile Readiness is now 15/15.</p>}</div>
-          <div className="button-row"><button className="secondary-button" aria-live="polite" disabled={downloading} onClick={downloadResume}>{downloading ? 'Preparing PDF…' : 'Download PDF'}</button><button className="primary-button" onClick={() => go('/jobs/juspay')}>Return to job <ArrowRight size={17} /></button></div>
+
+          <div className="r-actions">
+            <button className="primary-button" aria-live="polite" disabled={downloading} onClick={downloadResume}>{downloading ? 'Preparing PDF…' : <>Download PDF <FileCheck2 size={17} /></>}</button>
+            <button className="text-button" onClick={() => go('/jobs/juspay')}>Return to job</button>
+          </div>
         </motion.div>}
       </section>
     </main>
+    ) : (
+    /*
+     * The evidence conversation is a chat, not a form — prototype/job-detail-1b.html.
+     * A thread the assistant is speaking in, a progress bar over the four requirements,
+     * and a composer pinned at the foot. The findings card opens it so the user knows
+     * what is being asked and why before the first question arrives.
+     */
+    <main id="main-content" className="chat-screen">
+      <div className="c-top">
+        <button className="iconbtn" onClick={() => go('/jobs/juspay')} aria-label="Back to job detail"><ArrowLeft size={20} /></button>
+        <div className="c-top__id">
+          <AssistantMark className="c-top__orb" />
+          <span className="c-top__txt">
+            <span className="c-top__name">Career Assistant</span>
+            <span className="c-top__sub">{juspay.role} · {juspay.company}</span>
+          </span>
+        </div>
+      </div>
+
+      <div className="c-prog">
+        <div className="c-prog__bar">
+          {EVIDENCE_QUESTIONS.map((q, index) => (
+            <span key={q.id} className={`c-prog__seg ${index < step ? 'is-done' : index === step ? 'is-current' : ''}`} />
+          ))}
+        </div>
+        <span className="c-prog__label">Question {Math.min(step + 1, EVIDENCE_QUESTIONS.length)} of {EVIDENCE_QUESTIONS.length}</span>
+      </div>
+
+      <div className="c-thread" ref={threadRef} role="log" aria-live="polite" aria-label="Conversation">
+        <div className="c-thread__in">
+          {thread.map((item, index) => {
+            if (item.kind === 'user') return <div className="c-user" key={index}>{item.text}</div>
+            return (
+              <div className="c-asst" key={index}>
+                <div className="c-asst__ident"><AssistantMark className="c-mini-orb" /><b>Career Assistant</b></div>
+                {item.kind === 'findings' && (
+                  <>
+                    <div className="c-findings">
+                      <div className="c-findings__hd">Here’s what I found</div>
+                      <div className="c-findings__score"><b>10 of 15</b> evidenced</div>
+                      <ul className="c-fsum">
+                        <li><span className="c-fdot c-fdot--need" /><b>3 need proof</b><span className="c-fsum__v">System design · Scale · Cross-team leadership</span></li>
+                        <li><span className="c-fdot c-fdot--need" /><b>1 to confirm</b><span className="c-fsum__v">Kubernetes ownership</span></li>
+                        <li><span className="c-fdot c-fdot--miss" /><b>1 confirmed gap</b><span className="c-fsum__v">Production Java</span></li>
+                      </ul>
+                    </div>
+                    <p>I can strengthen the first four from what you tell me. I’ll keep Java off unless you correct it with production evidence.</p>
+                  </>
+                )}
+                {item.kind === 'question' && (
+                  <>
+                    <div className="c-qcard">
+                      <span className="c-qcard__label">Question {item.index + 1} of {EVIDENCE_QUESTIONS.length}</span>
+                      <h2 className="c-qcard__q">{item.question.ask}</h2>
+                      <p className="c-qcard__hint">{item.question.hint}</p>
+                    </div>
+                    {index === thread.length - 1 && <p className="c-qguide">Explain it in your own words — rough is fine. I’ll refine it and ask a follow-up if anything important is missing.</p>}
+                  </>
+                )}
+                {item.kind === 'receipt' && (
+                  <div className={`c-receipt ${item.claimed ? '' : 'c-receipt--open'}`}>
+                    {item.claimed ? <Check size={16} /> : <Info size={16} />}
+                    <span><strong>{item.title}</strong><small>{item.detail}</small></span>
+                  </div>
+                )}
+                {item.kind === 'note' && <p>{item.text}</p>}
+                {item.kind === 'done' && (
+                  <>
+                    <p>{receipts.filter((r) => r.claimed).length} of {EVIDENCE_QUESTIONS.length} requirements are now evidenced in your own words. Nothing here is anything you didn’t say.</p>
+                    <button className="primary-button" onClick={tailor} disabled={tailoring}>{tailoring ? <><span className="spinner" /> Tailoring résumé…</> : <>Tailor my résumé for Juspay <ArrowRight size={17} /></>}</button>
+                  </>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <form className="c-composer" onSubmit={(event) => { event.preventDefault(); submitEvidence() }}>
+        <div className="c-composer__field">
+          <label className="sr-only" htmlFor="evidence-answer">Type your answer</label>
+          <textarea id="evidence-answer" name="evidence-answer" autoComplete="off" rows={1} value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Type your answer…" disabled={done} />
+          <button type="submit" className="c-send" disabled={!answer.trim()} aria-label="Send answer"><ArrowRight size={18} /></button>
+        </div>
+        <div className="c-composer__foot">
+          <span className="c-composer__note">One question at a time · I only use details you confirm</span>
+          {!done && <button type="button" className="c-demohint" onClick={() => setAnswer(question.sample)}><span className="c-demohint__tag">Demo</span> Use Arjun’s demo answer</button>}
+        </div>
+      </form>
+    </main>
+    )
   )
 }
 

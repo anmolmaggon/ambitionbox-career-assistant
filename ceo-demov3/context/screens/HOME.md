@@ -21,7 +21,7 @@ Home must support:
 ### How Home consumes the handoff
 
 - Home treats first arrival as `arrival=first` **and** `firstHomeArrival: true`. Both must hold.
-- **The first-arrival line is written warm, not as a status report** (2026-08-19). “Your profile is reviewed and your application email is live” read as a system confirming its own setup to someone who had just arrived. It now opens with arrival, and it names **everything the screen drew on**, not just the inbox: “You're all set up. I've been across your application email and your ranked roles — 4 things need you, most urgent first.” Crediting only the email under-claimed — the sequence mixes email-derived moments with roles ranked against the reviewed preferences. Home is the screen that has seen everything; the greeting says so.
+- **The first-arrival line is written warm, not as a status report** (2026-08-19). “Your profile is reviewed and your application email is live” read as a system confirming its own setup to someone who had just arrived. Two drafts were rejected, both because they described what the system had done — “your profile is reviewed”, then “I've been across your application email and your ranked roles”. Neither is what a person cares about on arrival. **The line now states what changes for them:** “You won't have to go looking any more. 4 things need you today.” That covers every source at once without reciting an inventory, and it keeps the count and the ordering promise. The email-skip branch takes the same territory: “You won't have to go hunting for roles any more.” **Relief belongs to arrival only** — a returning visit gets the plain line, because being told the same good news every morning is how a promise turns into noise.
 - Home **never clears `firstHomeArrival`.** The flag stays inspectable for the onboarding contract test; arrival-only presentation is derived from the route instead.
 - First arrival changes the greeting line and plays one orchestrated section reveal. It never adds a card, a modal, or an interstitial.
 
@@ -31,7 +31,7 @@ Home must support:
 
 **The rail is gone.** Its first two rows routed to Matches and Tracker — the bottom-nav tabs drawn larger — and it cost ~420px.
 
-**Below the sequence: a quote of the day**, under an all-caps `QUOTE OF THE DAY` label, separated from the sequence by a hairline the width of the text column so it reads as the page's footer rather than one more thing in the stack. The quotation is **set in a serif** — it is editorial content and the one place on Home where the voice is not AmbitionBox's, so it is allowed to look that way. The deviation from Figtree is contained to this block and the mark above it; deleting one `font-family` line reverts it. Deliberately not a card — Home already stacks white surfaces and another one would read as a fifth thing needing attention. It is the screen exhaling after the work, so its weight comes from the mark, the measure and the whitespace instead of a container. Attributions are checked; nothing widely misattributed is included, and no paraphrase is passed off as a quotation. Keyed to the day of the week so it is genuinely *of the day* and stable within one sitting.
+**Below the sequence: a quote of the day**, under an all-caps `QUOTE OF THE DAY` label. **No rule above it** — the whitespace is the separation; a hairline made it read as a section boundary rather than as the page simply ending. The quotation is **set in a serif** — it is editorial content and the one place on Home where the voice is not AmbitionBox's, so it is allowed to look that way. The deviation from Figtree is contained to this block and the mark above it; deleting one `font-family` line reverts it. Deliberately not a card — Home already stacks white surfaces and another one would read as a fifth thing needing attention. It is the screen exhaling after the work, so its weight comes from the mark, the measure and the whitespace instead of a container. Attributions are checked; nothing widely misattributed is included, and no paraphrase is passed off as a quotation. Keyed to the day of the week so it is genuinely *of the day* and stable within one sitting.
 
 **Amended 2026-08-18: the hero and "What I set aside" are one carousel.** Home stopped being the screen that picks one thing and files the rest away; it lays everything out in order and lets the user scan it. The arbitration claim is unchanged and still falsifiable — *the order moves when the user's life moves* — it is simply no longer told by drawing one card larger. "One dominant CTA" is preserved structurally: only one card is in the viewport at a time, so dominance comes from position rather than size.
 
@@ -40,8 +40,29 @@ Home must support:
 - Rows come from `applications.attention`, `applications.waiting` and `jobs`. Nothing is invented.
 - Ordered by urgency (Overdue → Today → Due tomorrow → ranked roles). Only the head of the queue may claim "Next in line."
 - **Reasons must be state-derived.** A pick with a fixed date (interview, offer) changes why everything else waits. *If a reason could move to another row and stay true, it is decoration — cut the row.*
-- Verified by a falsifier across five states: 5/5 distinct reason sets, and no two reasons inside a state repeat. Re-run after any change to either ranking function.
+- Verified by a falsifier across five states: 5/5 distinct reason sets, and no two reasons inside a state repeat. Re-run after any change to either ranking function. **The probe moved with the UI:** the Why row is gone and the support paragraph now sits inside `.card-mid`, so the reason under test is the line each card renders for itself — `.card-mid > p:not(.card-entity-line)`. A falsifier reading a selector that no longer exists reports a clean 0/5 and looks like a real failure.
 - Every card carries a dismiss (✕) → **Ignore / Remind me later / Mark as done — I handled it**. The menu closes on a tap anywhere outside it or on Escape; a menu that only closes by choosing something is a trap. The third option exists because plenty of this happens off the platform and nothing can detect that it did. Dismissal is **local component state, not persisted** — nothing in `journey` records it, and inventing persistence would claim a memory the prototype does not have.
+### Six shapes, one shell (2026-08-19)
+
+Uniform size was the right call and stays. Uniform *composition* was not: a recruiter's message, a booked date, a ₹28L offer and a ranked role all rendered as `entity → headline → paragraph`, so nothing looked like what it was. The shell — width, radius, elevation, the mark-and-kicker row, the dismiss, the pill pinned to the floor — is identical on every card. Only the middle composes differently.
+
+| Shape | Middle | Fixtures |
+|---|---|---|
+| `reply` | the quote leads behind a 2px rule; the sender signs it underneath, the order an email arrives in | hardcoded quote · `applications.attention` |
+| `interview` | a date block (`TUE 28`) with time, duration, mode and interviewer — the only hard date in the search, drawn as one | `interviewIntel.invitation`, `loop.total` |
+| `offer` | the figure set at 32px with its fixed/variable split beneath, then the market band | `offer.{total,fixed,variable,market,currentDelta}` |
+| `role` | three columns of evidence instead of a wrapped grey sentence | `juspay` / `jobs[]` |
+| `task` | the action is the claim; a due chip and the pipeline **stage** say where it sits | `applications.attention[].{action,when,stage}` |
+| `connect` | unchanged — no entity, no dismiss, trust boundary beside the action | — |
+
+**The leash:** no shape may introduce a size, radius or elevation the others do not have. If one needs that to work, the treatment is wrong, not the shell.
+
+Three rules that fell out of building it, each of which had already caused a duplicate on screen:
+
+- **`stage` is surfaced, `insight` is not.** Both are real fixture data Home had never used. `stage` earns its place; `insight` would fight the row's `reason`, and two explanations on one card cancel out.
+- **Timing is stated once.** Shapes whose middle already carries the timing — `interview`, `task`, `role` — suppress the header chip, or the card says “Tuesday” twice.
+- **`title` vs `headline` on a role.** A queued role's `headline` is the Preference Match string, which the stat row now carries, so the card renders `title` (the role name) instead. `detail` still holds the Preference Match string because the CTA's accessible name is built from it — that is what `/Zeta.*86% Preference Match/` matches. Likewise “Round 1 of 4” moved out of `company.detail` into the schedule block so it still appears exactly once.
+
 - **Every card carries a category mark** — a 28px tinted tile holding one icon. The colour is restrained and stays inside the tile, per `context/UI.md`, and the split carries meaning rather than decorating: a **coloured** mark is something happening *to* you (a person waiting → blue, a date booked → violet, money on the table → green, a Tracker item due → amber) and a **slate** mark is something sitting there for you to choose (ranked roles, the email connection). A queued role also takes a quiet CTA instead of the solid one, because nobody is waiting on it. Cards stay identical in size and elevation; only identity varies.
 - **Material:** MOB-HOME-003 (Bond) — white cards on the quiet canvas, small grey eyebrow, bold plain-language claim, evidence strip, exactly one pill action. MOB-HOME-006 (Klarna) for the peeking mechanic and the elongated active dot; MOB-HOME-005 (Monzo) for dismissal being a property of the card. Their gradient fields are explicitly not carried across.
 
@@ -59,7 +80,11 @@ This is now `BottomNav` in `src/AppUI.jsx`, so it is the same three tabs on ever
 
 **The composer is part of the bottom cluster (2026-08-18).** Per MOB-HOME-001 (Cleo), suggested questions, the ask pill and the three tabs read as one quiet group sitting on the canvas — not an input buried under the fold above a separate white shelf. The cluster fades into the canvas rather than being fenced off by a border, so content passes under it. It is ~244px of permanent chrome, which is the deliberate cost of Ask being reachable from any scroll position and any state; Home reserves `padding-bottom: 272px` so nothing ends underneath it.
 
-**The cluster reads as a sheet (2026-08-19):** white, rounded 28px at the top, lifted off the canvas by a shadow, with a grab handle above the chips. Solid, so nothing shows through the tabs. On white the chips take a hairline instead of a shadow and the ask takes a recessed tinted field instead of a raised button, so it reads as the thing you type into. **The handle is a real control** — it opens the assistant, which is where a swipe up would land. An affordance that does nothing is a lie the moment someone tries it. Home reserves `padding-bottom: 216px` for it; `.screen`'s shared 132px is not enough.
+**The cluster reads as a sheet (2026-08-19):** white, rounded 28px at the top, lifted off the canvas by a shadow, with a grab handle above the pill. Solid, so nothing shows through the tabs. The ask takes a recessed tinted field instead of a raised button, so it reads as the thing you type into. **The handle is a real control** — it opens the assistant, which is where a swipe up would land. An affordance that does nothing is a lie the moment someone tries it.
+
+**The suggested-question chips were removed from the dock on 2026-08-19**, after the same chips had already been cut from the assistant sheet. Two rows of chrome were standing between the canvas and the tabs to offer questions nobody had asked for yet, and the pill they sat above already types an example on its own. The dock is **handle, pill, tabs** — 178px, down from 236px. The `PromptChips` component itself survives: the three legacy directions still render it in-page.
+
+With the chips gone the cluster gap dropped from 12px to 4px, because it had been sized to separate two stacked rows that no longer exist. **The handle keeps its 44px height** — that is the touch-target floor, not spacing — and gave up its bottom padding instead, which pulls the bar down toward the pill rather than leaving it marooned in its own band. The tab bar took its own top inset back so only the space above the pill closed up. Two values measured against the old dock were re-measured with it: Home's `padding-bottom` (272px → 220px, or the last line floats in dead space) and the review-only design switcher's offset.
 
 The tab bar inside the cluster is still the shared `BottomNav`; Home only takes it out of fixed positioning so the group can own the bottom together. The three legacy directions still render their own in-page composer, so the dock carries the ask **only when the design does not**.
 
@@ -117,10 +142,10 @@ Home is being decided between three material directions, built side by side agai
 
 ### Contextual composer
 
-- The composer label **“Ask AmbitionBox about your next move”** is now the pill's **accessible name** rather than its drawn text (2026-08-19). The pill types out example questions the way a search field cycles a placeholder; the typed line is `aria-hidden`, so a screen reader still hears the contract string. **Under reduced motion the contract string is what is drawn**, immediately and without a caret. The typed examples are deliberately not the chip set — the chips sit directly above, and repeating them would show the same range twice.
+- The composer label **“Ask AmbitionBox about your next move”** is now the pill's **accessible name** rather than its drawn text (2026-08-19). The pill types out example questions the way a search field cycles a placeholder; the typed line is `aria-hidden`, so a screen reader still hears the contract string. **Under reduced motion the contract string is what is drawn**, immediately and without a caret. The typed examples are now the only place the dock offers a question, since the chips beneath them were removed.
 - **The assistant's mark is the AmbitionBox mark, not a sparkle** (2026-08-19), in the dock pill and in the sheet. A sparkle is the generic sign for “an AI did something”, which `context/UI.md` rules out by name, and it made the one permanent control on the screen look like every other product's.
 - A grounding line names what the answer actually uses, and it changes with the state (live applications vs. reviewed profile only). **Moved 2026-08-18:** it now leads the assistant sheet instead of sitting under the composer. A slim Cleo pill has no room for a second line, and the grounding is most useful at the moment the answer is about to be given.
-- **Superseded 2026-08-19: suggested prompts are no longer derived from state.** They are pitches for what the assistant is *for*, and they name **AmbitionBox's own territory** — pay fairness, take-home, company comparison — rather than asking vague planning questions, because that range is what nobody discovers cold. The carousel already proves Home adapts — it visibly reorders when the user's life moves — so the chips stopped competing with it and went back to showing someone who has never asked anything what is worth asking. The five are stable in every state, and each lands on a real `homeAnswer()` branch backed by real fixtures — a chip that produces a shrug is worse than no chip. **The take-home answer names what is missing rather than inventing it:** no take-home fixture exists anywhere in the prototype, so the answer separates fixed from variable pay, says the letter does not give the split, and points at the one figure that *is* measurable (the ₹13k monthly cost-of-living delta). Confident wrong numbers are the thing this product exists to avoid. Chips use **short labels**; the sheet uses the **full question**, so the two surfaces never collide as duplicate controls.
+- **Superseded 2026-08-19: suggested prompts are no longer derived from state.** They are pitches for what the assistant is *for*, and they name **AmbitionBox's own territory** — pay fairness, take-home, company comparison — rather than asking vague planning questions, because that range is what nobody discovers cold. The carousel already proves Home adapts — it visibly reorders when the user's life moves — so the chips stopped competing with it and went back to showing someone who has never asked anything what is worth asking. The five are stable in every state, and each lands on a real `homeAnswer()` branch backed by real fixtures — a chip that produces a shrug is worse than no chip. **The take-home answer names its boundary rather than inventing past it.** Corrected 2026-08-19: an earlier version claimed the letter gives no fixed-pay split. It does — `offer.fixed` is ₹23.5L. The answer now uses it, says that fixed pay is the part that recurs monthly, and stops short of a take-home figure because the tax regime and deductions genuinely are not in the fixtures. Confident wrong numbers are the thing this product exists to avoid; so is claiming ignorance of data that is sitting in `data.js`. Chips use **short labels**; the sheet uses the **full question**, so the two surfaces never collide as duplicate controls.
 - **“Add an interview manually” left the page on 2026-08-19.** After the carousel rebuild it was a lone link floating below the sequence, and the capability index already offered the same sheet — two entry points to one honest disclaimer. The index is now the only one. `tests/prep-intel.spec.js` was re-pointed through it and keeps its intent unchanged; `?action=add-interview` still opens the sheet directly.
 - `homeAnswer()` is ordered most-specific-first. The “no interview invitation yet” answer is a contract string used by `tests/onboarding.spec.js`.
 
@@ -133,6 +158,143 @@ Kept here only so the decision is not re-litigated. Four stages (Explore → App
 - The greeting eyebrow reads **“Thursday · 9:41 am”**, set in caps, as of 2026-08-19 — it is a timestamp, and caps read as metadata rather than as the first line of a sentence. It is a fixture time, not a device clock: it agrees with “Good morning”, and it stays inside the Thursday the rest of the data assumes (“2h ago”, “Overdue”, Tuesday's round), which a real clock would contradict. The earlier “Thursday · Your job search” — itself a narrowing of “Your career”, which overstated the scope — survives in the three legacy directions.
 - **Removed 2026-08-19: the live-email row** (“Live from your application email · 15 organised · 3 need you”). It restated what the sequence beneath it already showed, and Tracker owns the organised-inbox count. `LiveSummary` survives only inside the three legacy directions.
 - Counts still appear once per screen. The greeting now owns the only count on Home, and it counts the sequence it introduces.
+
+## Assistant sheet — two halves, not one stack
+
+Rebuilt 2026-08-19 against **MOB-HOME-002 (Natural AI)** and **MOB-HOME-003 (Gemini)** after the previous sheet was called generic. It had led with a mark, a heading and a grounding paragraph, then put chat suggestions and navigation rows in the same contained list, so neither read as itself.
+
+The sheet is now split by what each half is for:
+
+- **Header.** Back on the left, history on the right — the assistant's own chrome, replacing the floating Close every other sheet uses, and the grab handle is hidden because a full-page surface is not something you drag. **Back is a real back**, not a second close: it returns to the menu from a thread or from history, and only leaves the assistant once the menu is already showing.
+- **Top — where you go.** An uncontained menu: grey glyph, plain label, air between rows. No card, no border, no chevron. Seven saturated glyphs stacked in a column would read as seven priorities, so the glyphs are grey and only take brand ink on hover. **A row is a label and a destination, nothing else.** Two attempts at a second value were both cut: the original `hint` described what each destination was, which the label already says, and the live-state suffix that replaced it (`Tuesday 11:00`, `₹28L`) put facts the cards already carry into a menu, where they read as clutter rather than as news.
+- **Bottom — where you type.** A rectangular composer, not a pill: the question sits on its own line and the mark, the signature and Send sit on a control row beneath it. The line under the field reads **“AmbitionBox Career Intelligence”** — the assistant signs the field it answers from. The state-dependent grounding sentence that briefly sat there restated what the answer already qualifies. **No suggestion chips in here**, and as of the same day none in the dock either — the sheet dropped them first for spending the composer's headroom, and the dock followed for the same reason.
+
+The sheet is **full page** (`100dvh`, square corners; inset to the shell above 700px). It was briefly sized to content instead — that left the menu and the composer competing over the same few hundred pixels. The stage between them owns the scroll, not the sheet, or a full-height sheet gets two scrollers. `padding-top` clears the absolutely-positioned Close control so the first menu row never runs under it.
+
+### Order and grouping
+
+The menu runs in **funnel order — discover, evaluate, apply, track, interview, offer** — because that is the order the rest of the demo is built in. Track had been sitting after Offer, which put the everyday screen behind the once-a-search one. “What AmbitionBox knows about me” is last: it is about the assistant rather than about the search. Its label matches that screen's own heading, and a noun phrase both reads as a destination and keeps the longest row to one line at 360px.
+
+Two groups, and **the only label on the surface** separates them, because the rows behave differently rather than for decoration:
+
+- **Destinations** leave the sheet. Every one still goes somewhere that exists: Matches, Job detail, the résumé assistant, Tracker, Prep (or the add-interview sheet), Offer (or the offer-start sheet), Profile. “Tailor my résumé” was “Strengthen my application”, which named the outcome and hid the artifact — the destination produces a résumé, so the row says résumé.
+- **Tools** answer in place. AmbitionBox's calculators are a real part of the product, and each row routes through `homeAnswer` against the same fixtures as everything else, so a tool returns Arjun's numbers rather than an empty form. The row's label is what the tool is called; a separate `question` field is what actually gets asked, so the row reads as a tool while the thread still reads as a question someone asked.
+
+**Gratuity is the honest case worth keeping.** It turns on two numbers AmbitionBox does not hold — basic pay, and tenure at one employer rather than total experience — so the answer states the rule, names both gaps, and leads with the five-year vesting cliff, which is the part that actually changes a job decision. A gratuity figure derived from CTC would be exactly the confident wrong number this product exists to avoid.
+
+### Past chats
+
+The hamburger opens history. Entries are **deterministic and store no reply** — each routes back through `homeAnswer`, so opening one shows the real answer and history cannot drift from what the assistant would say today. Anything asked this session joins the top of the list, which is why the seed is only three rows: it is context, not the feature.
+
+### The scroll fade
+
+The list runs past the fold on short screens, and a menu that simply ends at whatever row the fold lands on reads as a complete menu. So the stage carries a fade — but **it is measured, not assumed**: the scroller reports whether anything is still below it, re-measuring on scroll, on resize, and whenever the view or the history swaps the stage out. A fade drawn when nothing is hidden is a lie about the content, so when the list fits, no fade renders at all.
+
+It is **170px — around three rows deep**. At 96px only the last row softened, which still read as a list that had simply ended; over three rows the dissolve is unmistakable rather than something you have to notice. Solid for the bottom sixth, then eased out through four stops, because a single linear alpha ramp bands visibly across that distance. The scroller is a child of the stage rather than the stage itself, so the fade stays pinned to the stage's bottom edge instead of scrolling away with the content it covers. At 360px the rows also tighten, which buys back a row before the fold does.
+
+Asking moves the question into the thread as a right-aligned bubble and **empties the field** — the draft and the asked question are separate state, so the same sentence never appears twice on screen.
+
+**The dock handle is a real control and must stay wired.** It passed React's click event into `ask(question)` for a time, which called `.toLowerCase()` on it and broke the screen. It opens the assistant with an empty question, exactly like the ask pill.
+
+## Card fields — colour by category
+
+Added 2026-08-19 against **MOB-HOME-004 (Strava)**, whose Workouts screen expresses a category as a saturated field with a glassy diagonal sheen.
+
+**This is a promotion, not an invention.** The same mapping already existed twice over: `.action-card-mark` carried it at 28px, and the deep green and violet already existed as `priority-card--offer` and `priority-card--interview`, which the three legacy directions still render.
+
+| tone | field | what it means |
+|---|---|---|
+| `offer` | deep green | money on the table |
+| `interview` | violet, warm highlight | a date booked |
+| `reply` | indigo | a person waiting |
+| `update` | terracotta | a clock running on someone else's process |
+| `role` | **white** | yours to choose |
+| `quiet` (connect) | **white** | yours to choose |
+
+**Only live events take a field.** The line is the one `.action-card-mark` already drew — coloured is something happening to you, white is something sitting there for you to choose. Ranked roles and the email connection stay white, which is what stops the carousel becoming a rainbow and keeps the colour meaning something.
+
+**This does not re-introduce the hero.** The rebuild dropped these fields for a real reason: *a sequence of equals cannot have one card wearing a different field*. Colouring **by category** answers that — nothing is privileged, because the field says what *kind* of thing a card is rather than which one matters most. Order is still the only thing that ranks them.
+
+**Learned from Strava:** the saturated field and the glassy sheen. **Not copied:** the stacked-deck effect — our cards scroll as peers, and a stack implies a pile you work through — the vivid palette, or Strava's semantics, where colour means *the mode you picked* rather than what the card is.
+
+### Rules the fields have to keep
+
+- **Deep and muted, never vivid.** These sit beside AmbitionBox blue, and a bright field would beat the CTA on every card.
+- **The sheen is layered into `background`**, not a pseudo-element, so it cannot paint over the card's own content.
+- **Reply is indigo, not the brand blue its mark uses.** A blue field would fight its own CTA, which is the one control that has to win.
+- **Update is terracotta, not a literal dark amber.** The mark's `#b96a12` goes muddy brown stretched over a whole card, and this is the one tone that can appear two or three times in a row, so it had to survive being seen next to itself.
+- **The CTA inverts to white**, including over `.action-card--pick`'s brand blue, which would recede on green or violet.
+- **The due pill drops its tinted background** — two saturated surfaces stack into mud. Overdue keeps a distinct ink so the one genuinely worse state still reads as worse.
+- **The block sits after the base card rules on purpose.** Several overrides tie on specificity with the white-card rule they replace (`.action-card h2`, `.time-chip`), so source order is what decides them. Moving it up silently un-inverts the headline and the timestamp.
+
+### Contrast
+
+Every field clears AA against white text: 6.9:1 (update, lightest stop) to 15:1 (reply, darkest). **Secondary text runs at .88 and .82, not the .78/.66 a white-on-dark set usually takes** — measured against the lightest stop of the lightest field, .78 body text came out at **4.16:1 and failed**. The current values clear 5.8:1 and 5.2:1 on that same worst case.
+
+## The states board — `/states`
+
+Presenter surface, added 2026-08-19. Every Home state side by side, for showing the screen to a room. Linked from the demo launcher beside the chapter list, so it is not a URL only the person who built it knows.
+
+**Live iframes, not screenshots.** The board cannot go stale, and any tile can be opened and driven for real mid-presentation. Each frame renders the app at a true 390×844 and is scaled with `transform` — a scaled iframe keeps its own viewport, where `zoom` would reflow the app as a narrow desktop. The grid uses **fixed 300px columns** because the scale is a constant (300/390 = .769); a fluid column would need JS to keep the scale in step with the width.
+
+It is the one route that **renders outside `.phone-shell`**, since it is a wall of phones rather than one.
+
+Seven states, in the order the search runs: no inbox → first open → recruiter waiting → replied → résumé ready → interview booked → offer. Each tile shows its preset URL and the journey flags that produce it, so anyone in the room can reproduce it.
+
+**`firstopen` was added to `journeyPresets` for this.** The onboarding-handoff state was otherwise unreachable by URL: `?preset=` bypasses session storage, and every other preset ships `firstHomeArrival: false`. The addition is additive and nothing else reads it.
+
+Tiles past the first three lazy-load — seven copies of the app in one document is genuinely heavy.
+
+## Setting aside — the greeting counts what the rail shows
+
+Fixed 2026-08-19. The dismissed list used to live inside `ActionCarousel`, so the greeting never heard about it: setting every card aside left **“3 things need a look” sitting directly above an empty rail**. The list now lives in `useHomeContext`, and `introLine` reads the same array the carousel renders.
+
+`introLine` gained a **zero branch**, which states the all-clear plainly and without a count — there is no number worth printing. The carousel's own “That is everything for now” line was **removed**: the greeting owns the only count on Home, so a second line underneath restating it was the duplication this contract rules out. What is left in that state is the greeting and the day's quote, which is the composition it should have.
+
+### Why the leave is a CSS class and a timer, not AnimatePresence
+
+**Do not put this back under `AnimatePresence`.** It removes a child when the child disappears from *its own* render, which held while the dismissed list was carousel-local. Once the list moved up to Home, removal arrives as a new `cards` prop from a parent re-render and presence tracking silently desyncs — verified directly: React was rendering `interview,roles` while the DOM still held all three, the dropped node mounted at full opacity with `exit` never firing. `mode="popLayout"`, dropping `layout`, and driving the same fade through framer's `animate` all failed the same way.
+
+A class and a `setTimeout` do run, always, and cost one CSS rule. The card fades, then it leaves Home's list. **`LEAVE_MS` in `Home.jsx` and `.action-card.is-leaving` in `home.css` have to stay in step** — the timer removes the card, the CSS fades it. Under reduced motion the fade is skipped and the card is removed immediately, which is the path the Playwright suite exercises.
+
+Covered by *“setting every card aside leaves the greeting agreeing with the rail.”*
+
+## The contribution card — asking, not telling
+
+Added 2026-08-19. AmbitionBox's credibility is borrowed from its contributors: the briefing cites *63 interview reports*, the job cards cite *96 employee-reported salaries*, the offer beat cites *847 reviews*. Home knows when a user has capacity, which makes it the right place to ask for the next one back.
+
+**It is the only card that asks the user for something rather than telling them something, and it is drawn to say so.** Dotted border, no fill. Solid means AmbitionBox ranked this for you; the two colour states say whether a thing is happening *to* you or waiting *for* you to choose. This is neither, so it takes a border treatment rather than a fifth hue, and the colour language stays two-state. The CTA is outlined for the same reason — a solid button would put the loudest control on the screen on its quietest card.
+
+Three rules keep it honest:
+
+- **Calm days only.** A day is calm when nothing on it is dated — no offer window, no booked round, no recruiter waiting. Application updates do *not* disqualify one: those run on someone else's clock, which is why they are drawn the way they are and why their copy says you cannot close them alone. Live on `baseline`, `matches`, `resume`; absent on `tracker`, `interview`, `offer`.
+- **Always last.** It can never sit above something real.
+- **Never counted.** `introLine` filters `kind === 'contribute'` out of its count. Counting it would have the greeting claim four things need you when one of them is AmbitionBox asking a favour — the same contradiction the set-aside fix removed.
+
+**The subject is the employer the user is at right now** (Razorpay in the fixture), never anyone in their search. That is the review AmbitionBox is short of and the one they can actually give, and it means no rejection-bias problem: a company review is about where you work, not where you were turned down.
+
+The sheet names what a review would collect and then says plainly that the prototype does not submit anything, the same posture `AddInterviewSheet` takes. This is the first flow in the demo pointed *outward*, so its trust line is about posting rather than reading.
+
+Covered by *“the review ask appears only on a calm day, last, and is never counted.”*
+
+## The post-interview debrief
+
+Built 2026-08-19, on the `interviewDone` flag and the `postinterview` preset. It outranks a booked future round because the Tracker is genuinely stale until Arjun says what happened — nothing in an inbox reports the outcome of a call.
+
+**It is a normal solid card, not the dotted ask**, because it is a real task: the user gets something from answering. What AmbitionBox wants — the questions that came up — is the second step, inside the flow the card opens, never on the card face. That is the rule for every contribution that has a user-serving question in front of it.
+
+**Name the interview, never the day.** The first draft read *“How did Tuesday go?”* and it was wrong: a day of the week is not an interview, and this screen can hold more than one. The card names the company, the role and the round — *“How did your Juspay interview go?”*, over `Juspay · Senior Backend Engineer · Round 1 of 4` — and the support line reads the round, the interviewer and the slot straight off the fixture.
+
+The sheet is two steps and the order is the point:
+
+1. **The outcome** — went well / hard to read / did not go well. Only the user knows it, and it is what unsticks their Tracker.
+2. **The questions** — reachable only after step one, so the ask is never the price of entry.
+
+The pitch on step two is the user's own, and it is literal rather than an appeal to goodwill: logged questions are their weak-spot map, AmbitionBox prepares them on those before the next round, and they join the same 63 reports that told them what to expect for this one. Submitting is honestly unwired, and the outcome is stated as private either way.
+
+### Mood, considered and dropped
+
+A “how are you feeling lately” touchpoint was designed and cut. A stored feeling the app cannot act on is extraction dressed as empathy; it is a retention mechanic pulling against *designed to be deleted*; and repeated low answers raise a duty-of-care question that would need an answer before asking. The underlying need is better served by inferring from behaviour — applications gone quiet, nothing moving — and offering a **pause**, which is a real action the assistant can take.
 
 ## Accessible-name trap, hit twice now
 

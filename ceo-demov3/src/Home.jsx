@@ -16,18 +16,21 @@
  *   5. SHEETS   — shared by every design.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
-  ArrowRight, BriefcaseBusiness, Building2, Check, ChevronRight, CircleDollarSign,
-  Clock3, FileCheck2, FileText, Info, Mail, MessageSquare, Search, Send, ShieldCheck, Sparkles, Target,
+  ArrowLeft, ArrowRight, BriefcaseBusiness, Building2, Calculator, Check, ChevronRight, CircleDollarSign,
+  Clock3, FileCheck2, FileText, Info, Mail, Menu, MessageSquare, PiggyBank, Scale, Search, Send, ShieldCheck, Sparkles, Target,
   UserRoundCheck, X,
 } from 'lucide-react'
-import { applications, candidate, interviewIntel, jobs, juspay, onboardingProfile } from './data'
+import { applications, candidate, interviewIntel, jobs, juspay, offer, offerDecision, onboardingProfile, stageLabel } from './data'
 import { useJourney } from './store'
-import { BottomNav, CompanyLogo, Logo, Pill, Sheet, go } from './AppUI'
+import { AssistantDock, AssistantMark, BottomNav, CompanyLogo, Logo, Pill, PromptChips, Sheet, go } from './AppUI'
 
 const EASE = [0.22, 1, 0.36, 1]
+// Kept in step with `.action-card.is-leaving` in home.css — the timer removes the card,
+// the CSS fades it, and the two have to agree.
+const LEAVE_MS = 300
 
 // ---------------------------------------------------------------------------
 // 1. KERNEL
@@ -60,10 +63,12 @@ function useHomeSheets() {
   const [assistant, setAssistant] = useState(false)
   const [assistantQuestion, setAssistantQuestion] = useState('')
   const [offerStart, setOfferStart] = useState(false)
+  const [contribute, setContribute] = useState(false)
+  const [debrief, setDebrief] = useState(false)
   const [sent, setSent] = useState(false)
 
   return {
-    reply, addInterview, assistant, assistantQuestion, offerStart, sent,
+    reply, addInterview, assistant, assistantQuestion, offerStart, contribute, debrief, sent,
     openReply: () => setReply(true),
     closeReply: () => setReply(false),
     sendReply: () => {
@@ -75,6 +80,11 @@ function useHomeSheets() {
     closeAddInterview: () => setAddInterview(false),
     ask: (question) => { setAssistantQuestion(question); setAssistant(true) },
     closeAssistant: () => setAssistant(false),
+    openDebrief: () => setDebrief(true),
+    closeDebrief: () => setDebrief(false),
+    logInterview: () => { update({ interviewLogged: true }); setDebrief(false) },
+    openContribute: () => setContribute(true),
+    closeContribute: () => setContribute(false),
     openOfferStart: () => setOfferStart(true),
     closeOfferStart: () => setOfferStart(false),
     useDemoOffer: () => {
@@ -101,9 +111,19 @@ function useHomeContext(sheets) {
     || journey.preferencesConfirmed || journey.naukriConnected || journey.emailSkipped,
   )
 
-  const action = nextBestAction({ journey, hasProfileContext, openReply: sheets.openReply })
+  const action = nextBestAction({ journey, hasProfileContext, openReply: sheets.openReply, sheets })
   const aside = setAside({ journey, action })
-  const cards = carouselCards({ action, aside, journey })
+  const built = carouselCards({ action, aside, journey, sheets })
+
+  // Dismissal lives here rather than inside the carousel because the greeting counts
+  // what the carousel is showing. While it was carousel-local, setting every card aside
+  // left "3 things need a look" sitting above an empty rail — the screen contradicting
+  // itself in the one state that is supposed to read as calm.
+  //
+  // Local only, and deliberately so: nothing in `journey` records a dismissal, and
+  // inventing persistence would claim a memory the prototype does not have.
+  const [dismissed, setDismissed] = useState([])
+  const cards = built.filter((card) => !dismissed.includes(card.id))
 
   return {
     journey,
@@ -114,6 +134,7 @@ function useHomeContext(sheets) {
     action,
     aside,
     cards,
+    dismiss: (id) => setDismissed((prev) => (prev.includes(id) ? prev : [...prev, id])),
     // Home claims to have seen everything, so it reads the profile the user actually
     // reviewed rather than hardcoding a name.
     firstName: (journey.onboardingProfile?.name || onboardingProfile.name).split(' ')[0],
@@ -121,7 +142,10 @@ function useHomeContext(sheets) {
     // The email recommendation is a card only when it is not already the hero.
     showConnectNote: !journey.emailConnected && action.id !== 'connect',
     showTimeJump: journey.resumeReady && !journey.interviewInvited && !journey.offerDetected,
-    intro: introLine(journey, firstArrival, cards.length),
+    // The contribution card is deliberately not counted: it is not a thing that needs
+    // the user, and counting it would have the greeting claim four things need you when
+    // one of them is AmbitionBox asking for a favour.
+    intro: introLine(journey, firstArrival, cards.filter((card) => card.kind !== 'contribute').length),
     grounding: journey.emailConnected
       ? 'Uses your profile, preferences, and live applications.'
       : 'Uses your reviewed profile and preferences.',
@@ -138,47 +162,93 @@ function useHomeContext(sheets) {
 }
 
 /*
- * The greeting explains the screen it introduces, and it has to name everything the
- * screen actually drew on. Two corrections live here:
+ * The greeting explains the screen it introduces.
  *
- *   - A line claiming "one thing" above four cards is untrue, so the count comes from
- *     the sequence itself rather than being authored per state.
- *   - Crediting only the inbox was equally untrue: the sequence mixes email-derived
- *     moments with roles ranked against the reviewed preferences, so the line names
- *     both. Home is the screen that has seen everything; the greeting should say so.
+ * The count comes from the sequence itself — a line claiming "one thing" above four
+ * cards is untrue. The first-arrival wording went through two rejected drafts, both of
+ * which described what the system had done ("your profile is reviewed", "I've been
+ * across your application email"). Neither is what the person cares about on arrival.
+ * The line now states what changes for them: they can stop going and checking. That
+ * covers every source at once without reciting an inventory of them.
+ *
+ * Relief belongs to arrival only. A returning visit gets the plain line — being told
+ * the same good news every morning is how a promise turns into noise.
  */
 function introLine(journey, firstArrival, count) {
   if (journey.emailConnected) {
+    // Nothing left is a real state, not an error, so it is stated plainly and without
+    // the count the other branches carry — there is no number worth printing.
+    if (count === 0) {
+      return firstArrival
+        ? 'You won’t have to go looking any more. Nothing needs you right now.'
+        : 'I looked across everything — nothing is waiting on you right now.'
+    }
     if (count <= 1) {
       return firstArrival
-        ? 'You’re all set up. I’ve been across your application email and your ranked roles — one thing needs you today.'
+        ? 'You won’t have to go looking any more. One thing needs you today.'
         : 'I looked across everything — one thing needs you.'
     }
     return firstArrival
-      ? `You’re all set up. I’ve been across your application email and your ranked roles — ${count} things need you, most urgent first.`
+      ? `You won’t have to go looking any more. ${count} things need you today.`
       : `I looked across everything — ${count} things need a look.`
   }
   if (journey.emailSkipped) {
     return firstArrival
-      ? 'You’re all set up. I’ve ranked everything against the preferences you just reviewed — your search starts with what actually fits.'
+      ? 'You won’t have to go hunting for roles any more. Your search starts with what actually fits you.'
       : 'Your profile is ready. Bring your live search into focus next.'
   }
   return 'Your profile is ready. Bring your live search into focus next.'
 }
 
+/*
+ * The invitation, reduced to the parts a date block can show. Everything here is read
+ * from the fixture — the day string is "Tuesday, 28 July", so the block splits it rather
+ * than restating it, and nothing is formatted that the invitation did not contain.
+ */
+/*
+ * Three columns of evidence for a role. "Preference Match" is written out in the label
+ * rather than abbreviated — the contract is explicit that it is never shortened to
+ * "match", and a column label is still the term appearing on screen.
+ */
+function roleStats(role) {
+  return [
+    { value: `${role.preferenceMatch}%`, label: 'Preference Match' },
+    { value: role.salary, label: 'Range' },
+    { value: `${role.rating}★`, label: 'Rating' },
+  ]
+}
+
+function interviewSchedule() {
+  const [weekday, date] = interviewIntel.invitation.day.split(', ')
+  return {
+    weekday: weekday.slice(0, 3).toUpperCase(),
+    date: date.split(' ')[0],
+    month: date.split(' ')[1],
+    time: interviewIntel.invitation.time,
+    duration: interviewIntel.invitation.duration.replace(' minutes', ' min'),
+    mode: interviewIntel.invitation.mode,
+    with: interviewIntel.invitation.with,
+    round: `Round 1 of ${interviewIntel.loop.total}`,
+  }
+}
+
 // The hero is one adaptive surface. The first branch that matches owns the screen,
 // and every ranked branch states why it outranks the rest. Designs present this
 // differently; none of them may change the order.
-function nextBestAction({ journey, hasProfileContext, openReply }) {
+function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
   if (journey.offerDetected) {
     return {
       id: 'offer',
       variant: 'priority-card--offer',
       tone: 'offer', icon: <CircleDollarSign size={14} />,
+      shape: 'offer',
       kicker: 'OFFER RECEIVED',
       badge: <Pill tone="success">Today</Pill>,
       when: 'Today',
       company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · ${juspay.location}` },
+      // The number is the fact this card exists to deliver, so the card leads with it
+      // and splits it — a CTC headline with the variable folded in flatters the offer.
+      money: { total: offer.total, fixed: offer.fixed, variable: offer.variable, market: offer.market, delta: offer.currentDelta },
       headline: 'Your ₹28L offer is ready to understand.',
       support: 'See what employees report, what the move changes, and where you have room to negotiate.',
       why: 'A live decision outranks everything else in your search.',
@@ -187,15 +257,51 @@ function nextBestAction({ journey, hasProfileContext, openReply }) {
     }
   }
 
+  /*
+   * The morning after the round. This outranks a booked future round because the
+   * Tracker is genuinely stale until Arjun says what happened — nothing in the inbox
+   * tells us the outcome of a call.
+   *
+   * It is a normal solid card, not the dotted ask, because it is a real task: the user
+   * gets something from answering. What AmbitionBox wants — the questions that came up —
+   * is the second step, inside the flow this opens, never on the card face.
+   *
+   * The copy names the company and the round. "How did Tuesday go?" was the first draft
+   * and it is meaningless on a screen that can hold several interviews: a day of the
+   * week is not an interview.
+   */
+  if (journey.interviewDone && !journey.interviewLogged) {
+    const round = interviewIntel.loop.rounds[0]
+    return {
+      id: 'debrief',
+      variant: 'priority-card--interview',
+      tone: 'interview', icon: <UserRoundCheck size={14} />,
+      shape: 'debrief',
+      kicker: 'INTERVIEW DONE',
+      badge: <Pill tone="attention">Yesterday</Pill>,
+      when: 'Yesterday',
+      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · Round 1 of 4` },
+      headline: `How did your ${juspay.company} interview go?`,
+      support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
+      why: 'Nothing else in your search can move until this one is settled.',
+      whyQuestion: 'Why does logging this interview matter?',
+      cta: { label: 'Tell AmbitionBox how it went', onClick: () => sheets.openDebrief() },
+    }
+  }
+
   if (journey.interviewInvited) {
     return {
       id: 'interview',
       variant: 'priority-card--interview',
       tone: 'interview', icon: <Clock3 size={14} />,
+      shape: 'interview',
       kicker: 'INTERVIEW SCHEDULED',
       badge: <Pill tone={journey.prepComplete ? 'success' : 'attention'}>{interviewIntel.invitation.day.split(',')[0]}</Pill>,
       when: interviewIntel.invitation.day.split(',')[0],
-      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · Round 1 of ${interviewIntel.loop.total}` },
+      // "Round 1 of 4" moves out of company.detail and into the schedule block so the
+      // string still appears exactly once on the screen, which prep-intel.spec asserts.
+      schedule: interviewSchedule(),
+      company: { initials: 'JP', name: 'Juspay', detail: juspay.role },
       headline: journey.prepComplete
         ? `You’re ready for ${interviewIntel.invitation.time} on Tuesday.`
         : 'The invite doesn’t say what this round covers.',
@@ -215,12 +321,16 @@ function nextBestAction({ journey, hasProfileContext, openReply }) {
       id: 'reply',
       variant: '',
       tone: 'reply', icon: <MessageSquare size={14} />,
+      shape: 'reply',
       kicker: 'RECRUITER REPLY NEEDED',
       badge: <span className="time-chip">2h ago</span>,
       when: '2h ago',
       company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', detail: 'Backend Engineer III' },
       headline: '“Can you confirm your availability for a quick conversation?”',
-      support: 'Replying today keeps a high-paying opportunity warm. Detected in Gmail.',
+      support: 'Replying today keeps a high-paying opportunity warm.',
+      // Split out of `support` so the byline can sit under the quote where a message
+      // puts its sender. The full stop stays — onboarding.spec matches the string.
+      source: 'Detected in Gmail.',
       why: 'A person is waiting, and a recruiter reply ages faster than an application.',
       whyQuestion: 'Why should I reply to PhonePe first?',
       cta: { label: 'Review reply', onClick: openReply },
@@ -232,13 +342,15 @@ function nextBestAction({ journey, hasProfileContext, openReply }) {
       id: 'opportunity',
       variant: 'priority-card--juspay',
       tone: 'role', icon: <Target size={14} />,
+      shape: 'role',
       kicker: 'BEST NEXT OPPORTUNITY',
       when: juspay.posted,
       company: { initials: juspay.initials, name: juspay.company, detail: juspay.role },
       headline: 'Your payments experience makes this unusually relevant.',
-      // Preference Match leads the evidence row rather than sitting in the kicker line,
-      // so the term stays spelled out at 360px instead of being shortened to "match".
+      // `facts` is still what the three legacy directions render. `stats` is the same
+      // evidence given columns, which is what stops it wrapping into a grey sentence.
       facts: [`${juspay.preferenceMatch}% Preference Match`, juspay.salary, juspay.mode, `${juspay.rating} ★`],
+      stats: roleStats(juspay),
       why: journey.emailConnected
         ? 'Nothing in your inbox is waiting on you, so preference ranking takes over.'
         : 'It sits closest to the preferences you just reviewed.',
@@ -251,6 +363,7 @@ function nextBestAction({ journey, hasProfileContext, openReply }) {
     id: 'connect',
     variant: 'priority-card--connect',
     tone: 'quiet', icon: <Mail size={14} />,
+    shape: 'connect',
     kicker: 'NEXT USEFUL CONNECTION',
     headline: 'Know what needs you—before an opportunity goes cold.',
     support: 'Connect the email you use to apply. AmbitionBox will organise updates and bring the right recruiter moment here.',
@@ -310,9 +423,12 @@ function setAside({ journey, action }) {
   if (journey.offerDetected) {
     if (journey.interviewInvited) {
       add({
-        id: 'interview', initials: 'JP', company: 'Juspay', detail: `Round 1 of ${interviewIntel.loop.total}`,
+        // The schedule block now carries "Round 1 of 4", so the headline says something
+        // else rather than printing the same string twice on one card.
+        id: 'interview', initials: 'JP', company: 'Juspay', detail: 'The round is still ahead of you.',
         when: interviewIntel.invitation.day.split(',')[0], rank: 0,
         kicker: 'INTERVIEW SCHEDULED', ctaLabel: 'Review my prep', tone: 'interview', icon: <Clock3 size={14} />,
+        shape: 'interview', schedule: interviewSchedule(),
         reason: 'Prep is saved. The decision lands before the round does.',
         onSelect: () => go('/prep/juspay'),
       })
@@ -325,6 +441,10 @@ function setAside({ journey, action }) {
       id: 'roles', initials: juspay.initials, company: 'Your ranked roles', detail: `${juspay.preferenceMatch}% Preference Match`,
       when: 'Open', rank: 1,
       kicker: 'RANKED ROLES', ctaLabel: 'See ranked roles', tone: 'role', icon: <Target size={14} />,
+      // `detail` stays the Preference Match string because the CTA's accessible name is
+      // built from it, and that is what the email-skip test matches. `title` is what the
+      // card actually shows, so the stat row below is not the same words twice.
+      shape: 'role', title: 'Ranked against the preferences you reviewed.', stats: roleStats(juspay),
       reason: 'Nothing here beats an offer already in writing.',
       onSelect: () => go('/matches'),
     })
@@ -334,6 +454,9 @@ function setAside({ journey, action }) {
         id: 'reply', initials: 'PP', color: '#5f259f', company: 'PhonePe', detail: 'Reply to recruiter',
         when: '2h ago', rank: 1,
         kicker: 'RECRUITER REPLY NEEDED', ctaLabel: 'Review reply', tone: 'reply', icon: <MessageSquare size={14} />,
+        // A demoted reply is a task, not a message: the quote belongs to the card that
+        // is actually asking you to read it, and repeating it here would just be noise.
+        shape: 'task',
         reason: 'A fixed date beats an open message.',
         onSelect: () => go('/home?action=phonepe'),
       })
@@ -344,6 +467,9 @@ function setAside({ journey, action }) {
         id: item.company.toLowerCase(), initials: item.company.slice(0, 2).toUpperCase(), color: item.color,
         company: item.company, detail: item.action, when: item.when, rank: urgency(item.when),
         kicker: 'APPLICATION UPDATE', ctaLabel: 'Open in Tracker', tone: 'update', icon: <BriefcaseBusiness size={14} />,
+        // `stage` is real fixture data that Home has never surfaced. `insight` is left
+        // alone — the row's reason already occupies that slot and two explanations fight.
+        shape: 'task', role: item.role, stage: stageLabel(item.stage),
         reason: item.when === 'Overdue'
           ? (dated
             ? 'Overdue, but it is their slot list — and Tuesday is the date you control least.'
@@ -356,6 +482,7 @@ function setAside({ journey, action }) {
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,
       when: juspay.posted, rank: 4,
       kicker: 'RANKED ROLE', ctaLabel: 'See why it fits', tone: 'role', icon: <Target size={14} />,
+      shape: 'role', title: juspay.role, stats: roleStats(juspay),
       reason: dated
         ? 'Strong fit, but a booked round outranks an open listing.'
         : 'Best fit you have, but nobody is waiting on you.',
@@ -368,6 +495,7 @@ function setAside({ journey, action }) {
         id: job.id, initials: job.initials, company: job.company, detail: `${job.preferenceMatch}% Preference Match`,
         when: job.salary, rank: 100 - job.preferenceMatch,
         kicker: 'RANKED ROLE', ctaLabel: 'See the match', tone: 'role', icon: <Target size={14} />,
+        shape: 'role', title: job.role, stats: roleStats(job),
         reason: job.reason,
         onSelect: () => go('/matches'),
       })
@@ -392,12 +520,25 @@ function setAside({ journey, action }) {
  * `setAside()` still decides what follows and why; the carousel merely stops drawing
  * the first one larger than the rest. Dominance comes from position in the viewport
  * instead of size, which is why every card is the same width.
+ *
+ * `shape` is how a card composes its middle — a message, a date, a figure, a stat row,
+ * a task, a setup step. The shell around it never varies: same width, same radius, same
+ * elevation, one action pinned to the floor. Six middles, one family.
  */
-function carouselCards({ action, aside, journey }) {
+/*
+ * A day is calm when nothing on it is dated — no offer window, no booked round, no
+ * recruiter waiting. Application updates do not disqualify it: those run on someone
+ * else's clock, which is the whole reason they are drawn the way they are and why the
+ * copy on them says you cannot close them alone.
+ */
+const DATED_TONES = new Set(['offer', 'interview', 'reply'])
+
+function carouselCards({ action, aside, journey, sheets }) {
   const cards = [{
     id: action.id,
     kind: 'pick',
     tone: action.tone,
+    shape: action.shape,
     // The hero's field colours (the prep-v3 violet, the offer green) are deliberately
     // not carried over: a sequence of equals cannot have one card wearing a different
     // field without re-introducing the hero this rebuild removed. The beat is still
@@ -408,7 +549,10 @@ function carouselCards({ action, aside, journey }) {
     company: action.company,
     headline: action.headline,
     support: action.support,
-    facts: action.facts,
+    source: action.source,
+    schedule: action.schedule,
+    money: action.money,
+    stats: action.stats,
     cta: action.cta,
     dismissable: action.id !== 'connect',
   }]
@@ -418,12 +562,17 @@ function carouselCards({ action, aside, journey }) {
       id: row.id,
       kind: 'queued',
       tone: row.tone,
+      shape: row.shape,
       icon: row.icon,
       kicker: row.kicker,
       when: row.when,
-      company: { initials: row.initials, color: row.color, name: row.company },
+      company: { initials: row.initials, color: row.color, name: row.company, detail: row.role },
       headline: row.detail,
+      title: row.title,
       support: row.reason,
+      schedule: row.schedule,
+      stats: row.stats,
+      stage: row.stage,
       // The queued cards all reach the same few destinations, so each CTA names the
       // card it belongs to. Two "Open in Tracker" buttons on one screen would be
       // ambiguous to a screen reader, and the visible label stays inside the name.
@@ -440,6 +589,7 @@ function carouselCards({ action, aside, journey }) {
       id: 'connect',
       kind: 'connect',
       tone: 'quiet',
+      shape: 'connect',
       icon: <Mail size={14} />,
       kicker: 'NEXT USEFUL CONNECTION',
       headline: 'Know what needs you—before an opportunity goes cold.',
@@ -447,6 +597,45 @@ function carouselCards({ action, aside, journey }) {
       footnote: 'Job-search email only. Read only. Disconnect anytime.',
       cta: { label: 'Connect application email', onClick: () => go('/onboarding?step=email') },
       dismissable: false,
+    })
+  }
+
+  /*
+   * The contribution card — a third kind of card, and the only one that asks the user
+   * for something rather than telling them something.
+   *
+   * It is drawn dotted and unfilled because of that. Solid means AmbitionBox ranked this
+   * for you; the two colour states say whether it is happening to you or waiting for you
+   * to choose. This is neither, so it takes a border treatment rather than a fifth hue,
+   * and the existing colour language stays intact.
+   *
+   * Three rules keep it honest. It appears only on a calm day, so it never competes with
+   * something real. It is always last. And it is excluded from the greeting's count —
+   * see `useHomeContext` — because it is not a thing that needs the user, and counting it
+   * would put us straight back into the screen contradicting itself.
+   *
+   * The subject is the employer the user is at right now, not anyone in their search:
+   * this is the review AmbitionBox is short of, and it is the one they can actually give.
+   */
+  const calm = !cards.some((card) => DATED_TONES.has(card.tone))
+  if (calm) {
+    const current = offerDecision.currentCompany
+    cards.push({
+      id: 'contribute',
+      kind: 'contribute',
+      tone: 'contribute',
+      shape: 'contribute',
+      icon: <MessageSquare size={14} />,
+      // Every other kicker announces something that happened to the user. This one is
+      // pointed the other way, so it does not borrow that voice.
+      kicker: 'FROM PEOPLE LIKE YOU',
+      // The reciprocity is the claim, so it leads: the evidence this product quotes all
+      // day came from people in exactly this position.
+      headline: 'Every rating you have read came from someone like you.',
+      support: `${current.reviews.replace(' reviews', '')} people have rated ${current.company}. Yours is the one the next backend engineer reads.`,
+      footnote: 'Anonymous. Two minutes. Nothing is posted without your review.',
+      cta: { label: `Rate working at ${current.company}`, onClick: () => sheets?.openContribute?.() },
+      dismissable: true,
     })
   }
 
@@ -459,17 +648,25 @@ function homeAnswer(journey, question) {
   if (q.includes('without my email') || q.includes('no email') || q.includes('what can you')) {
     return 'Plenty. Your reviewed profile and preferences already rank roles, explain pay and company reality, and show where your evidence is thin. What I cannot do is see the applications you send, so recruiter replies and interview invitations stay outside AmbitionBox until you connect that email.'
   }
+  // Gratuity turns on two numbers AmbitionBox does not hold — basic pay, and tenure at
+  // one employer rather than total experience. Both are stated rather than guessed at:
+  // a gratuity figure derived from CTC would be exactly the confident wrong number this
+  // product exists to avoid. The vesting cliff is the part that changes a job decision,
+  // so that is what the answer leads with.
+  if (q.includes('gratuity')) {
+    return `Gratuity is 15 days of your last drawn basic pay for every completed year, and it only vests after five continuous years with one employer. I know your total experience is ${candidate.experience} and your current pay is ${candidate.currentPay}, but not your basic component or how long you have been at ${candidate.company} specifically — and those are the only two numbers this turns on. If you are close to five years at ${candidate.company}, the timing of a move is worth checking before you accept anything.`
+  }
   if (q.includes('in-hand') || q.includes('in hand') || q.includes('take home') || q.includes('take-home') || q.includes('monthly')) {
-    // No take-home fixture exists anywhere in the prototype, and inventing tax maths
-    // would be exactly the kind of confident wrong number this product exists to avoid.
-    // Naming what is missing is the answer.
+    // The letter does give the split, so use it. What is genuinely missing is the tax
+    // regime and deductions, and inventing those would be exactly the confident wrong
+    // number this product exists to avoid. Name the boundary, do not fake past it.
     return journey.offerDetected
-      ? 'I will not invent a take-home figure. ₹28L is CTC, and ₹4.5L of it is not fixed pay—₹2.5L performance-linked and ₹2L a one-time joining bonus—so a monthly number depends on a fixed-pay split the letter does not give. Ask Juspay for that breakdown. What is already measurable: Bengaluru is estimated to cost about ₹13k more each month than Pune.'
-      : 'No offer letter has arrived yet, so there is no CTC to break down. When one does, I separate fixed pay from variable and one-time components before any monthly figure—that split is usually where the number differs from what people expect.'
+      ? `Of the ${offer.total}, ${offer.fixed} is fixed pay—that is the part that recurs every month. ${offer.variable} is performance-linked and ${offer.joining} is a one-time joining bonus, so neither belongs in a monthly figure. I stop short of a take-home number because I do not have your tax regime or deductions. What is already measurable: Bengaluru is estimated to cost about ₹13k more each month than Pune.`
+      : 'No offer letter has arrived yet, so there is no pay to break down. When one does, I separate fixed pay from variable and one-time components first—that split is usually where the monthly number differs from what people expect.'
   }
   if (q.includes('paid fair') || q.includes('fairly') || q.includes('underpaid') || q.includes('paid enough')) {
     return journey.offerDetected
-      ? `₹28L sits inside the published ${juspay.salary} band for this role and 87% above your current ${candidate.currentPay}. The honest caveat is that ₹4.5L of it is not fixed pay, so compare the fixed component before you call it settled.`
+      ? `${offer.total} sits inside the published ${offer.market} band for this role and ${offer.currentDelta.replace('above current', 'above your current pay')}. The honest caveat is that only ${offer.fixed} of it is fixed, so compare the fixed component before you call it settled.`
       : `Your current ${candidate.currentPay} sits below the published ${juspay.salary} band for the role you are targeting. That gap is the case for moving, and it is why your ₹22L+ target reads as realistic rather than ambitious.`
   }
   if (q.includes('compare') || q.includes('versus') || q.includes(' vs ')) {
@@ -620,14 +817,6 @@ function Composer({ grounding, onOpen }) {
   )
 }
 
-function PromptChips({ prompts, onAsk, className = 'home-question-row' }) {
-  return (
-    <div className={className} aria-label="Suggested questions">
-      {prompts.map(({ label, question }) => <button key={label} onClick={() => onAsk(question)}>{label}</button>)}
-    </div>
-  )
-}
-
 function SetAside({ rows }) {
   if (!rows.length) return null
   return (
@@ -671,15 +860,6 @@ const QUOTES = [
   { line: 'Amateurs sit and wait for inspiration. The rest of us just get up and go to work.', who: 'Stephen King' },
 ]
 
-/*
- * The assistant's mark is the AmbitionBox mark itself, not a sparkle. A sparkle is the
- * generic sign for "an AI did something", which context/UI.md rules out by name — and it
- * made the one permanent control on the screen look like every other product's.
- */
-function AssistantMark({ className = 'assistant-mark' }) {
-  return <img className={className} src="/favicon.svg" alt="" aria-hidden="true" />
-}
-
 // What the pill types out. Deliberately not the chip set — the chips sit right above it,
 // and repeating them would show range twice instead of twice the range.
 const ASK_EXAMPLES = [
@@ -689,33 +869,6 @@ const ASK_EXAMPLES = [
   'What is the pay range for this role?',
   'Where is my profile thin?',
 ]
-
-function useTypewriter(phrases, enabled) {
-  const [typed, setTyped] = useState('')
-  const [phrase, setPhrase] = useState(0)
-  const [erasing, setErasing] = useState(false)
-
-  useEffect(() => {
-    if (!enabled) return undefined
-    const target = phrases[phrase % phrases.length]
-    if (!erasing && typed === target) {
-      const hold = setTimeout(() => setErasing(true), 2000)
-      return () => clearTimeout(hold)
-    }
-    if (erasing && typed === '') {
-      setErasing(false)
-      setPhrase((current) => current + 1)
-      return undefined
-    }
-    const step = setTimeout(
-      () => setTyped(erasing ? target.slice(0, typed.length - 1) : target.slice(0, typed.length + 1)),
-      erasing ? 20 : 48,
-    )
-    return () => clearTimeout(step)
-  }, [typed, erasing, phrase, enabled, phrases])
-
-  return typed
-}
 
 function QuoteOfTheDay() {
   // Keyed to the day so it is genuinely a quote *of the day*, and stable for anyone
@@ -740,74 +893,241 @@ function QuoteOfTheDay() {
  * an ordered queue rather than a gallery. The neighbour card is the affordance.
  */
 function ActionCarousel({ ctx, cards }) {
-  const [dismissed, setDismissed] = useState([])
+  // Two pieces of local state, both presentation-only: which card's set-aside menu is
+  // open, and which card is currently playing its leave animation. What has actually
+  // been set aside lives in Home, because the greeting counts it.
   const [menuFor, setMenuFor] = useState(null)
+  const [leaving, setLeaving] = useState(null)
+  const leaveTimer = useRef(null)
+  useEffect(() => () => clearTimeout(leaveTimer.current), [])
 
-  const visible = cards.filter((card) => !dismissed.includes(card.id))
-
-  // Local only, and deliberately so: nothing in `journey` records a dismissal, and
-  // inventing persistence would claim a memory the prototype does not have.
+  /*
+   * Why the leave is a CSS class and a timer rather than AnimatePresence.
+   *
+   * AnimatePresence removes a child when the child disappears from *its own* render.
+   * That held while the dismissed list was local to this component. Once the list moved
+   * up to Home — which it had to, so the greeting could stop contradicting the rail —
+   * the removal arrives as a new `cards` prop from a parent re-render, and presence
+   * tracking silently desynced: React rendered `interview,roles` while the DOM still
+   * held all three, the old node mounted at full opacity with exit never firing.
+   * Driving the same fade through framer's `animate` did not run either.
+   *
+   * A class and a timeout do run, always, and cost one CSS rule. The card fades, then it
+   * leaves Home's list. Home stays the single source of truth for what has been set
+   * aside; this component owns nothing but the transition.
+   */
   const dismiss = (id) => {
     setMenuFor(null)
-    setDismissed((prev) => [...prev, id])
+    if (ctx.reduceMotion) { ctx.dismiss(id); return }
+    setLeaving(id)
+    clearTimeout(leaveTimer.current)
+    leaveTimer.current = setTimeout(() => { setLeaving(null); ctx.dismiss(id) }, LEAVE_MS)
   }
 
-  if (!visible.length) {
-    return (
-      <p className="carousel-empty page-pad">
-        That is everything for now. Nothing in your search is waiting on you.
-      </p>
-    )
-  }
+  // No empty message here any more. The greeting owns the only count on Home, so when
+  // everything has been set aside it is the greeting that says so — a second line
+  // underneath restating it was the duplication HOME.md rules out. What is left is the
+  // greeting and the day's quote, which is the composition this state should have.
+  if (!cards.length) return null
 
   return (
     <>
       <div className="action-carousel" role="group" aria-label="What needs you, in order">
-        <AnimatePresence initial={false}>
-          {visible.map((card) => (
-            <ActionCard
-              key={card.id}
-              card={card}
-              reduceMotion={ctx.reduceMotion}
-              menuOpen={menuFor === card.id}
-              onMenu={() => setMenuFor(menuFor === card.id ? null : card.id)}
-              onDismiss={() => dismiss(card.id)}
-            />
-          ))}
-        </AnimatePresence>
+        {cards.map((card) => (
+          <ActionCard
+            key={card.id}
+            card={card}
+            reduceMotion={ctx.reduceMotion}
+            leaving={leaving === card.id}
+            menuOpen={menuFor === card.id}
+            onMenu={() => setMenuFor(menuFor === card.id ? null : card.id)}
+            onDismiss={() => dismiss(card.id)}
+          />
+        ))}
       </div>
     </>
   )
 }
 
 /*
- * The pill types out example questions the way a search field cycles a placeholder. The
- * typed line is the placeholder and is hidden from assistive tech; the button keeps
- * "Ask AmbitionBox about your next move" as its accessible name, which is the contract
- * string and the thing a screen reader should hear. Under reduced motion the contract
- * string is what is drawn, immediately and without a caret.
+ * The six middles.
+ *
+ * Everything outside this component is identical on every card — width, radius,
+ * elevation, the mark-and-kicker row, the dismiss, the pill pinned to the floor. What
+ * changes is how the middle composes, because the content is genuinely different in
+ * kind: a message wants to look like a message, a booked date wants a date block, an
+ * offer wants its number set large, a role wants columns of evidence.
+ *
+ * The leash: no shape may introduce a size, radius or elevation the others do not have.
+ * If one needs that to work, the treatment is wrong, not the shell.
  */
-function AskPill({ ctx }) {
-  const animate = !ctx.reduceMotion
-  const typed = useTypewriter(ASK_EXAMPLES, animate)
+
+// Shapes whose middle already states the timing — a date block, a due chip, a stat row.
+// A chip in the header on top of that just says the same thing twice.
+const TIMING_IN_MIDDLE = new Set(['interview', 'task', 'role'])
+
+/*
+ * Which tones wear a coloured field — MOB-HOME-004 (Strava).
+ *
+ * The line is the one `.action-card-mark` already drew: a coloured card is something
+ * happening to you — money on the table, a date booked, a person waiting, a clock
+ * running — and a white card is something sitting there for you to choose. Ranked roles
+ * and the email connection stay white, which is what stops the carousel becoming a
+ * rainbow and keeps the colour meaning something.
+ *
+ * This is a promotion, not an invention: the same green and violet already existed as
+ * `priority-card--offer` and `priority-card--interview`, and the marks already carried
+ * this exact mapping at 28px.
+ *
+ * The carousel rebuild dropped these fields for a real reason — "a sequence of equals
+ * cannot have one card wearing a different field without re-introducing the hero this
+ * rebuild removed". Colouring *by category* answers that: nothing is privileged, because
+ * the field says what kind of thing the card is rather than which one is most important.
+ * Order is still the only thing that ranks them.
+ */
+const FIELD_TONES = new Set(['offer', 'interview', 'reply', 'update'])
+
+function Entity({ company, className = 'action-card-entity' }) {
+  if (!company) return null
   return (
-    <button className="home-dock-ask" onClick={() => ctx.ask('')} aria-label="Ask AmbitionBox about your next move">
-      <AssistantMark className="home-dock-mark" />
-      {animate
-        ? <span className="home-dock-typed" aria-hidden="true">{typed}<i /></span>
-        : <span aria-hidden="true">Ask AmbitionBox about your next move</span>}
-      <Send size={16} />
-    </button>
+    <div className={className}>
+      <CompanyLogo initials={company.initials} color={company.color} />
+      <span>
+        <strong>{company.name}</strong>
+        {company.detail && <small>{company.detail}</small>}
+      </span>
+    </div>
   )
 }
 
-function ActionCard({ card, reduceMotion, menuOpen, onMenu, onDismiss }) {
+function CardMiddle({ card }) {
+  // A message: the quote leads behind a rule, and the sender signs it underneath —
+  // the order an email actually arrives in.
+  if (card.shape === 'reply') {
+    return (
+      <div className="card-mid">
+        <blockquote className="card-quote">{card.headline}</blockquote>
+        <Entity company={card.company} className="action-card-entity card-byline" />
+        {card.source && <small className="card-source">{card.source}</small>}
+        {card.support && <p>{card.support}</p>}
+      </div>
+    )
+  }
+
+  // A booked date: the one hard fact in the whole search, so it is drawn as one.
+  if (card.shape === 'interview' && card.schedule) {
+    const { weekday, date, time, duration, mode, with: who, round } = card.schedule
+    return (
+      <div className="card-mid">
+        <div className="card-when">
+          <span className="card-datebox"><b>{weekday}</b><i>{date}</i></span>
+          <span className="card-when-detail">
+            <strong>{time} · {duration}</strong>
+            <small>{mode} · {who}</small>
+          </span>
+        </div>
+        <h2>{card.headline}</h2>
+        <p className="card-entity-line">{card.company?.name} · {round}</p>
+        {card.support && <p>{card.support}</p>}
+      </div>
+    )
+  }
+
+  // A number: leading with CTC alone flatters the offer, so the split sits with it.
+  if (card.shape === 'offer' && card.money) {
+    return (
+      <div className="card-mid">
+        <div className="card-figure">
+          <b>{card.money.total}</b>
+          <small>{card.money.fixed} fixed · {card.money.variable} variable</small>
+        </div>
+        <h2>{card.headline}</h2>
+        <div className="card-band">
+          <span>Inside the {card.money.market} market band</span>
+          <span>{card.money.delta.replace('above current', 'above your current pay')}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // A role: the evidence gets columns instead of wrapping into a grey sentence.
+  if (card.shape === 'role') {
+    return (
+      <div className="card-mid">
+        <Entity company={card.company} />
+        {/* `title` on a queued role, because its `headline` is the Preference Match
+            string that the stat row below already carries. */}
+        <h2>{card.title || card.headline}</h2>
+        {card.support && <p>{card.support}</p>}
+        {card.stats && (
+          <div className="card-stats">
+            {card.stats.map(({ value, label }) => (
+              <span key={label}><b>{value}</b><i>{label}</i></span>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // A task: the action is the claim, and the pipeline stage says where it sits.
+  if (card.shape === 'task') {
+    return (
+      <div className="card-mid">
+        <h2>{card.headline}</h2>
+        <Entity company={card.company} className="action-card-entity card-byline" />
+        {(card.when || card.stage) && (
+          <div className="card-taskmeta">
+            {card.when && <span className={`card-due card-due--${card.when.toLowerCase().replace(/\s+/g, '-')}`}>{card.when}</span>}
+            {card.stage && <span className="card-stage">{card.stage}</span>}
+          </div>
+        )}
+        {card.support && <p>{card.support}</p>}
+      </div>
+    )
+  }
+
+  // A finished round: the interview is named on the card, because a day of the week is
+  // not an interview and this screen can hold more than one.
+  if (card.shape === 'debrief') {
+    return (
+      <div className="card-mid">
+        <Entity company={card.company} />
+        <h2>{card.headline}</h2>
+        {card.support && <p>{card.support}</p>}
+      </div>
+    )
+  }
+
+  // A contribution: no entity row, because the subject is the user's own workplace
+  // rather than a company being reported on, and the reciprocity is the claim.
+  if (card.shape === 'contribute') {
+    return (
+      <div className="card-mid">
+        <h2>{card.headline}</h2>
+        {card.support && <p>{card.support}</p>}
+        {card.footnote && <small className="action-card-note"><ShieldCheck size={12} /> {card.footnote}</small>}
+      </div>
+    )
+  }
+
+  // A setup step: no entity to name, and a trust boundary that belongs beside the action.
+  return (
+    <div className="card-mid">
+      <Entity company={card.company} />
+      <h2>{card.headline}</h2>
+      {card.support && <p>{card.support}</p>}
+      {card.footnote && <small className="action-card-note"><ShieldCheck size={12} /> {card.footnote}</small>}
+    </div>
+  )
+}
+
+function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }) {
   const duration = reduceMotion ? 0 : 0.32
   return (
     <motion.article
-      className={`action-card action-card--${card.kind} action-card--${card.tone}`}
+      className={`action-card action-card--${card.kind} action-card--${card.tone}${FIELD_TONES.has(card.tone) ? ' action-card--field' : ''}${leaving ? ' is-leaving' : ''}`}
       layout={!reduceMotion}
-      exit={{ opacity: 0, scale: 0.94 }}
       transition={{ duration, ease: EASE }}
     >
       <div className="action-card-top">
@@ -815,23 +1135,10 @@ function ActionCard({ card, reduceMotion, menuOpen, onMenu, onDismiss }) {
             means something is happening to you; slate means it is yours to choose. */}
         <span className="action-card-mark">{card.icon}</span>
         <span className="action-card-kicker">{card.kicker}</span>
-        {card.badge || (card.when && <span className="time-chip">{card.when}</span>)}
+        {!TIMING_IN_MIDDLE.has(card.shape) && (card.badge || (card.when && <span className="time-chip">{card.when}</span>))}
       </div>
 
-      {card.company && (
-        <div className="action-card-entity">
-          <CompanyLogo initials={card.company.initials} color={card.company.color} />
-          <span>
-            <strong>{card.company.name}</strong>
-            {card.company.detail && <small>{card.company.detail}</small>}
-          </span>
-        </div>
-      )}
-
-      <h2>{card.headline}</h2>
-      {card.support && <p>{card.support}</p>}
-      {card.facts && <div className="action-card-facts">{card.facts.map((fact) => <span key={fact}>{fact}</span>)}</div>}
-      {card.footnote && <small className="action-card-note"><ShieldCheck size={12} /> {card.footnote}</small>}
+      <CardMiddle card={card} />
 
       <div className="action-card-foot">
         <button className="action-card-cta" onClick={card.cta.onClick} aria-label={card.cta.name}>
@@ -1100,32 +1407,130 @@ function HomeComposer({ ctx, sheets }) {
 // An Explore tab was considered and dropped: it would have been this same list
 // packaged as tiles, and the composer that opens this sheet is permanent chrome,
 // so the list is already reachable from any state without spending a tab on it.
-function capabilities({ journey }, sheets) {
+/*
+ * Rows the screen you opened from makes most likely, lifted to the top.
+ *
+ * The baseline order is the search as it actually runs. Context re-ranks it rather than
+ * rewriting it: nothing is added, nothing is hidden, and the row a person came looking
+ * for is not four items down. Journey state outranks screen, because a live offer is a
+ * bigger fact about where you are than which tab you happen to be on.
+ *
+ * Everything below the lifted rows keeps its baseline order, so the menu never feels
+ * reshuffled between visits.
+ */
+const CONTEXT_PRIORITY = {
+  home: [],
+  jobs: ['roles', 'company'],
+  job: ['strengthen', 'company'],
+  assistant: ['strengthen', 'knows'],
+  tracker: ['track', 'prep'],
+  offer: ['offer', 'company'],
+  prep: ['prep', 'company'],
+}
+
+function orderByContext(rows, context, journey) {
+  const lifted = [
+    // A booked round and a live offer are the strongest signals there are, whatever
+    // screen the sheet was opened from.
+    ...(journey.offerDetected ? ['offer'] : []),
+    ...(journey.interviewInvited ? ['prep'] : []),
+    ...(CONTEXT_PRIORITY[context] || []),
+  ]
+  const rank = (row) => {
+    const index = lifted.indexOf(row.id)
+    return index === -1 ? lifted.length : index
+  }
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => rank(a.row) - rank(b.row) || a.index - b.index)
+    .map((item) => item.row)
+}
+
+export function capabilities({ journey }, sheets, context = 'home') {
+  // Ordered as the search actually runs — discover, evaluate, apply, track, interview,
+  // offer — because that is the order the rest of the demo is built in. Track had been
+  // sitting after Offer, which put the everyday screen behind the once-a-search one.
+  // `orderByContext` then lifts what the current screen and journey make likely.
+  //
+  // A row is a label and a destination, nothing else. Two attempts at a second value
+  // were both cut: the original `hint` described what each destination was, which the
+  // label already says, and the live-state suffix that replaced it ("Tuesday 11:00",
+  // "₹28L") put facts the cards already carry into a menu, where they read as clutter.
   return [
     {
-      id: 'roles', label: 'Find roles that fit me', hint: 'Ranked against the preferences you reviewed',
+      id: 'roles', label: 'Find roles that fit me',
       icon: Search, onSelect: () => go('/matches'),
     },
     {
-      id: 'company', label: 'Tell me what a company is really like', hint: 'Pay, ratings, work policy, and employee reviews',
+      id: 'company', label: 'Tell me what a company is really like',
       icon: Building2, onSelect: () => go('/jobs/juspay'),
     },
     {
+      // Was "Strengthen my application", which named the outcome and hid the artifact.
+      // The destination produces a tailored résumé, so the row says résumé.
       // "Close the evidence gap" would put "Close" in this row's accessible name,
       // colliding with every sheet's Close control.
-      id: 'strengthen', label: 'Strengthen my application', hint: 'Fill the evidence gap and tailor your résumé',
+      id: 'strengthen', label: 'Tailor my résumé',
       icon: FileText, onSelect: () => go('/assistant/juspay'),
     },
     {
-      id: 'prep', label: 'Add or prepare an interview', hint: journey.interviewInvited ? 'Juspay · Tuesday 11:00' : 'Add an invite and I will decode the round',
+      id: 'track', label: 'Track every application',
+      icon: BriefcaseBusiness, onSelect: () => go('/tracker'),
+    },
+    {
+      id: 'prep', label: 'Add or prepare an interview',
       icon: UserRoundCheck, onSelect: () => (journey.interviewInvited ? go('/prep/juspay') : sheets.openAddInterview()),
     },
     {
-      id: 'offer', label: 'Evaluate an offer', hint: journey.offerDetected ? '₹28L from Juspay' : 'Compare the letter with what is real',
+      id: 'offer', label: 'Evaluate an offer',
       icon: CircleDollarSign, onSelect: () => (journey.offerDetected ? go('/offer/juspay?stage=decision&story=finale') : sheets.openOfferStart()),
     },
+    {
+      // The assistant's own memory is a destination too, and the one row that answers
+      // "how do you know any of this" without the user having to ask it. Last, because
+      // it is about the assistant rather than about the search.
+      // Matches the heading on /profile, and a noun phrase reads as a destination —
+      // which also keeps the longest row in the menu to one line at 360px.
+      id: 'knows', label: 'What AmbitionBox knows about me',
+      icon: ShieldCheck, onSelect: () => go('/profile'),
+    },
+  ].map((row) => row)
+}
+
+// The index the sheet actually renders: the baseline list, re-ranked for where you are.
+export function contextualCapabilities(ctx, sheets, context) {
+  return orderByContext(capabilities(ctx, sheets), context, ctx.journey)
+}
+
+/*
+ * Tools answer in place rather than navigating — that is the whole reason they are a
+ * separate group. AmbitionBox's calculators are a real part of the product, and each
+ * row here routes through `homeAnswer` against the same fixtures every other answer
+ * uses, so a tool returns Arjun's numbers rather than an empty form.
+ *
+ * The label is what the tool is called; the question is what gets asked. Keeping them
+ * separate means the row can read as a tool while the thread still reads as a question
+ * someone asked.
+ */
+function assistantTools() {
+  return [
+    { id: 'fair', label: 'Am I being paid fairly?', question: 'Am I being paid fairly?', icon: Scale },
+    { id: 'inhand', label: 'In-hand salary calculator', question: 'What is my monthly in-hand?', icon: Calculator },
+    { id: 'gratuity', label: 'Gratuity calculator', question: 'How much gratuity am I owed?', icon: PiggyBank },
   ]
 }
+
+/*
+ * Past chats. Deterministic, and every entry routes back through `homeAnswer` rather
+ * than storing a reply — opening one shows the real answer, so history cannot drift
+ * from what the assistant would say today. Anything asked this session joins the top
+ * of the list, which is why the seed is short: it is context, not the feature.
+ */
+const pastChats = [
+  { question: 'How does Juspay compare with Razorpay?', when: 'Yesterday' },
+  { question: 'What is thin in my profile?', when: 'Tuesday' },
+  { question: 'Which roles actually fit me right now?', when: 'Last week' },
+]
 
 const DESIGNS = {
   current: HomeCurrent,
@@ -1136,34 +1541,21 @@ const DESIGNS = {
 
 
 /*
- * The bottom cluster — MOB-HOME-001 (Cleo).
- *
- * The composer stopped being page content and became chrome: suggested questions,
- * the ask pill and the three tabs read as one quiet group sitting on the canvas,
- * rather than an input buried under the fold and a separate white shelf below it.
- * Ask is always reachable, from any scroll position and any state.
- *
+ * Home's chrome is now the shared dock from AppUI, so Home and Jobs cannot drift apart.
  * The three legacy directions still render their own in-page composer, so the dock
  * carries the ask only when the design does not.
  */
 function HomeChrome({ ctx, design }) {
   const askInPage = design !== 'current'
+  if (askInPage) return <div className="home-dock home-dock--nav-only"><BottomNav active="home" /></div>
   return (
-    <div className={`home-dock ${askInPage ? 'home-dock--nav-only' : ''}`}>
-      {!askInPage && (
-        <>
-          {/* The grab handle is a real control, not a picture of one: it opens the
-              assistant, the same place a swipe up would land. An affordance that does
-              nothing is a lie the second someone tries it. */}
-          <button className="home-dock-handle" onClick={() => ctx.ask('')} aria-label="Open AmbitionBox assistant">
-            <i />
-          </button>
-          <PromptChips prompts={ctx.prompts} onAsk={ctx.ask} className="home-dock-chips" />
-          <AskPill ctx={ctx} />
-        </>
-      )}
-      <BottomNav active="home" />
-    </div>
+    <AssistantDock
+      active="home"
+      label="Ask AmbitionBox about your next move"
+      examples={ASK_EXAMPLES}
+      reduceMotion={ctx.reduceMotion}
+      onOpen={ctx.ask}
+    />
   )
 }
 
@@ -1219,8 +1611,10 @@ export function HomeScreen() {
       <AnimatePresence>
         {sheets.reply && <ReplySheet sent={sheets.sent} onClose={sheets.closeReply} onSend={sheets.sendReply} />}
         {sheets.addInterview && <AddInterviewSheet onClose={sheets.closeAddInterview} />}
-        {sheets.assistant && <HomeAssistantSheet journey={ctx.journey} grounding={ctx.grounding} prompts={ctx.prompts} initialQuestion={sheets.assistantQuestion} onClose={sheets.closeAssistant} index={capabilities(ctx, sheets)} />}
+        {sheets.assistant && <HomeAssistantSheet journey={ctx.journey} initialQuestion={sheets.assistantQuestion} onClose={sheets.closeAssistant} index={contextualCapabilities(ctx, sheets, 'home')} />}
         {sheets.offerStart && <OfferStartSheet onClose={sheets.closeOfferStart} onUseDemo={sheets.useDemoOffer} />}
+        {sheets.contribute && <ContributeSheet onClose={sheets.closeContribute} />}
+        {sheets.debrief && <DebriefSheet onClose={sheets.closeDebrief} onDone={sheets.logInterview} />}
       </AnimatePresence>
     </main>
   )
@@ -1230,32 +1624,119 @@ export function HomeScreen() {
 // 6. SHEETS — shared by every design
 // ---------------------------------------------------------------------------
 
-function HomeAssistantSheet({ journey, grounding, prompts, initialQuestion, onClose, index }) {
-  const [question, setQuestion] = useState(initialQuestion)
-  const [asked, setAsked] = useState(Boolean(initialQuestion))
-  const answer = useMemo(() => homeAnswer(journey, question), [journey, question])
-  return <Sheet label="Ask AmbitionBox" onClose={onClose} wide className="home-assistant-sheet">
-    <div className="home-assistant-mark"><AssistantMark className="home-assistant-mark-img" /></div>
-    {/* The dock pill is one slim line, so the grounding — which changes with the state —
-        is stated here, where the answer is actually about to be given. */}
-    <h2>Ask AmbitionBox</h2><p className="sheet-lead">{grounding} Unknowns stay explicit.</p>
-    <div className="home-assistant-suggestions">{prompts.map(({ question: item }) => <button key={item} onClick={() => { setQuestion(item); setAsked(true) }}>{item}</button>)}</div>
-    <form className="home-assistant-composer" onSubmit={(event) => { event.preventDefault(); if (question.trim()) setAsked(true) }}><input aria-label="Ask AmbitionBox" value={question} onChange={(event) => { setQuestion(event.target.value); setAsked(false) }} placeholder="Ask about your next move" /><button aria-label="Send question" disabled={!question.trim()}><Send size={16} /></button></form>
-    {index && !asked && (
-      <div className="capability-index">
-        <span className="composer-label">AmbitionBox can also</span>
-        <div className="capability-list">
-          {index.map(({ id, label, hint, icon: Icon, onSelect }) => (
+export function HomeAssistantSheet({ journey, initialQuestion, onClose, index }) {
+  // The draft and the asked question are separate: once a question is answered it moves
+  // into the thread as a bubble, and the field goes back to empty so the next question
+  // starts clean rather than the same sentence appearing twice on screen.
+  const [draft, setDraft] = useState('')
+  const [asked, setAsked] = useState(initialQuestion || '')
+  const [history, setHistory] = useState(initialQuestion ? [initialQuestion] : [])
+  const [view, setView] = useState(initialQuestion ? 'thread' : 'menu')
+  const answer = useMemo(() => homeAnswer(journey, asked), [journey, asked])
+  const tools = assistantTools()
+
+  // A fade drawn when nothing is hidden is a lie about the content, so whether the list
+  // runs past the fold is measured rather than assumed. It re-measures whenever the view
+  // or the history changes, because each one swaps the whole stage out.
+  const scrollRef = useRef(null)
+  const [more, setMore] = useState(false)
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return undefined
+    const measure = () => setMore(el.scrollHeight - el.scrollTop - el.clientHeight > 8)
+    measure()
+    el.addEventListener('scroll', measure, { passive: true })
+    window.addEventListener('resize', measure)
+    return () => { el.removeEventListener('scroll', measure); window.removeEventListener('resize', measure) }
+  }, [view, asked, history.length])
+
+  const ask = (item) => {
+    setAsked(item)
+    setDraft('')
+    setView('thread')
+    setHistory((rows) => (rows.includes(item) ? rows : [item, ...rows]))
+  }
+  // Back is a real back, not a second close: from a thread or from history it returns to
+  // the menu, and only leaves the assistant when the menu is already what you are on.
+  const back = () => (view === 'menu' ? onClose() : setView('menu'))
+
+  const threads = [
+    ...history.map((question) => ({ question, when: 'This session' })),
+    ...pastChats.filter((row) => !history.includes(row.question)),
+  ]
+
+  // Full page, not a partial sheet: this is the assistant's own surface, and at partial
+  // height the menu and the composer were fighting over the same few hundred pixels.
+  // No `onClose` passed to Sheet — this sheet carries its own header instead of the
+  // floating Close every other sheet uses.
+  return <Sheet label="Ask AmbitionBox" className="home-assistant-sheet">
+    <header className="assistant-bar">
+      <button onClick={back} aria-label={view === 'menu' ? 'Close assistant' : 'Back'}><ArrowLeft size={20} /></button>
+      <button onClick={() => setView(view === 'chats' ? 'menu' : 'chats')} aria-label="Past chats" aria-expanded={view === 'chats'}><Menu size={20} /></button>
+    </header>
+
+    {/* Two halves, not one stack — MOB-HOME-002 (Natural AI). The top half is where you
+        go, the bottom half is where you type. Mixing them was the old sheet's problem:
+        navigation rows sat in the same contained list as chat suggestions, so neither
+        read as itself. The menu floats uncontained because it is a set of destinations,
+        and the composer takes a real field at the bottom because it is an input. */}
+    <div className="assistant-stage">
+      <div className="assistant-scroll" ref={scrollRef}>
+      {view === 'thread' && <motion.div className="assistant-thread" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="assistant-asked">{asked}</p>
+        <div className="home-assistant-answer"><span>Based on your current context</span><p>{answer}</p><small><ShieldCheck size={13} /> Nothing is sent or changed automatically.</small></div>
+      </motion.div>}
+
+      {view === 'chats' && <div className="assistant-chats">
+        <span className="assistant-group">Past chats</span>
+        {threads.map(({ question, when }) => (
+          <button key={question} onClick={() => ask(question)}>
+            <MessageSquare size={18} />
+            <span><strong>{question}</strong><small>{when}</small></span>
+          </button>
+        ))}
+      </div>}
+
+      {view === 'menu' && <>
+        {/* Two groups because the rows behave differently, not for decoration: the first
+            set leaves the sheet, the second answers inside it. */}
+        {index && <nav className="assistant-menu" aria-label="What AmbitionBox can do">
+          {index.map(({ id, label, icon: Icon, onSelect }) => (
             <button key={id} onClick={() => { onClose(); onSelect() }}>
-              <span className="capability-icon"><Icon size={16} /></span>
-              <span className="capability-copy"><strong>{label}</strong><small>{hint}</small></span>
-              <ChevronRight size={15} />
+              <Icon size={20} />
+              <span>{label}</span>
             </button>
           ))}
-        </div>
+        </nav>}
+        <span className="assistant-group">Tools</span>
+        <nav className="assistant-menu" aria-label="AmbitionBox tools">
+          {tools.map(({ id, label, question, icon: Icon }) => (
+            <button key={id} onClick={() => ask(question)}>
+              <Icon size={20} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+        </>}
       </div>
-    )}
-    {asked && <motion.div className="home-assistant-answer" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}><span>Based on your current context</span><p>{answer}</p><small><ShieldCheck size={13} /> Nothing is sent or changed automatically.</small></motion.div>}
+      {/* Tall enough to start around the middle of the last visible row, so the cut-off
+          row itself is the signal rather than a hairline at the very bottom edge. */}
+      {more && <span className="assistant-fade" aria-hidden="true" />}
+    </div>
+
+    {/* Browsing history is not asking, so the composer steps out of the way for it. */}
+    {view !== 'chats' && <div className="assistant-composer-shell">
+      <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); if (draft.trim()) ask(draft.trim()) }}>
+        <input aria-label="Ask AmbitionBox" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === 'thread' ? 'Ask something else' : 'What do you want to know?'} />
+        <div className="assistant-composer-foot">
+          <AssistantMark className="assistant-composer-mark" />
+          {/* The assistant signs the field it answers from. The state-dependent grounding
+              line that used to sit here restated what the answer already qualifies. */}
+          <small>AmbitionBox Career Intelligence</small>
+          <button aria-label="Send question" disabled={!draft.trim()}><Send size={16} /></button>
+        </div>
+      </form>
+    </div>}
   </Sheet>
 }
 
@@ -1273,6 +1754,85 @@ function ReplySheet({ sent, onClose, onSend }) {
         <div className="draft-note"><Sparkles size={16} /> Availability is the only personal detail included.</div>
         <button className="primary-button" onClick={onSend}><Send size={17} /> Send reply</button>
       </>}
+    </Sheet>
+  )
+}
+
+/*
+ * The post-interview debrief — two steps, in that order for a reason.
+ *
+ * Step one serves the user: the outcome is the thing only they know, and it is what
+ * unsticks their Tracker. Step two is what AmbitionBox wants — the questions that came
+ * up — and it is only reachable after step one, so the ask is never the price of entry.
+ *
+ * The pitch on step two is the user's own: logged questions are their weak-spot map, and
+ * they feed the same evidence model that already grades their practice answers. The
+ * database filling up is the by-product, which is why the copy says so plainly rather
+ * than appealing to altruism.
+ */
+function DebriefSheet({ onClose, onDone }) {
+  const round = interviewIntel.loop.rounds[0]
+  const [outcome, setOutcome] = useState(null)
+  const [questions, setQuestions] = useState('')
+  const outcomes = [
+    { id: 'well', label: 'It went well' },
+    { id: 'mixed', label: 'Hard to read' },
+    { id: 'badly', label: 'It did not go well' },
+  ]
+  return (
+    <Sheet label={`How the ${juspay.company} interview went`} onClose={onClose} wide>
+      <div className="sheet-body">
+        <span className="eyebrow">INTERVIEW DONE</span>
+        <h2>How did your {juspay.company} interview go?</h2>
+        <p>{round.label} with {interviewIntel.invitation.with}, {interviewIntel.invitation.day} at {interviewIntel.invitation.time}.</p>
+
+        <div className="debrief-outcomes" role="group" aria-label="How it went">
+          {outcomes.map(({ id, label }) => (
+            <button key={id} className={outcome === id ? 'is-chosen' : ''} aria-pressed={outcome === id} onClick={() => setOutcome(id)}>{label}</button>
+          ))}
+        </div>
+
+        {outcome && (
+          <motion.div className="debrief-questions" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            {/* The reciprocity is the whole pitch, and it is literal rather than a
+                goodwill appeal: these become the questions we prepare him on next. */}
+            <h3>What did they actually ask?</h3>
+            <p>Whatever you remember. AmbitionBox prepares you on these before your next round, and adds them to the {interviewIntel.evidence.reports} reports that told you what to expect for this one.</p>
+            <label className="message-box">
+              <span>Questions they asked</span>
+              <textarea name="interview-questions" autoComplete="off" rows={4} value={questions} onChange={(e) => setQuestions(e.target.value)} placeholder="How would you make a retry safe to run twice?" />
+            </label>
+            <p className="add-interview-note"><Info size={15} /> Submitting isn’t wired up in this prototype. In the product these post anonymously, and the outcome stays private to you either way.</p>
+            <button className="primary-button" onClick={onDone}>Save how it went <ArrowRight size={17} /></button>
+          </motion.div>
+        )}
+      </div>
+    </Sheet>
+  )
+}
+
+/*
+ * What a review would actually collect. Same posture as AddInterviewSheet: it names the
+ * fields and then says plainly that the prototype does not submit anything, rather than
+ * miming a form. This is the first flow in the demo pointed outward, so the trust line
+ * has to be about posting rather than about reading.
+ */
+function ContributeSheet({ onClose }) {
+  const current = offerDecision.currentCompany
+  return (
+    <Sheet label={`Rate working at ${current.company}`} onClose={onClose}>
+      <div className="sheet-body">
+        <span className="eyebrow">FROM PEOPLE LIKE YOU</span>
+        <h2>Rate working at {current.company}.</h2>
+        <p>{current.reviews.replace(' reviews', '')} people have already rated it, at {current.overall} overall. The ratings AmbitionBox showed you all along came from people doing exactly this.</p>
+        <ul className="add-interview-fields">
+          <li>Salary, work-life balance, culture, and growth</li>
+          <li>What is genuinely good, and what you would warn someone about</li>
+          <li>Whether you would recommend it to someone like you</li>
+        </ul>
+        <p className="add-interview-note"><Info size={15} /> Submitting isn’t wired up in this prototype. In the product this posts anonymously, and nothing leaves this screen until you have read it back.</p>
+        <button className="primary-button" onClick={onClose}>Got it</button>
+      </div>
     </Sheet>
   )
 }

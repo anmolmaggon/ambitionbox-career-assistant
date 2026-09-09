@@ -18,6 +18,8 @@ Allowed values are `draft` and `locked`. Only the owner's explicit word **lock**
 | Résumé import | Codex | draft | draft | draft | draft | `output/playwright/current/onboarding-resume-import-390.png` |
 | Manual profile setup | Codex | draft | draft | draft | draft | `output/playwright/current/onboarding-manual-390.png` |
 | Email-skip handoff | Codex | draft | draft | draft | draft | Route/state contract only |
+| Jobs tab (job listing) | Claude | draft | draft | draft | draft | Card ported from `prototype/matches-2b` 2026-08-19; shared dock + header; detail stays Juspay-only by owner instruction |
+| Tracker | Claude | draft | draft | draft | draft | Rebuilt on one pipeline model 2026-08-19 (6 stages, Move, sources, Jobs-matched card). Contract in `context/screens/TRACKER.md`. |
 | Home | Claude | draft | draft | draft | draft | Carousel rebuild + Bond material, 2026-08-18. `output/playwright/current/home-priority-390.png` predates it; capture is held until onboarding settles. |
 | Shared design tokens | Shared | draft | draft | draft | draft | `src/tokens.css` |
 

@@ -15,7 +15,8 @@ const states = [
   ['/profile?preset=tracker', 'What AmbitionBox knows'],
   ['/tracker?preset=baseline', 'Every application. One smart Tracker.'],
   ['/home?preset=tracker', 'Good morning, Arjun.'],
-  ['/matches?preset=matches', 'The roles worth your time.'],
+  // The Jobs intro block was removed on 2026-08-19; the feed's own control anchors it now.
+  ['/matches?preset=matches', 'Sort jobs by'],
   ['/jobs/juspay?preset=readiness', 'Senior Backend Engineer'],
   ['/assistant/juspay?preset=resume&stage=resume', 'Profile Readiness is now 14/15.'],
   ['/prep/juspay?preset=interview&stage=invite&round=open', 'Juspay wants to interview you.'],

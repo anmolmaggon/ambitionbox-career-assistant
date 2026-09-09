@@ -34,6 +34,7 @@ If a consequential item is unclear, ask the owner. If the request already answer
 - Styling, components, imagery, or motion: [UI.md](UI.md) and [the reference catalogue](../references/CATALOG.md)
 - Onboarding: [screens/ONBOARDING.md](screens/ONBOARDING.md)
 - Home: [screens/HOME.md](screens/HOME.md)
+- Tracker: [screens/TRACKER.md](screens/TRACKER.md)
 - Owner feedback or rejected directions: [FEEDBACK.md](FEEDBACK.md)
 
 For any user-facing wording, pitch, naming, CTA, or trust-language change, also read and follow [the shared copywriting skill](../.agents/skills/ambitionbox-v3-copywriting/SKILL.md).

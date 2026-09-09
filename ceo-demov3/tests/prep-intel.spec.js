@@ -62,7 +62,7 @@ test('declining Java preserves the gap and carries to the job screen', async ({ 
   await expect(page.getByText('Kept at 14/15. The gap stays named.')).toBeVisible()
   await expect(page.getByText('How to answer it truthfully and still be credible')).toBeVisible()
   await page.goto('/jobs/juspay')
-  await expect(page.getByText('14/15', { exact: true })).toBeVisible()
+  await expect(page.getByText('14 of 15')).toBeVisible()
 })
 
 test('confirming Java honestly moves readiness to 15/15 across screens', async ({ page }) => {
@@ -70,7 +70,7 @@ test('confirming Java honestly moves readiness to 15/15 across screens', async (
   await page.getByRole('button', { name: 'Yes, I did' }).click()
   await expect(page.getByText('Confirmed. Profile Readiness is now 15/15.')).toBeVisible()
   await page.goto('/jobs/juspay')
-  await expect(page.getByText('15/15', { exact: true })).toBeVisible()
+  await expect(page.getByText('15 of 15')).toBeVisible()
 })
 
 test('coaching grades what was actually typed rather than praising anything', async ({ page }) => {
