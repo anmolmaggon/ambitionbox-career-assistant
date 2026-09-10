@@ -504,7 +504,25 @@
    beside it the room it needed to stay whole. */
 [data-look="bold"] .action-card-cta > svg { display: none; }
 
+/*
+ * The dismiss control, and its hover.
+ *
+ * `home.css` inverts this control on `.action-card--field` — white ink, white wash —
+ * because in the `current` look a field card is a dark gradient. In this look the same
+ * class renders a pale tinted card, so those rules put a white ✕ on a white surface and
+ * the control vanished under the cursor.
+ *
+ * The hover is a soft pad of the card's own ink rather than a colour change: the ✕ is not
+ * a link, and colouring it blue like one reads as an invitation to press the thing that
+ * makes a card go away.
+ */
 [data-look="bold"] .action-card-dismiss { color: var(--subtle); }
+[data-look="bold"] .action-card--field .action-card-dismiss,
+[data-look="bold"] .action-card--field .action-card-dismiss:hover { color: var(--ink); }
+[data-look="bold"] .action-card-dismiss:hover,
+[data-look="bold"] .action-card--field .action-card-dismiss:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
 [data-look="bold"] .action-card-mark { background: color-mix(in srgb, var(--status) 16%, transparent); color: var(--status-ink); border-radius: 11px; }
 [data-look="bold"] .action-card .time-chip { color: var(--subtle); }
 [data-look="bold"] .card-source { color: var(--subtle); }
