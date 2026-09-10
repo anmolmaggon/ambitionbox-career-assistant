@@ -107,9 +107,14 @@
 [data-look="bold"] .secondary-button,
 [data-look="bold"] .ghost-button {
   background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  font-weight: 700;
+  border: 1.5px solid color-mix(in srgb, var(--ab-color-primary-strong) 28%, transparent);
+  color: var(--ab-color-primary-strong);
+  font-weight: 600;
+}
+[data-look="bold"] .secondary-button:hover,
+[data-look="bold"] .ghost-button:hover {
+  border-color: var(--ab-color-primary-strong);
+  background: color-mix(in srgb, var(--ab-color-primary-strong) 7%, var(--surface));
 }
 
 /* Home ------------------------------------------------------------------- */
@@ -476,9 +481,14 @@
 
 [data-look="bold"] .action-card--queued .action-card-cta,
 [data-look="bold"] .action-card--queued.action-card--role .action-card-cta {
-  background: color-mix(in srgb, var(--ink) 7%, transparent);
-  color: var(--ink);
+  background: var(--surface);
+  color: var(--ab-color-primary-strong);
+  border: 1.5px solid color-mix(in srgb, var(--ab-color-primary-strong) 30%, transparent);
   box-shadow: none;
+}
+[data-look="bold"] .action-card--queued .action-card-cta:hover {
+  border-color: var(--ab-color-primary-strong);
+  background: color-mix(in srgb, var(--ab-color-primary-strong) 7%, var(--surface));
 }
 
 /* No arrow. The pill already reads as pressable, and the glyph was costing the figure
@@ -654,3 +664,66 @@
 [data-look="bold"] .action-card-head,
 [data-look="bold"] .card-mid { position: relative; z-index: 1; }
 
+
+
+/* ==========================================================================
+ * TRACKER AND JOBS CARDS
+ *
+ * The same material as a Home card, so the three tabs read as one product: white surface,
+ * 26px radius, a hairline rather than a heavy border, and a soft lift instead of a shadow
+ * that implies elevation the card does not have.
+ *
+ * The status tint deliberately does NOT come across. A Home card is one of six things
+ * needing you today and its hue is doing real work; a Tracker list is fifteen rows in
+ * stage order, and fifteen tinted cards would be a rainbow saying nothing the stage
+ * heading has not already said.
+ * ========================================================================== */
+
+[data-look="bold"] .application-card,
+[data-look="bold"] .job-card,
+[data-look="bold"] .tracker-summary {
+  border-radius: 26px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(15, 20, 35, .05);
+}
+
+[data-look="bold"] .application-card__role,
+[data-look="bold"] .job-id__role { font-size: 15px; font-weight: 600; letter-spacing: -.015em; }
+[data-look="bold"] .application-card__company,
+[data-look="bold"] .job-id__company { font-size: 12.5px; font-weight: 600; }
+[data-look="bold"] .application-card__meta { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+
+/* Actions, matching the Home card exactly: one filled primary, everything else outlined
+   in the same blue. A grey-on-grey pill is the shape that reads as disabled. */
+[data-look="bold"] .job-action { font-size: 13px; font-weight: 600; letter-spacing: 0; }
+[data-look="bold"] .job-action--view {
+  background: var(--ab-color-primary-strong);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(63, 92, 251, .24);
+}
+[data-look="bold"] .job-action--move,
+[data-look="bold"] .job-action--secondary,
+[data-look="bold"] .job-action--save {
+  border: 1.5px solid color-mix(in srgb, var(--ab-color-primary-strong) 28%, transparent);
+  background: var(--surface);
+  color: var(--ab-color-primary-strong);
+}
+[data-look="bold"] .job-action--move:hover,
+[data-look="bold"] .job-action--secondary:hover,
+[data-look="bold"] .job-action--save:hover {
+  border-color: var(--ab-color-primary-strong);
+  background: color-mix(in srgb, var(--ab-color-primary-strong) 7%, var(--surface));
+}
+
+/* The match block picks up the card's own ink rather than a filled tile, so a list of
+   fifteen does not read as fifteen badges competing with each other. */
+[data-look="bold"] .job-score { border-radius: 14px; background: color-mix(in srgb, var(--ab-color-primary-strong) 9%, transparent); color: var(--ab-color-primary-strong); }
+[data-look="bold"] .job-score b { color: var(--ab-color-primary-strong); font-weight: 700; }
+[data-look="bold"] .job-score i { color: color-mix(in srgb, var(--ab-color-primary-strong) 62%, white); font-weight: 600; }
+
+[data-look="bold"] .application-moved { border-radius: 14px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
+[data-look="bold"] .application-moved__undo { border: 1.5px solid color-mix(in srgb, var(--ab-color-primary-strong) 28%, transparent); color: var(--ab-color-primary-strong); background: var(--surface); }
+
+[data-look="bold"] .stage-group { border-radius: 26px; border: 0; background: color-mix(in srgb, var(--ink) 3.5%, transparent); }
+[data-look="bold"] .stage-head__count { font-weight: 600; box-shadow: 0 0 0 1px var(--line); }

@@ -319,16 +319,29 @@ test('the post-interview card names the interview and asks for the outcome first
   await expect(page.getByRole('heading', { name: /You sat .* at Juspay yesterday/ })).toBeVisible()
   await expect(page.getByText('Senior Backend Engineer · Round 1 of 4')).toBeVisible()
 
-  // The debrief is a thread now. The outcome is asked first because it is the part that
-  // serves the user; what North wants — the questions that came up — comes after.
+  /*
+   * The debrief is a conversation, not a form: North reacts to each answer before asking
+   * the next thing, and the question after is built from the answer before it. The outcome
+   * comes first because it is the part that serves the user; what North wants — the topics
+   * that came up — is second, so a contribution is never the price of entry.
+   */
   await page.getByRole('button', { name: /Tell me how it went/ }).first().click()
-  await expect(page.getByText('No email reports how a round actually went')).toBeVisible()
-  await expect(page.getByText('Which of these came up?')).toHaveCount(0)
+  await expect(page.getByText('Nothing in your inbox says how it went')).toBeVisible()
+  await expect(page.getByText('What did they actually spend time on?')).toHaveCount(0)
+
   await page.getByRole('button', { name: 'Hard to read', exact: true }).click()
-  await expect(page.getByText('Which of these came up?')).toBeVisible()
+  await expect(page.getByText(/Interviewers are trained not to give it away/)).toBeVisible()
+  await expect(page.getByText('What did they actually spend time on?')).toBeVisible()
 
   await page.getByRole('button', { name: 'System design', exact: true }).click()
   await page.getByRole('button', { name: /Add 1/ }).click()
+
+  // The follow-up is built from what was just picked, not authored in advance.
+  await expect(page.getByText('Anything you would want back?')).toBeVisible()
+  await page.getByRole('button', { name: 'System design', exact: true }).click()
   await page.getByRole('button', { name: 'Skip' }).click()
-  await expect(page.getByRole('heading', { name: 'Logged. Hard to read is normal at this stage.' })).toBeVisible()
+  await page.getByRole('button', { name: 'They did not say', exact: true }).click()
+
+  // No date means the ghost clock starts today — the answer does real work.
+  await expect(page.getByText(/ten-day clock starts today/)).toBeVisible()
 })

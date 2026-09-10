@@ -941,3 +941,56 @@ export const jobDetails = {
   },
   razorline: null,
 }
+
+/*
+ * Round intelligence, keyed by application. This is what North reads before a round: what
+ * candidates reported the round covered, and what the invitation itself does not say.
+ *
+ * Kept per company on purpose. A Google loop and a Juspay loop are not the same shape, and
+ * describing one with the other's reports would be exactly the confident wrong answer this
+ * product exists to avoid. `unknowns` is the honest half — almost no invitation says what
+ * the round covers, and saying so is more useful than guessing.
+ */
+export const roundIntel = {
+  'google-app': {
+    reports: 31,
+    scope: 'Software Engineer III · Bengaluru · last 12 months',
+    covers: [
+      { label: 'Data structures, applied', meta: '28 of 31 reports · usually two problems', tone: 'warn' },
+      { label: 'One system-design question', meta: '19 of 31 · shorter than a full design round', tone: 'warn' },
+      { label: 'How you work with others', meta: '24 of 31 · behavioural, scored separately', tone: 'ok' },
+    ],
+    unknowns: [
+      'Which of the five rounds this one is',
+      'Whether the same interviewer carries through the loop',
+      'Whether the level is fixed or still open',
+    ],
+    stand: [
+      { label: 'Distributed systems at scale', meta: 'Six years of it, and it is the half they weight most', tone: 'ok' },
+      { label: 'Payments domain depth', meta: 'Not what this role is about. Do not lead with it', tone: 'neutral' },
+      { label: 'Algorithmic practice', meta: 'Your thinnest ground. Nothing in your profile evidences recent practice', tone: 'warn' },
+    ],
+  },
+  'paytm-app': {
+    reports: 22,
+    scope: 'Senior Backend Engineer · Noida · last 12 months',
+    covers: [
+      { label: 'System design, end to end', meta: '17 of 22 reports · the round that decides it', tone: 'warn' },
+      { label: 'Ledger and reconciliation', meta: '12 of 22 · Paytm asks this more than most', tone: 'warn' },
+      { label: 'Team and ownership questions', meta: '15 of 22', tone: 'ok' },
+    ],
+    unknowns: ['Whether a third round follows', 'Who else is in the loop'],
+    stand: [],
+  },
+}
+
+/*
+ * What the user has already told North about rounds they have sat. The post-interview
+ * debrief writes here, and the next debrief reads it back — which is the only way North
+ * can say "that is three of your last four" without inventing the count.
+ */
+export const roundHistory = [
+  { company: 'Juspay', round: 'Round 1', topics: ['System design', 'Payments domain'], outcome: 'Went well' },
+  { company: 'Pine Labs', round: 'Round 2', topics: ['System design', 'Scale and throughput'], outcome: 'Hard to read' },
+  { company: 'Navi', round: 'Round 4', topics: ['Team and ownership', 'Past projects'], outcome: 'Did not go well' },
+]

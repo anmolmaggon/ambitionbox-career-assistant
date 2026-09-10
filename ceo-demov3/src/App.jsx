@@ -374,6 +374,7 @@ function TrackerScreen() {
     // recruiter reply, written differently, is how two screens start disagreeing.
     return {
       label: item.action,
+      primary: true,
       onClick: () => (item.flow
         ? go(`/flow/${item.flow}?application=${item.id}`)
         : setActionNotice(`${item.company} details are ready in the connected email.`)),

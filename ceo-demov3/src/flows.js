@@ -1,4 +1,4 @@
-import { applications, candidate, interviewIntel, juspay, offer } from './data'
+import { applications, candidate, interviewIntel, juspay, offer, roundHistory, roundIntel } from './data'
 
 /*
  * The flow scripts.
@@ -98,82 +98,197 @@ function replyFlow(app) {
   ]
 }
 
-/* ---- 2 · A round is booked, or the slot still is not ----------------------- */
+/* ---- 2 · Before the round ---------------------------------------------------
+ *
+ * The holistic version, rebuilt 2026-09-10 on Pranoy's instruction. The order is the point:
+ * North shows the invitation, then says what the invitation does not say, then fills that
+ * gap from reports, then names where the user actually stands. Booking the slot sits in
+ * the middle rather than at the start, because nobody picks a time well before they know
+ * what they are picking a time for.
+ */
 
 function prepFlow(app) {
+  const intel = roundIntel[app.id]
   const slots = ['Mon 15 Sep · 11:00', 'Tue 16 Sep · 15:30', 'Thu 18 Sep · 10:00']
+  const named = app.interview?.interviewer && !/not named/i.test(app.interview.interviewer)
   return [
     {
       id: 'found', from: 'north', type: 'message',
-      text: `${app.when} by ${app.company}, and none is picked yet. That is the only thing standing between you and a booked round.`,
+      text: `${app.when} by ${app.company}, and none is picked yet. Before you choose, here is everything I have on this round.`,
     },
     {
-      id: 'detail', from: 'north', type: 'detail',
-      title: `${app.company} · ${app.role}`,
+      id: 'invite', from: 'north', type: 'quote',
+      quote: `We would like to invite you to a ${app.interview?.duration || '45 minute'} conversation for the ${app.role} role. Please pick a slot that works for you.`,
+      sender: `Talent team · ${app.company}`,
+      meta: `Gmail · ${app.when.toLowerCase()}`,
+    },
+    {
+      /*
+       * The most useful thing North can say here, and the least flattering to the sender:
+       * the invitation is almost content-free. Naming that is what earns the next step,
+       * because everything after it is North filling a gap the user can see for themselves.
+       */
+      id: 'unknowns', from: 'north', type: 'list',
+      title: 'That is the whole email. Here is what it does not tell you.',
+      items: (intel?.unknowns || ['What this round covers']).map((label) => ({ label, meta: 'Not stated anywhere in the thread', tone: 'neutral' })),
+    },
+    {
+      id: 'reading', from: 'north', type: 'thinking',
+      text: intel ? `Reading ${intel.reports} interview reports for this role` : 'Reading what candidates reported',
+      when: () => Boolean(intel),
+    },
+    {
+      id: 'covers', from: 'north', type: 'list',
+      title: `What ${app.interview?.round?.split(' of ')[0] || 'this round'} actually covers here.`,
+      items: intel?.covers || [],
+      source: intel ? `From ${intel.reports} reports · ${intel.scope}` : undefined,
+      when: () => Boolean(intel?.covers?.length),
+    },
+    {
+      id: 'who', from: 'north', type: 'detail',
+      title: named ? 'Who you are meeting' : 'The round itself',
       rows: [
         ['Round', app.interview?.round],
         ['Format', app.interview?.mode],
         ['Length', app.interview?.duration],
-        ['Interviewer', app.interview?.interviewer],
+        // Naming an unknown as unknown, rather than leaving the row out, is what stops the
+        // absence reading as an oversight.
+        ['Interviewer', named ? app.interview.interviewer : 'Not named in the invitation'],
       ].filter(([, value]) => value),
     },
     {
       id: 'gap', from: 'north', type: 'choice', gap: true,
-      text: 'Your calendar is not connected, so I cannot tell which of these is free. Which one works?',
+      text: 'Your calendar is not connected, so the one thing I cannot work out is which of these is free. Which works?',
       key: 'slot',
       options: slots,
     },
     {
-      id: 'confirming', from: 'north', type: 'thinking',
-      text: 'Building your prep against the role',
+      id: 'building', from: 'north', type: 'thinking',
+      text: 'Putting your prep against it',
     },
     {
-      id: 'plan', from: 'north', type: 'list',
-      title: (answers) => `Booked for ${answers.slot}. Here is what to expect.`,
-      items: [
-        { label: 'Distributed systems design', meta: 'Named in 11 of 14 reports for this role', tone: 'warn' },
-        { label: 'Scale and throughput numbers', meta: 'Your weakest evidence — no volume figures in your profile', tone: 'warn' },
-        { label: 'Payments domain depth', meta: 'Your strongest ground. Six years of it', tone: 'ok' },
-        { label: 'Code review and mentoring', meta: 'Evidenced in your profile', tone: 'ok' },
+      id: 'stand', from: 'north', type: 'list',
+      title: 'Where you stand against it.',
+      items: intel?.stand?.length ? intel.stand : [
+        { label: 'Payments and distributed systems', meta: 'Six years, and your strongest ground', tone: 'ok' },
+        { label: 'Scale and throughput numbers', meta: 'Nothing in your profile puts figures to it', tone: 'warn' },
       ],
-      source: 'From 63 interview reports on AmbitionBox and your reviewed profile',
+      source: 'Against your reviewed profile',
+    },
+    {
+      id: 'verdict', from: 'north', type: 'verdict',
+      title: (answers) => `Booked for ${answers.slot}.`,
+      text: (answers) => {
+        const weak = (intel?.stand || []).find((row) => row.tone === 'warn')
+        return weak
+          ? `Two hours on ${weak.label.toLowerCase()} buys you more than anything else here. I will put the rest in front of you the evening before.`
+          : 'I will put the whole briefing in front of you the evening before, and ask how it went the day after.'
+      },
     },
     {
       id: 'done', from: 'north', type: 'actions',
-      text: 'I will remind you the evening before, and ask how it went the day after.',
+      text: 'Nothing is on your calendar yet — you confirm the slot with them.',
       options: [
-        { label: 'Start prep', primary: true, result: 'prep' },
-        { label: 'Just book it for now', result: 'booked' },
+        { label: 'Open the full briefing', primary: true, result: 'prep' },
+        { label: 'Just save the slot', result: 'booked' },
       ],
     },
   ]
 }
 
-/* ---- 3 · The round happened and nothing in an inbox reports how it went ---- */
+/* ---- 3 · After the round ----------------------------------------------------
+ *
+ * Rebuilt 2026-09-10. The old version was three questions in a row, which is a form with
+ * speech bubbles around it. This one answers back: every question North asks is followed
+ * by North reacting to what it just heard, and the question after that is built from the
+ * answer before it. That is the difference between a conversation and a survey.
+ *
+ * The order is deliberate. The outcome comes first because it is the part that serves the
+ * user — their Tracker is stale until they say. What North wants, the questions that came
+ * up, is second. A contribution is never the price of entry.
+ */
 
 function debriefFlow(app) {
+  const intel = roundIntel[app.id]
+  const who = app.interview?.interviewer?.split(' · ')[0]
+  const round = app.interview?.round || 'your round'
+
+  /* How often a topic has come up across the rounds the user has already logged. This is
+   * the only way North can say "three of your last four" without inventing the count. */
+  const seenBefore = (topic) => roundHistory.filter((entry) => entry.topics.includes(topic)).length
+
   return [
     {
       id: 'found', from: 'north', type: 'message',
-      text: `Your ${app.company} round was ${app.when.replace('Interviewed ', '')}. ${app.interview?.round} with ${app.interview?.interviewer?.split(' · ')[0]}.`,
+      text: `${round} at ${app.company} was two days ago${who ? `, with ${who}` : ''}. Nothing in your inbox says how it went, so this part is yours.`,
     },
     {
       id: 'outcome', from: 'north', type: 'choice', gap: true,
-      text: 'No email reports how a round actually went, so this part only you can tell me. How did it go?',
+      text: 'Start with the honest version. How did it go?',
       key: 'outcome',
       options: ['Went well', 'Hard to read', 'Did not go well'],
     },
     {
+      /* North answers before it asks again. Without this the thread is a form. */
+      id: 'react-outcome', from: 'north', type: 'message',
+      text: (answers) => ({
+        'Went well': 'Good. Let me get the details down while they are still sharp.',
+        'Hard to read': 'That is the most common answer I get, and it usually means less than it feels like. Interviewers are trained not to give it away.',
+        'Did not go well': 'Noted, and it is worth capturing properly. A round that went badly is the one you learn most from, as long as you write it down while you still remember it.',
+      }[answers.outcome] || 'Noted.'),
+    },
+    {
       id: 'topics', from: 'north', type: 'choice', multi: true,
-      text: 'Which of these came up? I will prepare you on them before the next round.',
+      text: 'What did they actually spend time on?',
       key: 'topics',
-      options: ['System design', 'Scale and throughput', 'Payments domain', 'Behavioural', 'Live coding', 'Team fit'],
+      options: ['System design', 'Coding', 'Scale and throughput', 'Payments domain', 'Past projects', 'Team and ownership'],
+    },
+    {
+      id: 'react-topics', from: 'north', type: 'message',
+      text: (answers) => {
+        const picked = answers.topics || []
+        const repeat = picked.find((topic) => seenBefore(topic) >= 2)
+        if (repeat) {
+          return `${repeat} again. That is ${seenBefore(repeat) + 1} of your last ${roundHistory.length + 1} rounds — it is the thing standing between you and the next level, not a coincidence.`
+        }
+        if (intel?.covers?.length && picked.length) {
+          return `That lines up with what ${app.company} candidates reported, so nothing here surprised the room.`
+        }
+        return 'Logged against the role.'
+      },
+    },
+    {
+      /*
+       * Built from the previous answer. Asking "what did you struggle with" in the
+       * abstract gets a shrug; asking it against the three things they just named gets a
+       * real answer, and it is one tap.
+       */
+      id: 'stuck', from: 'north', type: 'choice',
+      text: 'Anything you would want back?',
+      key: 'stuck',
+      options: (answers) => [...(answers.topics || []).slice(0, 4), 'Nothing I would change'],
+    },
+    {
+      id: 'react-stuck', from: 'north', type: 'message',
+      text: (answers) => (answers.stuck === 'Nothing I would change'
+        ? 'Then you have nothing to fix and everything to wait for.'
+        : `Then ${answers.stuck.toLowerCase()} is what we work on before the next one. I will build the prep around it rather than around the whole role.`),
     },
     {
       id: 'note', from: 'north', type: 'input',
-      text: 'Anything you want to remember about it? One line is plenty.',
+      text: 'Anything you want to remember, in your own words? One line is plenty.',
       key: 'note',
       placeholder: 'e.g. Went deep on idempotency. Should have led with the ledger rewrite.',
+    },
+    {
+      /*
+       * The timing question does real work: the answer sets when this application starts
+       * counting as ghosted. Without it the ten-day rule runs off a date nobody agreed to.
+       */
+      id: 'timing', from: 'north', type: 'choice',
+      text: 'Last one. Did they say when you would hear back?',
+      key: 'timing',
+      options: ['This week', 'Next week', 'They did not say'],
     },
     {
       id: 'filing', from: 'north', type: 'thinking',
@@ -182,22 +297,27 @@ function debriefFlow(app) {
     {
       id: 'verdict', from: 'north', type: 'verdict',
       title: (answers) => ({
-        'Went well': 'Logged. Round 3 is where this gets decided.',
-        'Hard to read': 'Logged. Hard to read is normal at this stage.',
-        'Did not go well': 'Logged. That is useful, not fatal.',
+        'Went well': `Logged. ${app.company} is now the furthest along in your search.`,
+        'Hard to read': 'Logged. Hard to read is not a bad sign at this stage.',
+        'Did not go well': 'Logged. Useful, not fatal.',
       }[answers.outcome] || 'Logged.'),
       text: (answers) => {
-        const topics = (answers.topics || []).length
-          ? (answers.topics || []).slice(0, 2).join(' and ').toLowerCase()
-          : 'the areas from your last round'
-        return `I have added ${topics} to your prep for the next round, and to the 63 reports other candidates read before this interview.`
+        const chase = {
+          'This week': 'If Friday passes with nothing, I will bring it back with a note already written.',
+          'Next week': 'I will hold it quietly and raise it if next week ends in silence.',
+          'They did not say': 'No date means the ten-day clock starts today. If it runs out I will bring it back with a note already written.',
+        }[answers.timing] || 'I will watch the thread.'
+        const prep = answers.stuck && answers.stuck !== 'Nothing I would change'
+          ? ` Your next round's prep now leads with ${answers.stuck.toLowerCase()}.`
+          : ''
+        return chase + prep
       },
     },
     {
       id: 'done', from: 'north', type: 'actions',
-      text: 'The card stays where it is until Paytm say something. If they go quiet for ten days I will bring it back.',
+      text: 'What you wrote stays yours. The topics join the reports the next candidate reads.',
       options: [
-        { label: 'Prepare me for Round 3', primary: true, result: 'prep' },
+        { label: 'See what changes next', primary: true, result: 'prep' },
         { label: 'Done for now', result: 'done' },
       ],
     },
