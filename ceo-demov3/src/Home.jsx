@@ -203,6 +203,14 @@ function introLine(journey, firstArrival, count) {
  * than restating it, and nothing is formatted that the invitation did not contain.
  */
 /*
+ * The PhonePe application, looked up once. Its recruiter reply is the golden path's
+ * first beat and appears twice — as the hero card and, when a fixed date outranks it,
+ * as a demoted task. Both need the same identity block, and hand-typing the role and
+ * rating in two places is how they drift apart.
+ */
+const phonepe = applications.find((entry) => entry.id === 'phonepe-app')
+
+/*
  * Three columns of evidence for a role. "Preference Match" is written out in the label
  * rather than abbreviated — the contract is explicit that it is never shortened to
  * "match", and a column label is still the term appearing on screen.
@@ -211,7 +219,14 @@ function roleStats(role) {
   return [
     { value: `${role.preferenceMatch}%`, label: 'Preference Match' },
     { value: role.salary, label: 'Range' },
-    { value: `${role.rating}★`, label: 'Rating' },
+    /*
+     * Reviews, not the rating. The rating moved up to the company line where every card
+     * now carries it, and printing it twice on one card is the thing this screen keeps
+     * ruling out. What the stat row owes it instead is the sample behind it — the same
+     * argument data.js already makes about the salary estimate: a number without its n
+     * is an opinion.
+     */
+    { value: (role.reviews || '').replace(' reviews', ''), label: 'Reviews' },
   ]
 }
 
@@ -242,7 +257,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'OFFER IN',
       badge: <Pill tone="success">Today</Pill>,
       when: 'Today',
-      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · ${juspay.location}` },
+      company: { initials: 'JP', name: 'Juspay', rating: juspay.rating, role: juspay.role, facts: [juspay.location, juspay.mode] },
       // The number is the fact this card exists to deliver, so the card leads with it
       // and splits it — a CTC headline with the variable folded in flatters the offer.
       money: { total: offer.total, fixed: offer.fixed, variable: offer.variable, market: offer.market, delta: offer.currentDelta },
@@ -278,7 +293,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'HOW DID IT GO',
       badge: <Pill tone="attention">Yesterday</Pill>,
       when: 'Yesterday',
-      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · Round 1 of 4` },
+      company: { initials: 'JP', name: 'Juspay', rating: juspay.rating, role: juspay.role, facts: ['Round 1 of 4'] },
       headline: `You sat ${round ? round.label.toLowerCase() : 'your round'} at ${juspay.company} yesterday.`,
       support: 'No email reports how a round actually went. Thirty seconds, and your next round gets sharper.',
       why: 'Nothing else in your search can move until this one is settled.',
@@ -300,7 +315,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       // "Round 1 of 4" moves out of company.detail and into the schedule block so the
       // string still appears exactly once on the screen, which prep-intel.spec asserts.
       schedule: interviewSchedule(),
-      company: { initials: 'JP', name: 'Juspay', detail: juspay.role },
+      company: { initials: 'JP', name: 'Juspay', rating: juspay.rating, role: juspay.role },
       headline: journey.prepComplete
         ? `You’re ready for ${interviewIntel.invitation.time} on Tuesday.`
         : 'The invite doesn’t say what this round covers.',
@@ -324,12 +339,26 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'THEY REPLIED',
       badge: <span className="time-chip">2h ago</span>,
       when: '2h ago',
-      company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', detail: 'Backend Engineer III' },
+      company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', rating: phonepe?.rating, role: phonepe?.role, facts: phonepe ? identityFacts(phonepe) : [] },
       headline: '“Can you confirm your availability for a quick conversation?”',
-      support: 'Sneha at PhonePe, waiting since 7:40. Your draft is written.',
-      // Split out of `support` so the byline can sit under the quote where a message
-      // puts its sender. The full stop stays — onboarding.spec matches the string.
-      source: 'Detected in Gmail.',
+      /*
+       * The support line stopped naming Sneha and PhonePe on 2026-09-10. The byline
+       * below the quote now signs it with her name and company, and COPY.md rules out
+       * repeating the same personalisation in adjacent elements. What is left is the
+       * part only this line says: how long she has been waiting, and that the reply
+       * already exists.
+       */
+      support: 'Waiting since 7:40 this morning. Your draft is written.',
+      /*
+       * The byline is the sender, per the owner's card reference of 2026-09-10. It used
+       * to read "Detected in Gmail." — the channel standing where a message puts its
+       * signature — which left the recruiter's name buried in the support paragraph and
+       * meant the card never said where Arjun had applied. The channel moved to the chip
+       * beside this line, and `appliedVia` now says Naukri in the facts above.
+       */
+      source: phonepe?.recruiter,
+      appliedVia: phonepe?.appliedVia,
+      signalVia: phonepe?.signalVia,
       why: 'A person is waiting, and a recruiter reply ages faster than an application.',
       whyQuestion: 'Why should I reply to PhonePe first?',
       foot: '2h waiting',
@@ -345,7 +374,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       shape: 'role',
       kicker: `NEW MATCH · ${juspay.preferenceMatch}%`,
       when: juspay.posted,
-      company: { initials: juspay.initials, name: juspay.company, detail: juspay.role },
+      company: { initials: juspay.initials, name: juspay.company, rating: juspay.rating, role: juspay.role, facts: [juspay.location, juspay.mode, juspay.experience] },
       headline: `${juspay.role} at ${juspay.company}.`,
       // `facts` is still what the three legacy directions render. `stats` is the same
       // evidence given columns, which is what stops it wrapping into a grey sentence.
@@ -470,6 +499,30 @@ function cardFigure(item) {
   return item.appliedAgo || item.when
 }
 
+/*
+ * The third line of the identity block: at most three facts, middot separated.
+ *
+ * "Applied 11d ago · via Gmail · Round 2 of 4" — chosen over location and work mode
+ * because where you are in a process is the one thing a candidate cannot reconstruct
+ * from memory, and over the match percentage because once you have applied, the match
+ * has stopped being a decision. Match now appears only on cards about a role you have
+ * not acted on, which is the one place it changes what you do.
+ *
+ * Three is a ceiling, not a quota. The round is omitted where there is no round yet, and
+ * on a rejected card, where `cardFigure` already sets `reachedRound` as the figure —
+ * a card must not print the same fact twice.
+ */
+function identityFacts(item) {
+  const round = item.stage === 'rejected' ? null : item.interview?.round
+  return [
+    item.appliedAgo && `Applied ${item.appliedAgo}`,
+    // Where it was SENT. Where the reply landed is the chip's job; the single `source`
+    // field conflated the two, and Arjun applies on Naukri but hears back in Gmail.
+    (item.appliedVia || item.source) && `via ${item.appliedVia || item.source}`,
+    round,
+  ].filter(Boolean)
+}
+
 /* The pipeline line a card carries: for a ghosted card, where it fell from. */
 function stageNote(item) {
   if (item.stage !== 'ghosted') return stageLabel(item.stage)
@@ -490,6 +543,10 @@ function applicationCard(item) {
     rank: FLOW_RANK[item.flow] ?? 9,
     ctaLabel: item.action,
     role: item.role,
+    rating: item.rating,
+    facts: identityFacts(item),
+    appliedVia: item.appliedVia,
+    signalVia: item.signalVia,
     stage: stageNote(item),
     quote: item.quote,
     sender: item.recruiter,
@@ -526,6 +583,7 @@ function setAside({ journey, action }) {
         // The schedule block now carries "Round 1 of 4", so the headline says something
         // else rather than printing the same string twice on one card.
         id: 'interview', initials: 'JP', company: 'Juspay', detail: 'The round is still ahead of you.',
+        rating: juspay.rating, role: juspay.role,
         when: interviewIntel.invitation.day.split(',')[0], rank: 0,
         kicker: 'INTERVIEW BOOKED', ctaLabel: 'Review my prep', tone: 'interview', icon: <Clock3 size={14} />,
         shape: 'interview', schedule: interviewSchedule(),
@@ -552,6 +610,7 @@ function setAside({ journey, action }) {
     if (journey.interviewInvited && !journey.phonepeReplied) {
       add({
         id: 'reply', initials: 'PP', color: '#5f259f', company: 'PhonePe', detail: 'Reply to recruiter',
+        rating: phonepe?.rating, role: phonepe?.role, facts: phonepe ? identityFacts(phonepe) : [],
         when: '2h ago', rank: 1,
         kicker: 'THEY REPLIED', ctaLabel: 'Review reply', tone: 'reply', icon: <MessageSquare size={14} />,
         // A demoted reply is a task, not a message: the quote belongs to the card that
@@ -576,6 +635,7 @@ function setAside({ journey, action }) {
     }
     add({
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,
+      rating: juspay.rating, role: juspay.role, facts: [juspay.location, juspay.mode, juspay.experience],
       when: juspay.posted, rank: 4,
       kicker: `NEW MATCH · ${juspay.preferenceMatch}%`, ctaLabel: 'Tailor my CV', tone: 'role', icon: <Target size={14} />,
       shape: 'role', title: juspay.role, stats: roleStats(juspay),
@@ -587,6 +647,7 @@ function setAside({ journey, action }) {
     for (const job of jobs.slice(1, 4)) {
       add({
         id: job.id, initials: job.initials, company: job.company, detail: `${job.preferenceMatch}% Preference Match`,
+        rating: job.rating, role: job.role, facts: [job.location, job.mode, job.experience],
         when: job.salary, rank: 100 - job.preferenceMatch,
         kicker: 'NEW MATCH', ctaLabel: 'See the match', tone: 'role', icon: <Target size={14} />,
         shape: 'role', title: job.role, stats: roleStats(job),
@@ -663,6 +724,8 @@ function carouselCards({ action, aside, journey, sheets }) {
     headline: action.headline,
     support: action.support,
     source: action.source,
+    appliedVia: action.appliedVia,
+    signalVia: action.signalVia,
     schedule: action.schedule,
     money: action.money,
     stats: action.stats,
@@ -680,7 +743,7 @@ function carouselCards({ action, aside, journey, sheets }) {
       icon: row.icon,
       kicker: row.kicker,
       when: row.when,
-      company: { initials: row.initials, color: row.color, name: row.company, detail: row.role },
+      company: { initials: row.initials, color: row.color, name: row.company, rating: row.rating, role: row.role, facts: row.facts },
       headline: row.claim || row.detail,
       title: row.title,
       support: row.reason,
@@ -688,6 +751,8 @@ function carouselCards({ action, aside, journey, sheets }) {
       stats: row.stats,
       stage: row.stage,
       source: row.source,
+      appliedVia: row.appliedVia,
+      signalVia: row.signalVia,
       foot: row.foot,
       // The queued cards all reach the same few destinations, so each CTA names the
       // card it belongs to. Two "Open in Tracker" buttons on one screen would be
@@ -840,12 +905,10 @@ function HeroCard({ ctx, className = '' }) {
           <div className="priority-kicker">{action.icon} {action.kicker}</div>
           {action.badge}
         </div>
-        {action.company && (
-          <div className="priority-company">
-            <CompanyLogo initials={action.company.initials} color={action.company.color} />
-            <span><strong>{action.company.name}</strong><small>{action.company.detail}</small></span>
-          </div>
-        )}
+        {/* The same three lines the carousel cards carry. This block used to hand-roll
+            its own two-line version, which is how the hero and the cards below it ended
+            up disagreeing about what the second line meant. */}
+        <Entity company={action.company} className="priority-company" />
         <h2>{action.headline}</h2>
         {action.support && <p>{action.support}</p>}
         {action.facts && <div className="priority-facts">{action.facts.map((fact) => <span key={fact}>{fact}</span>)}</div>}
@@ -1078,17 +1141,85 @@ const FIGURE_IN_MIDDLE = new Set(['offer', 'interview'])
  * the field says what kind of thing the card is rather than which one is most important.
  * Order is still the only thing that ranks them.
  */
-const FIELD_TONES = new Set(['offer', 'interview', 'reply', 'update'])
+/*
+ * Retired 2026-09-10 on the owner's instruction. The category colour moved from the whole
+ * card to the identity panel at its head, following the owner's card reference: a light
+ * card with a tinted masthead. The set is kept empty rather than deleted so the reasoning
+ * above stays attached to the decision it explains, and so restoring the full field is one
+ * line if the panel does not survive review.
+ */
+const FIELD_TONES = new Set([])
+
+/*
+ * The identity block, settled 2026-09-10 with Pranoy. Three lines on every card, in the
+ * same order, saying the same kinds of thing:
+ *
+ *   1. the company, with its AmbitionBox rating held quiet beside it
+ *   2. THE ROLE — the largest line in the block
+ *   3. up to three facts, middot separated
+ *
+ * The bug this fixes: `detail` used to be whatever each call site felt like. On the
+ * Juspay cards it was the role, on PhonePe "Reply to recruiter", on a queued role
+ * "89% Preference Match". So the second line meant something different card to card,
+ * and on most of them it never said which job this actually was — a company name alone
+ * does not identify an application when you have fourteen of them.
+ *
+ * Rating is deliberately subordinate: it rides on the company line at the same size as
+ * the company, never on the role line. The role is what the card is about; the rating
+ * is context for it, and it is the one thing here only AmbitionBox can put on a card.
+ */
+/*
+ * The kicker rides on the company line rather than beside the whole block. The split it
+ * draws — subject on the left, event on the right — is worth keeping, but as a sibling of
+ * the entire identity it took a column's width off the role and the facts, and both
+ * ellipsised: "Backend Eng…", "Applied 11d ago · …". The role is the line this block
+ * exists for, so it gets the full width and the event shares the quietest line.
+ */
+function IdentityLines({ company, kicker }) {
+  const facts = (company.facts || []).filter(Boolean)
+  return (
+    <>
+      {/* The role leads. It is both the largest line and the first one, because a reader
+          landing on this card is asking which job it is, and the company alone does not
+          answer that when fourteen applications are in flight. It reserves room on its
+          right for the dismiss control, which sits in the panel's top corner. */}
+      {company.role && <b className="entity-role">{company.role}</b>}
+      <span className="entity-top">
+        <strong>
+          {company.name}
+          {company.rating && <em className="entity-rating">★ {company.rating}</em>}
+        </strong>
+        {/* The event, on the quietest line and clear of the dismiss control above it. */}
+        {kicker && <span className="action-card-kicker">{kicker}</span>}
+      </span>
+      {facts.length > 0 && <small className="entity-facts">{facts.join(' · ')}</small>}
+    </>
+  )
+}
+
+/*
+ * Where the update reached us, which is not where the application was sent. Arjun applies
+ * on Naukri and hears back in Gmail, and until the card says both, the product's actual
+ * claim — that North watches the inbox whatever you applied through — is only in the
+ * pitch. The chip is drawn only when the two differ; where they agree, the facts line
+ * has already said it and a chip would be the same fact twice.
+ */
+function SignalChip({ card }) {
+  if (!card.signalVia || card.signalVia === card.appliedVia) return null
+  return (
+    <span className="card-signal">
+      <Mail size={11} aria-hidden="true" />
+      {card.signalVia}
+    </span>
+  )
+}
 
 function Entity({ company, className = 'action-card-entity' }) {
   if (!company) return null
   return (
     <div className={className}>
       <CompanyLogo initials={company.initials} color={company.color} />
-      <span>
-        <strong>{company.name}</strong>
-        {company.detail && <small>{company.detail}</small>}
-      </span>
+      <span><IdentityLines company={company} /></span>
     </div>
   )
 }
@@ -1100,7 +1231,12 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <blockquote className="card-quote">{card.headline}</blockquote>
-        {card.source && <small className="card-source">{card.source}</small>}
+        {(card.source || card.signalVia) && (
+          <div className="card-byline">
+            {card.source && <small className="card-source">{card.source}</small>}
+            <SignalChip card={card} />
+          </div>
+        )}
         {card.support && <p>{card.support}</p>}
       </div>
     )
@@ -1144,11 +1280,17 @@ function CardMiddle({ card }) {
 
   // A role: the evidence gets columns instead of wrapping into a grey sentence.
   if (card.shape === 'role') {
+    /*
+     * On a role card the role IS the claim, and the masthead now states it. A queued
+     * role's `title` is the role verbatim, so printing it again as the heading set the
+     * same words twice on one card — the rule this screen keeps everywhere else. Where
+     * the heading says something the masthead does not, it stays.
+     */
+    const heading = card.title || card.headline
+    const restatesIdentity = heading && heading === card.company?.role
     return (
       <div className="card-mid">
-        {/* `title` on a queued role, because its `headline` is the Preference Match
-            string that the stat row below already carries. */}
-        <h2>{card.title || card.headline}</h2>
+        {!restatesIdentity && <h2>{heading}</h2>}
         {card.support && <p>{card.support}</p>}
         {card.stats && (
           <div className="card-stats">
@@ -1166,8 +1308,11 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <h2>{card.headline}</h2>
-        {card.stage && card.stage.startsWith('Ghosted') && (
-          <div className="card-taskmeta"><span className="card-stage">{card.stage}</span></div>
+        {(card.stage?.startsWith('Ghosted') || card.signalVia) && (
+          <div className="card-taskmeta">
+            {card.stage?.startsWith('Ghosted') && <span className="card-stage">{card.stage}</span>}
+            <SignalChip card={card} />
+          </div>
         )}
         {card.support && <p>{card.support}</p>}
       </div>
@@ -1181,6 +1326,7 @@ function CardMiddle({ card }) {
       <div className="card-mid">
         <Entity company={card.company} />
         <h2>{card.headline}</h2>
+        {card.signalVia && <div className="card-taskmeta"><SignalChip card={card} /></div>}
         {card.support && <p>{card.support}</p>}
       </div>
     )
@@ -1218,9 +1364,10 @@ function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }
           ? <CompanyLogo initials={card.company.initials} color={card.company.color} />
           : <span className="action-card-mark">{card.icon}</span>}
         <span className="action-card-org">
-          <strong>{card.company?.name || 'North'}</strong>
+          {card.company
+            ? <IdentityLines company={card.company} kicker={card.kicker} />
+            : <><span className="entity-top"><strong>North</strong><span className="action-card-kicker">{card.kicker}</span></span></>}
         </span>
-        <span className="action-card-kicker">{card.kicker}</span>
       </div>
 
       <CardMiddle card={card} />

@@ -93,8 +93,17 @@
 
 .home-screen .home-action-hero .priority-kicker { font-size: var(--h-meta); letter-spacing: .09em; }
 .home-screen .home-action-hero .time-chip { font-size: var(--h-meta); }
-.home-screen .home-action-hero .priority-company { margin-top: var(--h-5); gap: var(--h-3); }
-.home-screen .home-action-hero .priority-company strong { font-size: var(--h-action); letter-spacing: -.02em; }
+/*
+ * The hero wears the same three lines as the cards below it, one step larger. The role
+ * takes the size the company name used to have — on the hero above all, the card is
+ * about a job, not about a brand.
+ */
+.home-screen .home-action-hero .priority-company { margin-top: var(--h-5); gap: var(--h-3); align-items: flex-start; }
+.home-screen .home-action-hero .priority-company > span { min-width: 0; }
+.home-screen .home-action-hero .priority-company strong { display: flex; align-items: baseline; gap: 6px; font-size: var(--h-small); font-weight: 700; letter-spacing: -.01em; }
+.home-screen .home-action-hero .priority-company .entity-rating { flex: none; font-style: normal; font-weight: 700; opacity: .72; }
+.home-screen .home-action-hero .priority-company .entity-role { display: block; margin-top: 2px; font-size: var(--h-action); font-weight: 700; letter-spacing: -.02em; line-height: 1.18; }
+.home-screen .home-action-hero .priority-company .entity-facts { display: block; margin-top: 4px; font-size: var(--h-small); }
 .home-screen .home-action-hero .priority-company small { margin-top: 3px; font-size: var(--h-small); }
 .home-screen .home-action-hero h2 {
   margin: var(--h-5) 0 var(--h-3); max-width: 15em;
@@ -472,10 +481,27 @@
 .action-card .time-chip { flex: 0 0 auto; color: var(--h-quiet); font-size: 10px; font-weight: 700; white-space: nowrap; }
 .action-card .pulse-dot { background: var(--ab-color-primary); box-shadow: 0 0 0 4px rgba(63,92,251,.14); }
 
-.action-card-entity { margin-top: var(--h-3); display: flex; align-items: center; gap: var(--h-3); }
+/*
+ * The identity block: company, role, facts. Three lines, and the role is the one set
+ * largest — it is what the card is about, and a company name on its own does not say
+ * which of fourteen applications you are looking at.
+ *
+ * `align-items: flex-start` because the block is now taller than the logo tile; centring
+ * it left the tile floating against the role rather than the company it belongs to.
+ */
+.action-card-entity { margin-top: var(--h-3); display: flex; align-items: flex-start; gap: var(--h-3); }
 .action-card-entity > span { min-width: 0; }
-.action-card-entity strong, .action-card-entity small { display: block; }
-.action-card-entity strong { font-size: var(--h-small); letter-spacing: -.01em; }
+.action-card-entity strong, .action-card-entity small, .action-card-entity .entity-role { display: block; }
+/* Company line: sized down from the role, because it is context for it. */
+.action-card-entity strong { display: flex; align-items: baseline; gap: 5px; color: var(--h-quiet); font-size: 10px; font-weight: 700; letter-spacing: .01em; }
+/*
+ * The rating rides on the company line at the company's own size — present on every
+ * card, never competing with the role. It is the one line here that only AmbitionBox
+ * can put on a card, which is an argument for showing it, not for enlarging it.
+ */
+.action-card-entity .entity-rating { flex: none; font-style: normal; font-weight: 700; color: var(--h-quiet); opacity: .82; }
+.action-card-entity .entity-role { margin-top: 2px; font-size: var(--h-small); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.action-card-entity .entity-facts { margin-top: 3px; color: var(--h-quiet); font-size: 10px; line-height: 1.35; }
 .action-card-entity small { margin-top: 1px; color: var(--h-quiet); font-size: 10px; line-height: 1.35; }
 
 /* Action-title step from context/UI.md rather than a display step: the card holds a
@@ -581,8 +607,14 @@
 /* A queued role has nobody waiting on it, so its action is quiet rather than solid. */
 .action-card--queued.action-card--role .action-card-cta { color: #262d46; background: #f0f3fa; }
 
+/*
+ * z-index 4, above the identity panel. The panel takes `position: relative; z-index: 1`
+ * so its tint sits over the card's own background, which put the role's box — padding
+ * included — on top of this button and swallowed the click outright. Reserving space
+ * with padding is not the same as being clickable through it.
+ */
 .action-card-dismiss {
-  position: absolute; top: var(--h-2); right: var(--h-2);
+  position: absolute; z-index: 4; top: var(--h-2); right: var(--h-2);
   width: 44px; height: 44px; border: 0; border-radius: 50%;
   display: grid; place-items: center;
   color: #a3aabd; background: transparent; cursor: pointer;
@@ -665,8 +697,13 @@
 .action-card--field .pulse-dot { background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.22); }
 
 .action-card--field h2,
-.action-card--field .action-card-entity strong,
+.action-card--field .action-card-entity .entity-role,
 .action-card--field .card-when-detail strong { color: #fff; }
+/* Company, rating and facts all sit at the .82 tier: on a coloured field the role is
+   the only line in the block that takes full white, which is the same hierarchy the
+   white cards draw with size. */
+.action-card--field .action-card-entity strong,
+.action-card--field .action-card-entity .entity-rating { color: rgba(255,255,255,.82); }
 /* .88 and .82, not the .78/.66 a white-on-dark set usually takes: measured against the
    lightest stop of the lightest field, .78 body text came out at 4.16:1 and failed AA.
    These clear 5.8:1 and 5.2:1 on the worst case, and the fields themselves all sit
@@ -674,6 +711,7 @@
 .action-card--field > p,
 .action-card--field .card-mid > p { color: rgba(255,255,255,.88); }
 .action-card--field .action-card-entity small,
+.action-card--field .action-card-entity .entity-facts,
 .action-card--field .card-when-detail small,
 .action-card--field .action-card-note,
 .action-card--field .card-source,
@@ -1093,3 +1131,98 @@
 .debrief-questions { margin-top: var(--h-6); padding-top: var(--h-5); border-top: 1px solid #eceff6; }
 .debrief-questions h3 { margin: 0; font-size: var(--h-title); letter-spacing: -.03em; }
 .debrief-questions > p { margin: var(--h-2) 0 var(--h-4); color: var(--ab-color-muted); font-size: var(--h-small); line-height: 1.55; }
+
+/*
+ * THE CARD MASTHEAD IDENTITY — settled 2026-09-10 with Pranoy.
+ *
+ * The three lines live here, in `.action-card-head`, because this is the one block every
+ * card type renders. `.action-card-entity` only appears inside two of the middles, which
+ * is why the role was invisible on most cards: the masthead said "PhonePe" and stopped.
+ *
+ * Colour is carried by `inherit` plus opacity rather than a fixed ink, so the same rules
+ * hold on a white card and on a coloured field without a second set of overrides.
+ */
+/*
+ * THE IDENTITY PANEL — owner instruction 2026-09-10, from the Swiggy card reference.
+ *
+ * The three lines sit on a tinted field that shares the card's outer radius and closes
+ * with an internal divider rather than a card gap, per context/UI.md. The tint is the
+ * CATEGORY's, not the company's: fifteen brand colours across one carousel is a rainbow
+ * where the brand is bright and a smudge where it is not — Swiggy orange next to Uber
+ * #111111 — and it would cost the colour the meaning it already carries. The logo tile
+ * stays the one brand-coloured element.
+ *
+ * `--card-tint` and `--card-ink` are the mark palette that already existed on
+ * `.action-card-mark`, promoted from a 28px tile to the panel behind it.
+ */
+.action-card-head {
+  align-items: flex-start;
+  margin: 0 0 var(--h-3);
+  padding: var(--h-3) var(--h-3) var(--h-3) var(--h-3);
+  border-radius: 20px 20px 0 0;
+  border-bottom: 1px solid rgba(24,31,62,.06);
+  background: var(--card-tint, #f4f6fb);
+  color: var(--card-ink, #262d46);
+}
+/*
+ * Deepened 2026-09-10 on the owner's instruction. The first pass took the tints straight
+ * from the 28px mark tiles, which are sized to sit inside a white card — at panel scale
+ * they read as almost-white and the category signal barely registered. These are roughly
+ * two steps down the same hues. Every pairing below was measured against its ink: the
+ * lowest is 8.4:1, so the quiet lines still clear AA at .7 opacity.
+ */
+.action-card--reply { --card-tint: #d5ddfd; --card-ink: #1b2660; }
+.action-card--interview { --card-tint: #e0d7f6; --card-ink: #33206a; }
+.action-card--offer { --card-tint: #c8e6d9; --card-ink: #0b4335; }
+.action-card--update { --card-tint: #f7e2c2; --card-ink: #5d3506; }
+/* Slate for the things sitting there for you to choose, which is the split the marks
+   already drew: coloured is something happening to you, slate is a choice. */
+.action-card--role, .action-card--quiet, .action-card--contribute { --card-tint: #e4e8f2; --card-ink: #2b3250; }
+.action-card-org { display: grid; gap: 1px; min-width: 0; flex: 1 1 auto; }
+/* Company on the left, event on the right, sharing the quietest line so the two lines
+   below them get the whole card. */
+.action-card-org .entity-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
+.action-card-org .entity-top > strong { min-width: 0; }
+.action-card-org .action-card-kicker { flex: 0 0 auto; }
+.action-card-org strong {
+  display: flex; align-items: baseline; gap: 5px;
+  color: inherit; opacity: .68;
+  font-size: 10px; font-weight: 700; letter-spacing: .01em;
+}
+/* Present on every card, never competing with the role: the rating rides on the company
+   line at the company's own size. It is the one thing here only AmbitionBox can put on a
+   card, which argues for showing it, not for enlarging it. */
+.action-card-org .entity-rating { flex: none; font-style: normal; font-weight: 700; white-space: nowrap; }
+/* The role: the largest line in the block, because it is what the card is about. A
+   company name alone does not say which of fourteen applications you are looking at. */
+.action-card-org .entity-role {
+  /* 44px of clearance: the dismiss control is a 44px circle in the panel's top-right,
+     and the role is the only line that runs level with it. */
+  padding-right: 40px;
+  font-size: 16px; font-weight: 700; letter-spacing: -.015em; line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* The facts wrap rather than truncate. Three of them run past a phone's card width, and
+   a half-shown fact is worse than a second line. */
+.action-card-org .entity-facts { color: inherit; opacity: .68; font-size: 10px; line-height: 1.35; }
+/* .68 of near-black reads as a settled grey; .68 of white on the darkest field measured
+   below the 4.5:1 the field cards are held to, so they take a lift rather than a colour. */
+.action-card--field .action-card-org strong,
+.action-card--field .action-card-org .entity-facts { opacity: .85; }
+
+
+/* The sender signs the quote; the channel it arrived through sits opposite. */
+.card-byline { display: flex; align-items: center; justify-content: space-between; gap: var(--h-2); }
+.card-taskmeta { display: flex; align-items: center; gap: var(--h-2); flex-wrap: wrap; }
+
+/*
+ * Where the update reached us. Drawn only when it differs from where the application was
+ * sent, so it always carries a fact the line above does not.
+ */
+.card-signal {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid rgba(24,31,62,.09); background: #f7f8fc;
+  color: var(--h-quiet); font-size: 10px; font-weight: 700; white-space: nowrap;
+}

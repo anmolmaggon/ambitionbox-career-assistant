@@ -1,9 +1,10 @@
 /*
- * NORTH — the bold look.  `?look=bold`
+ * NORTH — the bold look. This is the default design; `?look=current` reaches the earlier
+ * one.
  *
- * An exploration, not a replacement. Everything here is scoped under
- * [data-look="bold"], so the current design is untouched and the two can be compared on
- * the same screens with the same data.
+ * Everything here is scoped under [data-look="bold"], which main.jsx now stamps unless
+ * the URL asks otherwise. The earlier design is left intact underneath so the two can
+ * still be compared on the same screens with the same data.
  *
  * THE LANGUAGE, in one line: set the sentence enormous, keep everything else quiet, and
  * spend the accent once per screen on the thing North is actually pointing at.
@@ -346,11 +347,12 @@
 
 [data-look="bold"] .action-card-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  /* The dismiss control is absolutely positioned in the corner, so the masthead reserves
-     its width rather than running the kicker underneath it. */
-  padding: 16px 42px 0 18px;
+  align-items: flex-start;
+  gap: 12px;
+  /* The panel is the masthead now, so it takes even padding on all four sides. The
+     dismiss control's clearance is reserved by the role line itself rather than by
+     padding, because only that line runs level with it. */
+  padding: 16px 18px;
 }
 
 [data-look="bold"] .action-card-head .company-logo {
@@ -727,3 +729,45 @@
 
 [data-look="bold"] .stage-group { border-radius: 26px; border: 0; background: color-mix(in srgb, var(--ink) 3.5%, transparent); }
 [data-look="bold"] .stage-head__count { font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+
+/*
+ * The bold direction's masthead identity. Same hierarchy as the base rules, one step up
+ * in size: the role takes the `--t-body` the company name used to hold, and the company
+ * drops to the caption size its own line already used for the second line.
+ *
+ * These sit at the end of the file on purpose — the earlier `.action-card-org strong`
+ * rule sets the role's old size, and this is the override for it.
+ */
+[data-look="bold"] .action-card-head { align-items: flex-start; }
+[data-look="bold"] .action-card-org { gap: 2px; }
+[data-look="bold"] .action-card-org .action-card-kicker { flex: 0 0 auto; }
+[data-look="bold"] .action-card-org strong {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .01em; color: inherit; opacity: .7;
+}
+[data-look="bold"] .action-card-org .entity-role {
+  font-size: var(--t-body); font-weight: 600; letter-spacing: 0; color: inherit; opacity: 1;
+}
+[data-look="bold"] .action-card-org .entity-facts {
+  font-size: 10.5px; font-weight: 500; color: inherit; opacity: .7;
+}
+[data-look="bold"] .action-card--field .action-card-org strong,
+[data-look="bold"] .action-card--field .action-card-org .entity-facts { opacity: .85; }
+
+
+/*
+ * The bold direction's identity panel. Same category tints as the base rules, sized one
+ * step up: the role takes 17px and the two quiet lines sit beneath it.
+ */
+[data-look="bold"] .action-card-head {
+  border-radius: 22px 22px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+  background: var(--card-tint, #f4f6fb);
+  color: var(--card-ink, var(--ink));
+  margin-bottom: 14px;
+}
+[data-look="bold"] .action-card-org .entity-role {
+  padding-right: 40px;
+  font-size: 17px; font-weight: 600; letter-spacing: -.015em; line-height: 1.22;
+  color: inherit; opacity: 1;
+}
+[data-look="bold"] .action-card-head .company-logo { box-shadow: inset 0 0 0 1px rgba(11,11,11,.10); }
