@@ -330,7 +330,7 @@ function rejectionFlow(app) {
   return [
     {
       id: 'found', from: 'north', type: 'message',
-      text: `${app.company} closed ${app.when}. You reached ${app.reachedRound?.toLowerCase() || 'the final round'}, which is further than most.`,
+      text: `${app.company} closed ${app.when}. You reached ${app.reachedRound?.toLowerCase() || 'the final round'} — further than most people who applied.`,
     },
     {
       id: 'quote', from: 'north', type: 'quote',
@@ -340,7 +340,7 @@ function rejectionFlow(app) {
     },
     {
       id: 'reasons', from: 'north', type: 'list',
-      title: 'Rejection emails never say why. Here is what I can line up against it.',
+      title: 'Their email will not say why. Here is what I can line up against it.',
       items: [
         { label: 'System-design ownership', meta: 'Named in your debrief as the hard part. Also the gap on your profile', tone: 'warn' },
         { label: 'Java in production', meta: 'The role asked for 3+ years. You confirmed you have none', tone: 'bad' },
@@ -360,14 +360,14 @@ function rejectionFlow(app) {
     },
     {
       id: 'verdict', from: 'north', type: 'verdict',
-      title: 'Three roles where this matters less.',
+      title: 'Three roles where this matters less — and one live decision.',
       text: (answers) => answers.agree === 'Not it at all'
         ? 'I have dropped that reasoning. On level alone, these three sit inside your band rather than above it.'
         : 'All three are Go-heavy payments teams inside your experience band, so the Java gap and the level stretch both stop applying.',
     },
     {
       id: 'done', from: 'north', type: 'actions',
-      text: 'Navi stays in your Tracker as a record. Nothing else to do here.',
+      text: 'Navi stays in your Tracker as a record. The useful part is what it changes about Paytm.',
       options: [
         { label: 'Show me those three', primary: true, result: 'jobs' },
         { label: 'Close', result: 'done' },

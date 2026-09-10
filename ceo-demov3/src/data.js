@@ -273,10 +273,19 @@ export const applications = [
   /* ---- Rejected: finished, and the only stage that explains itself ------------- */
   {
     id: 'navi-app', company: 'Navi', role: 'Senior Backend Engineer', initials: 'NV', color: '#2c3e8f',
-    claim: 'Navi went with someone else.',
+    claim: 'Navi is closed.',
     stage: 'rejected', source: 'Gmail', appliedAgo: '41d ago', when: '6d ago',
     outcome: 'Not selected after the final round', action: 'Understand why', flow: 'rejection',
-    insight: 'You reached the final round. Their email will not say why. I can see three things that might have.',
+    /*
+     * The line points forward rather than back. A rejection you can do nothing about is
+     * only worth reading if it changes the next decision, and Paytm's is live.
+     *
+     * "You reached the final round" is `reachedRound`. An earlier draft said "you were one
+     * of the last two", which no rejection email states and North therefore cannot know.
+     * The named company is coupled to the interview-stage fixture above; if that moves,
+     * this line moves with it.
+     */
+    insight: 'You reached the final round. Whatever separated you from the person they picked is worth knowing before Paytm decides.',
     reachedRound: 'Round 4 of 4',
     movedBy: 'north', movedFrom: 'interview', movedAgo: '6d ago', movedVia: 'Gmail',
     movedNote: 'Rejection detected',
