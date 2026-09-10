@@ -18,10 +18,12 @@ Allowed values are `draft` and `locked`. Only the owner's explicit word **lock**
 | Résumé import | Codex | draft | draft | draft | draft | `output/playwright/current/onboarding-resume-import-390.png` |
 | Manual profile setup | Codex | draft | draft | draft | draft | `output/playwright/current/onboarding-manual-390.png` |
 | Email-skip handoff | Codex | draft | draft | draft | draft | Route/state contract only |
-| Jobs tab (job listing) | Claude | draft | draft | draft | draft | Card ported from `prototype/matches-2b` 2026-08-19; shared dock + header; detail stays Juspay-only by owner instruction |
-| Tracker | Claude | draft | draft | draft | draft | Rebuilt on one pipeline model 2026-08-19 (6 stages, Move, sources, Jobs-matched card). Contract in `context/screens/TRACKER.md`. |
+| Jobs tab (job listing) | Claude | draft | draft | draft | draft | Card ported from `prototype/matches-2b` 2026-08-19; shared dock + header. Three roles open as of 2026-09-10: Juspay (journey-driven), Zeta (static list), Groww (no requirement list, says so). |
+| Tracker | Claude | draft | draft | draft | draft | Rebuilt on five stages 2026-09-10 (Applied / Interview scheduled / Offer / Ghosted / Rejected, ghosting cross-cutting, per-card provenance). Contract in `context/screens/TRACKER.md`. |
+| Flow (six threads) | Claude | draft | draft | draft | draft | `src/Flow.jsx`, `src/flows.js`. Contract in `context/screens/FLOW.md`. Added 2026-09-10. |
 | Home | Claude | draft | draft | draft | draft | Carousel rebuild + Bond material, 2026-08-18. `output/playwright/current/home-priority-390.png` predates it; capture is held until onboarding settles. |
 | Shared design tokens | Shared | draft | draft | draft | draft | `src/tokens.css` |
+| NORTH brand layer | Shared | draft | draft | draft | draft | `src/north.css`, `public/north-mark.svg`, `Logo`/`Needle` in `src/AppUI.jsx`. Added 2026-09-10. |
 
 When locking a layer, add the date and exact owner instruction below. Do not infer approval from implementation.
 

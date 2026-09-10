@@ -569,7 +569,7 @@ function ApplicationCard({ item, action, onMove, onUndoMove }) {
       {item.movedNote && (
         <p className={`application-moved ${item.movedBy === 'you' ? 'application-moved--you' : ''}`}>
           <Needle size={13} />
-          <span>
+          <span className="application-moved__text">
             <strong>{item.movedBy === 'you' ? 'You moved this' : item.movedNote}</strong>
             {' · '}{item.movedVia === 'you' ? item.movedAgo : `${item.movedVia} · ${item.movedAgo}`}
           </span>

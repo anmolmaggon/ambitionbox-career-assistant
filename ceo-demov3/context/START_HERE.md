@@ -34,6 +34,7 @@ If a consequential item is unclear, ask the owner. If the request already answer
 - Styling, components, imagery, or motion: [UI.md](UI.md) and [the reference catalogue](../references/CATALOG.md)
 - Onboarding: [screens/ONBOARDING.md](screens/ONBOARDING.md)
 - Home: [screens/HOME.md](screens/HOME.md)
+- Flow (the thread a card opens into): [screens/FLOW.md](screens/FLOW.md)
 - Tracker: [screens/TRACKER.md](screens/TRACKER.md)
 - Owner feedback or rejected directions: [FEEDBACK.md](FEEDBACK.md)
 
@@ -62,6 +63,20 @@ Models may read every workstream. They edit only their owned area.
 - `output/playwright/archive/` contains history and is never design direction.
 - Prototype, QA, and generated AI images are not references unless the owner explicitly promotes one.
 
+## Naming
+
+The product is **North**. North is the agent; **AmbitionBox is the evidence it cites** —
+ratings, salary estimates, review counts, and the byline under the wordmark. See
+[PRODUCT.md](PRODUCT.md). Renamed 2026-09-10 on Pranoy's instruction; the brand layer is
+additive and lives in `src/north.css` plus `Logo`/`Needle` in `src/AppUI.jsx`.
+
 ## Current resume point
 
-The active refinement is the [Unified Email Connection](briefs/ONBOARDING-EMAIL-UNIFIED.md). Preferences now open one light campaign screen that sells timely help across recruiter replies, interviews, and offers while presenting Gmail, another email, trust, and an optional header Skip in the same decision. Curation is parked outside the live flow but remains query-addressable. Account sheets, scan, import result, and the Home handoff contract are unchanged. All affected screens remain drafts.
+**2026-09-10, Pranoy's branch (`pranoy/north-pivot`):** the product was renamed to North
+and rebuilt around three tabs — Home surfaces what needs the user, Tracker holds a
+five-stage pipeline with ghosting cutting across it, Jobs ranks and opens roles. Every
+Home and Tracker card opens a thread (`context/screens/FLOW.md`). See the last ten rows of
+[FEEDBACK.md](FEEDBACK.md) for the decisions behind it.
+
+The onboarding work below predates that and is unchanged. The active refinement was the
+[Unified Email Connection](briefs/ONBOARDING-EMAIL-UNIFIED.md). Preferences now open one light campaign screen that sells timely help across recruiter replies, interviews, and offers while presenting Gmail, another email, trust, and an optional header Skip in the same decision. Curation is parked outside the live flow but remains query-addressable. Account sheets, scan, import result, and the Home handoff contract are unchanged. All affected screens remain drafts.

@@ -133,6 +133,12 @@ export function FlowScreen() {
             step={step}
             answers={answers}
             reduceMotion={reduceMotion}
+            /*
+             * The needle marks who is speaking, so it appears once per run rather than on
+             * every turn. North talks for four or five turns at a stretch; repeating the
+             * mark down all of them turns the speaker into a column of decoration.
+             */
+            showAvatar={index === 0 || answers[visible[index - 1]?.key] !== undefined}
             isLast={index === visible.length - 1}
             draft={draft}
             setDraft={setDraft}
@@ -199,7 +205,7 @@ function FlowHeader({ meta, app }) {
 
 /* --------------------------------------------------------------------------- */
 
-function FlowTurn({ step, answers, reduceMotion, isLast, draft, setDraft, copied, setCopied }) {
+function FlowTurn({ step, answers, reduceMotion, isLast, showAvatar, draft, setDraft, copied, setCopied }) {
   const answered = step.key !== undefined && answers[step.key] !== undefined
   return (
     <>
@@ -209,8 +215,8 @@ function FlowTurn({ step, answers, reduceMotion, isLast, draft, setDraft, copied
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: .34, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="flow-avatar">
-          <Needle size={16} state={step.type === 'thinking' && isLast ? 'settling' : 'settled'} />
+        <span className={`flow-avatar ${showAvatar ? '' : 'is-hidden'}`}>
+          {showAvatar && <Needle size={16} state={step.type === 'thinking' && isLast ? 'settling' : 'settled'} />}
         </span>
         <div className="flow-turn-body">
           <FlowElement step={step} answers={answers} draft={draft} setDraft={setDraft} copied={copied} setCopied={setCopied} />

@@ -4,7 +4,13 @@
 
 AmbitionBox helps a jobseeker search intentionally: find opportunities that genuinely match, understand what is real about the company and compensation, strengthen the evidence needed to compete, and act on the most useful next move.
 
-The onboarding story currently focuses on the job search, not the entire career. Brand the experience as **AmbitionBox**; do not introduce “Career Assistant” or “Career Copilot” as user-facing product names.
+The onboarding story currently focuses on the job search, not the entire career.
+
+**Naming, revised 2026-09-10.** The product is **North**. North is the agent — the thing
+that reads the inbox, ranks the day, drafts the reply and moves the card. **AmbitionBox is
+the evidence North cites**: the ratings, the salary estimates, the review counts, and the
+byline under the wordmark. Keep that split exactly. "Career Assistant" and "Career Copilot"
+remain out.
 
 ## The user promise
 
