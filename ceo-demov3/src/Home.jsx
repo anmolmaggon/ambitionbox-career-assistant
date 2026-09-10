@@ -250,6 +250,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: 'See what employees report, what the move changes, and where you have room to negotiate.',
       why: 'A live decision outranks everything else in your search.',
       whyQuestion: 'Why is reviewing this offer my next move?',
+      foot: offer.total,
       cta: { label: 'Review my offer', onClick: () => go('/flow/offer') },
     }
   }
@@ -282,6 +283,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
       why: 'Nothing else in your search can move until this one is settled.',
       whyQuestion: 'Why does logging this interview matter?',
+      foot: interviewIntel.invitation.day.split(',')[0],
       cta: { label: 'Tell North how it went', onClick: () => go('/flow/debrief?application=juspay') },
     }
   }
@@ -330,6 +332,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       source: 'Detected in Gmail.',
       why: 'A person is waiting, and a recruiter reply ages faster than an application.',
       whyQuestion: 'Why should I reply to PhonePe first?',
+      foot: '2h waiting',
       cta: { label: 'Review reply', onClick: () => go('/flow/reply?application=phonepe-app') },
     }
   }
@@ -455,6 +458,20 @@ function flowReason(item, dated) {
   }
 }
 
+/*
+ * The figure a card leads its footer with. Elapsed time where nothing is moving, a fixed
+ * date where a clock is running — the same field pointing in opposite directions, which
+ * is the honest difference between a ghosting and a booked round.
+ */
+function cardFigure(item) {
+  if (item.stage === 'ghosted') return `${item.silentDays}d quiet`
+  if (item.stage === 'rejected') return item.reachedRound
+  if (item.phase === 'post') return 'Debrief due'
+  if (item.invitedAgo) return `${item.invitedAgo}d to pick`
+  if (item.interview?.round) return item.interview.round
+  return item.appliedAgo || item.when
+}
+
 /* The pipeline line a card carries: for a ghosted card, where it fell from. */
 function stageNote(item) {
   if (item.stage !== 'ghosted') return stageLabel(item.stage)
@@ -478,6 +495,14 @@ function applicationCard(item, dated) {
     quote: item.quote,
     sender: item.recruiter,
     flow: item.flow,
+    source: item.source,
+    /*
+     * The one number this card is about, shown in the footer band beside the action.
+     * Every card type has exactly one: money for an offer, a date for a round, elapsed
+     * silence for a ghosting, how far you got for a rejection. Picking it per type is
+     * what stops the band from being a slot that sometimes has nothing in it.
+     */
+    foot: cardFigure(item),
     reason: flowReason(item, dated),
     onSelect: () => go(`/flow/${item.flow}?application=${item.id}`),
     ...presentation,
@@ -645,6 +670,7 @@ function carouselCards({ action, aside, journey, sheets }) {
     schedule: action.schedule,
     money: action.money,
     stats: action.stats,
+    foot: action.foot,
     cta: action.cta,
     dismissable: action.id !== 'connect',
   }]
@@ -665,6 +691,8 @@ function carouselCards({ action, aside, journey, sheets }) {
       schedule: row.schedule,
       stats: row.stats,
       stage: row.stage,
+      source: row.source,
+      foot: row.foot,
       // The queued cards all reach the same few destinations, so each CTA names the
       // card it belongs to. Two "Open in Tracker" buttons on one screen would be
       // ambiguous to a screen reader, and the visible label stays inside the name.
@@ -1028,6 +1056,14 @@ function ActionCarousel({ ctx, cards }) {
 const TIMING_IN_MIDDLE = new Set(['interview', 'task', 'role'])
 
 /*
+ * Shapes whose middle already leads with the number this card is about. Their footer
+ * carries the action alone — a ₹28L figure set at 34px and then repeated in the floor
+ * beneath it is the same count twice on one card, which is the rule Home already keeps
+ * for its greeting.
+ */
+const FIGURE_IN_MIDDLE = new Set(['offer', 'interview'])
+
+/*
  * Which tones wear a coloured field — MOB-HOME-004 (Strava).
  *
  * The line is the one `.action-card-mark` already drew: a coloured card is something
@@ -1068,7 +1104,6 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <blockquote className="card-quote">{card.headline}</blockquote>
-        <Entity company={card.company} className="action-card-entity card-byline" />
         {card.source && <small className="card-source">{card.source}</small>}
         {card.support && <p>{card.support}</p>}
       </div>
@@ -1115,7 +1150,6 @@ function CardMiddle({ card }) {
   if (card.shape === 'role') {
     return (
       <div className="card-mid">
-        <Entity company={card.company} />
         {/* `title` on a queued role, because its `headline` is the Preference Match
             string that the stat row below already carries. */}
         <h2>{card.title || card.headline}</h2>
@@ -1136,7 +1170,6 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <h2>{card.headline}</h2>
-        <Entity company={card.company} className="action-card-entity card-byline" />
         {(card.when || card.stage) && (
           <div className="card-taskmeta">
             {card.when && <span className={`card-due card-due--${card.when.toLowerCase().replace(/\s+/g, '-')}`}>{card.when}</span>}
@@ -1182,17 +1215,30 @@ function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }
       layout={!reduceMotion}
       transition={{ duration, ease: EASE }}
     >
-      <div className="action-card-top">
-        {/* Restrained category colour, kept inside the tile per context/UI.md. Coloured
-            means something is happening to you; slate means it is yours to choose. */}
-        <span className="action-card-mark">{card.icon}</span>
+      {/*
+        * The masthead: whose news this is on the left, what kind of news on the right.
+        * Splitting them is the point — the subject and the event are two different facts,
+        * and a kicker sitting under a company name reads as a description of the company.
+        */}
+      <div className="action-card-head">
+        {card.company
+          ? <CompanyLogo initials={card.company.initials} color={card.company.color} />
+          : <span className="action-card-mark">{card.icon}</span>}
+        <span className="action-card-org">
+          <strong>{card.company?.name || 'North'}</strong>
+        </span>
         <span className="action-card-kicker">{card.kicker}</span>
-        {!TIMING_IN_MIDDLE.has(card.shape) && (card.badge || (card.when && <span className="time-chip">{card.when}</span>))}
       </div>
 
       <CardMiddle card={card} />
 
+      {/*
+        * The footer band: the one number this card is about, and the one thing to do
+        * about it. Pinned to the floor so a row of cards holding different amounts of
+        * evidence still lines its actions up.
+        */}
       <div className="action-card-foot">
+        {card.foot && !FIGURE_IN_MIDDLE.has(card.shape) && <span className="action-card-figure">{card.foot}</span>}
         <button className="action-card-cta" onClick={card.cta.onClick} aria-label={card.cta.name}>
           {card.cta.label} <ArrowRight size={16} />
         </button>

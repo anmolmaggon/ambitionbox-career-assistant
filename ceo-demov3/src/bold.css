@@ -36,10 +36,19 @@
   --ab-color-subtle: #8b8c90;
   --ab-color-line: #e2e2df;
 
-  /* The pointer. */
-  --ab-color-primary: #cdfa46;
-  --ab-color-primary-dark: #b6e02f;
+  /*
+   * The pointer, in our own blue rather than the reference's mint.
+   *
+   * #3F5CFB is too dark to carry black text and too close to the card ground to lead on
+   * one, so this is that hue lifted until it does both: 8.1:1 against black text, and
+   * 7.7:1 against the card it sits on. Nothing else on a dark card gets to be this
+   * bright, which is the whole reason it reads as the answer.
+   */
+  --ab-color-primary: #7e9bff;
+  --ab-color-primary-dark: #5f81f7;
   --bold-on-accent: #0b0b0b;
+  --bold-card: #0e0e10;
+  --bold-card-floor: #17171b;
 
   /*
    * Success is a deep blue here, not a green. Green beside acid lime reads as two of the
@@ -342,3 +351,191 @@
 }
 .look-switch button[aria-pressed="true"] { background: #fff; color: #0b0b0b; }
 :root[data-look="bold"] .look-switch button[aria-pressed="true"] { background: #cdfa46; }
+
+
+/* The card ---------------------------------------------------------------
+ *
+ * Built to Pranoy's reference 2026-09-10. One anatomy for all six types, top to bottom:
+ * whose news this is, what kind of news, the claim, the evidence, then the number and the
+ * action sitting together on a floor that is a shade lighter than the card.
+ *
+ * The floor is the move that makes it work. Separating the action from the story with a
+ * change of surface rather than a rule means the card reads as two zones — read this,
+ * then do this — without a line drawn between them.
+ */
+
+[data-look="bold"] .action-card {
+  padding: 0;
+  overflow: hidden;
+  background: var(--bold-card);
+  color: #fff;
+  border-radius: 28px;
+}
+
+/* Every card is dark in this treatment. Urgency moves to the accent on the action and to
+   position in the sequence, so the six category hues are not doing it any more. */
+[data-look="bold"] .action-card--queued,
+[data-look="bold"] .action-card:not(.action-card--field) {
+  background: var(--bold-card);
+  color: #fff;
+}
+
+[data-look="bold"] .action-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* The dismiss control is absolutely positioned in the corner, so the masthead reserves
+     its width rather than running the kicker underneath it. */
+  padding: 16px 42px 0 18px;
+}
+
+[data-look="bold"] .action-card-head .company-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+[data-look="bold"] .action-card-org { display: grid; gap: 1px; min-width: 0; flex: 1; }
+[data-look="bold"] .action-card-org strong { font-size: 14px; font-weight: 700; letter-spacing: -.015em; color: #fff; }
+[data-look="bold"] .action-card-org small { font-size: 10.5px; color: rgba(255, 255, 255, .46); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* The event, set as a chip in the top corner the way the reference tabs its category. */
+[data-look="bold"] .action-card-kicker {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .09);
+  color: rgba(255, 255, 255, .82);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-look="bold"] .card-mid { padding: 14px 18px 18px; gap: 10px; }
+
+[data-look="bold"] .action-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+  color: #fff;
+}
+
+[data-look="bold"] .action-card > p,
+[data-look="bold"] .card-mid > p {
+  color: rgba(255, 255, 255, .58);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/*
+ * The divided fact row from the reference. Rules between, not around: a border box would
+ * make three facts look like three objects, and they are one row of one thing.
+ */
+[data-look="bold"] .action-card-facts {
+  display: flex;
+  gap: 0;
+  margin-top: 4px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+[data-look="bold"] .action-card-facts span {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  border-left: 1px solid rgba(255, 255, 255, .13);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+[data-look="bold"] .action-card-facts span:first-child { padding-left: 0; border-left: 0; color: #fff; }
+
+[data-look="bold"] .card-quote {
+  border-left: 2px solid var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+[data-look="bold"] .card-datebox { background: rgba(255, 255, 255, .08); color: #fff; border-radius: 14px; }
+[data-look="bold"] .card-figure b { color: #fff; font-size: 34px; letter-spacing: -.05em; }
+[data-look="bold"] .card-figure small,
+[data-look="bold"] .card-band span,
+[data-look="bold"] .card-when-detail small { color: rgba(255, 255, 255, .55); }
+[data-look="bold"] .card-when-detail strong { color: #fff; }
+
+/* The floor ------------------------------------------------------------- */
+
+[data-look="bold"] .action-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: auto;
+  padding: 13px 13px 13px 18px;
+  background: var(--bold-card-floor);
+}
+
+[data-look="bold"] .action-card-figure {
+  margin-right: auto;
+  /* The figure takes the remainder and the button keeps its intrinsic width. With both
+     set to shrink, a nowrap button refused to give any back and the number truncated
+     instead of the thing that could afford to. */
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The one lit thing on the card. The glow is the reference's, kept because on a near-black
+ * surface it reads as the button being the source of light rather than as a drop shadow.
+ */
+[data-look="bold"] .action-card-cta {
+  /* The base card runs a full-width action. Here it shares the floor with the figure, so
+     it sizes to its label — an explicit width beats flex-basis, which is why the figure
+     had been squeezed to nothing. */
+  width: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 12px 17px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--bold-on-accent);
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -.015em;
+  box-shadow: 0 0 22px rgba(126, 155, 255, .38);
+}
+
+/* Only the card in front carries the lit action. Everything behind it takes a quiet one,
+   which is what keeps "the one thing" legible without a label saying so. */
+[data-look="bold"] .action-card--queued .action-card-cta {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  box-shadow: none;
+}
+
+/* No arrow. The pill already reads as pressable, and the glyph was costing the figure
+   beside it the room it needed to stay whole. */
+[data-look="bold"] .action-card-cta > svg { display: none; }
+
+[data-look="bold"] .action-card-dismiss { color: rgba(255, 255, 255, .45); }
+[data-look="bold"] .action-card-mark { background: rgba(255, 255, 255, .1); color: #fff; border-radius: 11px; }
+[data-look="bold"] .action-card .time-chip { color: rgba(255, 255, 255, .5); }
+[data-look="bold"] .card-source { color: rgba(255, 255, 255, .45); }
