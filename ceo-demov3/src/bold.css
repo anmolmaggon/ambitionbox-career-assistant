@@ -204,41 +204,128 @@
 
 /* Bottom cluster --------------------------------------------------------- */
 
+/*
+ * The bottom cluster: two floating capsules, not a sheet.
+ *
+ * The white sheet was 178px of permanent chrome carrying a grab handle, an ask pill and
+ * three full-width tabs. It went because a sheet has to be a solid field — content cannot
+ * pass under it — and it was spending a fifth of the screen to do that. Two capsules
+ * resting on the canvas cost the same two rows and give the page back everything between
+ * and around them.
+ *
+ * The grab handle went with it. It opened the assistant, which is exactly what the ask
+ * pill directly beneath it does, and two controls for one destination is one too many.
+ */
 [data-look="bold"] .home-dock {
-  border-radius: 34px 34px 0 0;
-  background: var(--surface);
-  box-shadow: 0 -20px 44px rgba(11, 11, 11, .09);
+  gap: 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
+/* Content fades rather than being cut off by an edge, so the page reads as continuing
+   underneath instead of ending at a shelf. */
+[data-look="bold"] .home-dock::before {
+  content: '';
+  position: absolute;
+  inset: -60px 0 0 0;
+  z-index: -1;
+  background: linear-gradient(to top, var(--canvas) 64%, color-mix(in srgb, var(--canvas) 72%, transparent) 84%, transparent);
+  pointer-events: none;
+}
+
+[data-look="bold"] .home-dock-handle { display: none; }
+
 [data-look="bold"] .home-dock-ask {
+  min-height: 54px;
+  border: 0;
   border-radius: 999px;
-  background: var(--ab-color-canvas);
-  font-weight: 600;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(15, 20, 35, .1), 0 0 0 1px rgba(15, 20, 35, .05);
+  font-weight: 500;
 }
 
 /*
- * Four circles, the way the reference draws them. A tab is a shape you can hit rather
- * than a glyph floating over a label, and the active one is the only lime on the row.
+ * The tabs, as one capsule sized to its own content rather than a bar spanning the screen.
+ *
+ * Only the current tab carries a label, expanded into a tinted pill; the other two are
+ * icons alone. Three destinations this well known do not need three labels standing by,
+ * and the label that is showing is the one fact the bar exists to report.
  */
-[data-look="bold"] .bottom-nav { background: transparent; gap: 8px; padding: 8px 16px env(safe-area-inset-bottom); }
+[data-look="bold"] .bottom-nav {
+  width: fit-content;
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
+  padding: 6px;
+  gap: 4px;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(15, 20, 35, .1), 0 0 0 1px rgba(15, 20, 35, .05);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* On every screen but Home the bar positions itself, so it centres on the shell. */
+[data-look="bold"] .bottom-nav:not(.home-dock .bottom-nav) {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+[data-look="bold"] .home-dock .bottom-nav { padding: 6px; }
+
 [data-look="bold"] .bottom-nav a,
 [data-look="bold"] .bottom-nav button {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
-  height: 52px;
+  height: 44px;
+  padding: 0 15px;
+  flex-direction: row;
+  gap: 7px;
   border-radius: 999px;
-  background: var(--ab-color-canvas);
-  color: var(--ink);
-  gap: 0;
+  background: transparent;
+  color: var(--muted);
   font-size: 0;
+  transition: padding var(--ab-motion-fast) var(--ab-ease-out), background var(--ab-motion-fast) var(--ab-ease-out);
 }
+
+/*
+ * Clipped, not removed. `display: none` takes the label out of the accessibility tree
+ * too, which leaves three unlabelled icons for anyone using a screen reader — and the
+ * tab's accessible name is the only thing that says where it goes.
+ */
 [data-look="bold"] .bottom-nav a span,
-[data-look="bold"] .bottom-nav button span { display: none; }
+[data-look="bold"] .bottom-nav button span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 [data-look="bold"] .bottom-nav a.is-active,
 [data-look="bold"] .bottom-nav button.is-active {
-  background: var(--ab-color-primary-strong);
-  color: #fff;
+  padding: 0 18px;
+  background: color-mix(in srgb, var(--ab-color-primary-strong) 11%, transparent);
+  color: var(--ab-color-primary-strong);
 }
+
+[data-look="bold"] .bottom-nav a.is-active span,
+[data-look="bold"] .bottom-nav button.is-active span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
 [data-look="bold"] .bottom-nav a.is-active svg,
 [data-look="bold"] .bottom-nav button.is-active svg { fill: none; }
 
