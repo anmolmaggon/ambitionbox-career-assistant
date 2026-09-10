@@ -264,14 +264,12 @@ function TrackerScreen() {
     const fromEmail = journey.emailConnected ? [
       {
         company: 'Juspay', role: 'Senior Backend Engineer', initials: 'JP', color: '#183f44',
-        preferenceMatch: 89, stage: journey.offerDetected ? 'offer' : 'interviewing', source: 'Gmail',
+        preferenceMatch: 89, stage: journey.offerDetected ? 'offer' : 'interview', phase: 'pre', source: 'Gmail',
         when: journey.offerDetected ? '₹28L offer' : 'Tue 11:00', flag: 'Interview detected',
         readiness: '10/15 profile evidence',
         insight: journey.offerDetected ? 'The offer is in. See what it means before you answer.' : 'See what to expect and start tailored prep',
       },
-      ...applications.attention,
-      ...applications.waiting,
-      ...applications.closed,
+      ...applications,
     ] : []
     const manual = manualApplications.map((item, index) => ({
       ...item, id: `manual-${index}`, stage: item.stage || 'applied', source: 'Added by you', when: 'Added by you',
@@ -284,25 +282,17 @@ function TrackerScreen() {
   }, [hasTrackerContent, journey.emailConnected, journey.offerDetected, manualApplications, moved])
 
   /*
-   * Stage 1 is the user's own shortlist: roles saved in Jobs that they have not applied
-   * to. These are not applications, so they stay out of the 15 the scan reports and out
-   * of the Tracked-from counts — a saved role has no source to trace, the user picked it.
-   * A saved role whose company already has an application is dropped: it is being
-   * tracked further down the pipeline and would otherwise appear twice.
+   * Saved roles left Tracker on 2026-09-10 with the `shortlisted` stage. A role you saved
+   * but never applied to is a Jobs concept — it has no source to trace and nothing to
+   * track — and it was the one column here holding something that was not an application.
+   * Jobs owns it now, behind the bookmark.
    */
-  const shortlistedJobs = useMemo(() => {
-    if (!journey.savedJobs?.length) return []
-    const applied = new Set(allApplications.map((item) => item.company))
-    return [...jobs, ...moreJobs]
-      .filter((job) => journey.savedJobs.includes(job.id) && !applied.has(job.company))
-      .map((job) => ({
-        id: `saved-${job.id}`, company: job.company, role: job.role, initials: job.initials,
-        preferenceMatch: job.preferenceMatch, stage: moved[`saved-${job.id}`] || 'shortlisted',
-        when: `${job.location} · ${job.mode}`, source: 'Saved by you', jobId: job.id,
-      }))
-  }, [journey.savedJobs, allApplications, moved])
 
-  const everything = useMemo(() => [...shortlistedJobs, ...allApplications], [shortlistedJobs, allApplications])
+  const everything = allApplications
+  const ghostedCount = useMemo(
+    () => everything.filter((item) => (moved[item.id] || item.stage) === 'ghosted').length,
+    [everything, moved],
+  )
 
   const sourceCounts = useMemo(() => {
     const counts = new Map()
@@ -427,10 +417,7 @@ function TrackerScreen() {
               <div>
                 <span className="tracker-period">Based on the last 90 days</span>
                 <h1>{allApplications.length} application{allApplications.length === 1 ? '' : 's'}</h1>
-                {/* Saved roles are in the pipeline but are not applications, so the
-                    headline stays the scan's number and the shortlist is named beside
-                    it rather than folded into it. */}
-                {shortlistedJobs.length > 0 && <span className="tracker-shortlist-line">+ {shortlistedJobs.length} saved role{shortlistedJobs.length === 1 ? '' : 's'} you have not applied to</span>}
+                {ghostedCount > 0 && <span className="tracker-shortlist-line">{ghostedCount} have gone quiet · North is watching them</span>}
               </div>
               <span className="sync-badge"><span /> Synced</span>
             </div>
@@ -471,7 +458,7 @@ function TrackerScreen() {
           ) : (
             <>
               <div className="content-heading tracker-view-heading">
-                <div><span className="eyebrow">YOUR PIPELINE</span><h2>From shortlist to offer</h2></div>
+                <div><span className="eyebrow">YOUR PIPELINE</span><h2>From applied to offer</h2></div>
                 <div className="tracker-view-toggle" role="group" aria-label="Tracker view">
                   <button className={viewMode === 'list' ? 'is-active' : ''} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')}>List</button>
                   <button className={viewMode === 'board' ? 'is-active' : ''} aria-pressed={viewMode === 'board'} onClick={() => setViewMode('board')}>Board</button>
@@ -541,10 +528,12 @@ function TrackerScreen() {
  * 11px, and a full-pill 44px action. The old Tracker card ran a 14px company over an 11px
  * role with a 38px rounded-rectangle button, which is why the two tabs read as two products.
  */
-function ApplicationCard({ item, action, onMove }) {
-  const closed = item.stage === 'closed'
+function ApplicationCard({ item, action, onMove, onUndoMove }) {
+  // Rejected is the only finished stage: flat, muted, and carrying no match score, because
+  // a percentage beside a rejection invites a second look at something already over.
+  const finished = item.stage === 'rejected'
   return (
-    <article className={`application-card ${closed ? 'application-card--closed' : ''} ${item.flag ? 'application-card--flagged' : ''}`}>
+    <article className={`application-card ${finished ? 'application-card--closed' : ''} ${item.flag ? 'application-card--flagged' : ''}`}>
       <div className="application-card__id">
         <CompanyLogo initials={item.initials} color={item.color} />
         <span className="application-card__copy">
@@ -553,7 +542,7 @@ function ApplicationCard({ item, action, onMove }) {
           <h3 className="application-card__role">{item.role}</h3>
           <span className="application-card__meta">{item.outcome || item.when} · {item.source}</span>
         </span>
-        {!closed && item.preferenceMatch
+        {!finished && item.preferenceMatch
           ? <span className="job-score"><b>{item.preferenceMatch}%</b><i>Match</i></span>
           : null}
       </div>
@@ -732,7 +721,10 @@ function MatchesScreen() {
     // A role you have already applied to is not a job to find — it is an application to
     // track, and Tracker owns it. Showing it here asks the user to do something they have
     // already done, so anything with a live application drops out of the feed entirely.
-    const applied = new Set([...applications.attention, ...applications.waiting].map((item) => item.company))
+    // A role you have already applied to is not a job to find. Ghosted and rejected count
+    // as applied too — resurfacing a company that went quiet on you, or turned you down, as
+    // a fresh role to try is the feed forgetting what Tracker knows.
+    const applied = new Set(applications.map((item) => item.company))
     const full = [...jobs, ...moreJobs].filter((job) => !applied.has(job.company))
     // Before Naukri is connected the feed is not two hand-picked rows — it is everything
     // AmbitionBox and company careers already know about. What Naukri actually adds is the

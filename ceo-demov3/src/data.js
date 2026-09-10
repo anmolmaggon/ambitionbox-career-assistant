@@ -105,73 +105,196 @@ export const juspay = {
 }
 
 /*
- * The pipeline Tracker renders, in order. Every item sits in exactly one stage, and the
- * user can move it by hand — `journey.applicationStages` overrides these.
+ * The pipeline, rebuilt 2026-09-10 on Pranoy's instruction.
  *
- * `shortlisted` is the user's OWN shortlist: roles saved in Jobs that they have not
- * applied to yet. It leads the pipeline on the owner's instruction 2026-08-19 — the
- * search starts when you pick a role, not when you send the form. It is the only stage
- * that is not an application, so it sits outside the 15 the scan reports.
+ * Five stages, down from seven. `shortlisted` left the pipeline — a role you saved but
+ * never applied to is a Jobs concept, and it was the one column holding things that were
+ * not applications. `review` and `recruiter-shortlist` folded back into `applied`: a
+ * recruiter reading you is a signal on the card, not a place the application moved to.
+ * `closed` split by cause, because its two halves need opposite things from the user —
+ * a rejection is over, silence is not.
  *
- * `recruiter-shortlist` is the other direction: they picked you. The word "shortlist"
- * was doing three jobs at once (your saved roles, the recruiter picking you, and a
- * likelihood chip), so the recruiter stage now names its actor and the chip says
- * "Outlook" instead.
+ * GHOSTED IS NOT A STEP. It cuts across the pipeline: an application can fall silent
+ * after you apply, after an invite, or after you interview. A ghosted card therefore
+ * keeps `ghostedFrom`, says on its face where it fell from, and offers a follow-up
+ * written for that origin. Offer and Rejected never ghost — one has its own clock
+ * inside the offer flow, the other is finished.
  */
 export const applicationStages = [
-  { id: 'shortlisted', label: 'Shortlisted', hint: 'Saved from Jobs, not applied yet' },
-  { id: 'applied', label: 'Applied', hint: 'Sent, nothing back yet' },
-  { id: 'review', label: 'Recruiter review', hint: 'Someone is reading your profile' },
-  { id: 'recruiter-shortlist', label: 'Recruiter shortlist', hint: 'They picked you for the next round' },
-  { id: 'interviewing', label: 'Interviewing', hint: 'Rounds scheduled or under way' },
+  { id: 'applied', label: 'Applied', hint: 'Sent, or a recruiter is reading you' },
+  { id: 'interview', label: 'Interview scheduled', hint: 'A round is booked, or just happened' },
   { id: 'offer', label: 'Offer', hint: 'A number is on the table' },
-  { id: 'closed', label: 'Closed', hint: 'Finished, either way' },
+  { id: 'ghosted', label: 'Ghosted', hint: 'Quiet past the point of waiting' },
+  { id: 'rejected', label: 'Rejected', hint: 'Finished' },
 ]
 
 /*
- * The import-result summary. These add to the 15 the scan reports: 4 with something to do,
- * 4 with nothing to do but wait, 7 already finished.
+ * When silence becomes ghosting. The clock resets on any signal — an email, a recruiter
+ * view, a calendar change, or the user editing the card — so these count days of nothing
+ * at all, not days since applying.
+ *
+ * 45 days from Applied is Pranoy's number. The other two are shorter because the other
+ * side has already spent effort on you: an unanswered invite and a round that already
+ * happened both mean someone owes you a reply, and six weeks of either is not patience.
+ */
+export const ghostRules = {
+  applied: { days: 45, label: 'no reply since you applied' },
+  invited: { days: 7, label: 'no slot confirmed since the invite' },
+  interviewed: { days: 10, label: 'no update since the round' },
+}
+
+/* A follow-up buys this many more days before North offers to close the application. */
+export const ghostFollowUpGrace = 14
+
+/*
+ * What the import screen reports. These are the three shapes a scanned application can
+ * be in at the moment it lands — needing the user, waiting on someone else, or finished.
+ * The pipeline stages are the finer model; this is the receipt.
  */
 export const trackerStats = [
-  { value: 4, label: 'Need attention', tone: 'attention' },
-  { value: 4, label: 'Waiting', tone: 'waiting' },
-  { value: 7, label: 'Closed', tone: 'closed' },
+  { value: 4, label: 'Need you', tone: 'attention' },
+  { value: 7, label: 'Waiting', tone: 'waiting' },
+  { value: 4, label: 'Closed', tone: 'closed' },
 ]
 
 export const stageLabel = (id) => (applicationStages.find((stage) => stage.id === id) || {}).label || id
 
-export const applications = {
-  attention: [
-    { company: 'PhonePe', role: 'Backend Engineer III', action: 'Reply to recruiter', when: 'Today', color: '#5f259f', preferenceMatch: 83, stage: 'review', source: 'Gmail', insight: 'Your fintech experience is relevant. A reply today keeps the conversation moving.' },
-    { company: 'CRED', role: 'Senior Backend Engineer', action: 'Review assessment', when: 'Due tomorrow', color: '#17192b', preferenceMatch: 81, stage: 'recruiter-shortlist', source: 'Gmail', insight: 'Shortlisted for the take-home assessment. Finishing it is what moves you to interviews.' },
-    { company: 'Google', role: 'Software Engineer III', action: 'Choose interview slots', when: 'Overdue', color: '#4285f4', preferenceMatch: 78, stage: 'recruiter-shortlist', source: 'Gmail', insight: 'The role is a stretch on level, but your distributed-systems experience is relevant.' },
-  ],
-  waiting: [
-    { company: 'Amazon', role: 'SDE III', when: 'Applied 4d ago', preferenceMatch: 84, stage: 'applied', source: 'Naukri' },
-    { company: 'Flipkart', role: 'Lead Software Engineer', when: 'Recruiter viewed', preferenceMatch: 74, stage: 'review', source: 'Naukri' },
-    { company: 'Swiggy', role: 'Backend Engineer', when: 'Applied 8d ago', preferenceMatch: 80, stage: 'applied', source: 'Gmail' },
-    { company: 'Zeta', role: 'Senior Software Engineer', when: 'Interview completed', preferenceMatch: 86, stage: 'interviewing', source: 'Naukri' },
-  ],
-  /*
-   * The Tracker summary counts eight closed applications, so eight exist here. A stat
-   * that opens onto an empty panel is a stat the user cannot trust.
-   *
-   * These deliberately carry no match score and no action. The point of the Closed view
-   * is that these are finished — showing a percentage next to a rejection invites a
-   * second look at something there is nothing left to do about. Companies here are
-   * disjoint from the Jobs feed, so nothing a user was rejected from resurfaces as a
-   * role to find.
-   */
-  closed: [
-    { company: 'Navi', role: 'Senior Backend Engineer', outcome: 'Not selected after the final round', when: '6d ago', stage: 'closed', source: 'Gmail' },
-    { company: 'Dream11', role: 'Senior Backend Engineer', outcome: 'Not selected after the assessment', when: '12d ago', stage: 'closed', source: 'Gmail' },
-    { company: 'Uber', role: 'Senior Software Engineer', outcome: 'Role put on hold by the company', when: '18d ago', stage: 'closed', source: 'Gmail' },
-    { company: 'Pine Labs', role: 'Lead Backend Engineer', outcome: 'Role closed before your interview', when: '24d ago', stage: 'closed', source: 'Naukri' },
-    { company: 'Myntra', role: 'Backend Engineer III', outcome: 'Not selected after screening', when: '31d ago', stage: 'closed', source: 'Naukri' },
-    { company: 'BharatPe', role: 'Senior Backend Engineer', outcome: 'You withdrew', when: '38d ago', stage: 'closed', source: 'Gmail' },
-    { company: 'Ola', role: 'Backend Engineer III', outcome: 'No reply — closed after 45 days', when: '52d ago', stage: 'closed', source: 'Gmail' },
-  ],
-}
+/*
+ * The fourteen applications the Gmail scan reports. Juspay is the fifteenth and is
+ * assembled in TrackerScreen — it is the golden path's interview and has never lived
+ * in the fixture.
+ *
+ * Flat, since 2026-09-10. The old shape split them three ways (attention / waiting /
+ * closed), which was the stat model Tracker dropped; a second grouping alongside the
+ * pipeline is exactly the disagreement that model caused. Stage is the only grouping.
+ *
+ * `movedBy` is the Gmail promise made visible. North reads the inbox and moves cards,
+ * and until a card says so on its face, that claim lives only in the pitch. `north`
+ * means North moved it and the card offers an undo; `you` means the user did, and
+ * nothing rewrites it afterwards.
+ */
+export const applications = [
+  /* ---- Applied: sent, or someone is reading you ------------------------------- */
+  {
+    id: 'phonepe-app', company: 'PhonePe', role: 'Backend Engineer III', initials: 'PP', color: '#5f259f',
+    stage: 'applied', source: 'Gmail', preferenceMatch: 83, appliedAgo: '11d ago',
+    when: 'Recruiter replied · 2h ago', action: 'Reply to recruiter', flow: 'reply', urgency: 'today',
+    insight: 'Your fintech experience is relevant. A reply today keeps the conversation moving.',
+    quote: 'Can you confirm your availability for a quick conversation?',
+    recruiter: 'Sneha Rao · Talent, PhonePe',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '2h ago', movedVia: 'Gmail',
+    movedNote: 'Recruiter reply detected',
+  },
+  {
+    id: 'cred-app', company: 'CRED', role: 'Senior Backend Engineer', initials: 'CR', color: '#17192b',
+    stage: 'applied', source: 'Gmail', preferenceMatch: 81, appliedAgo: '9d ago',
+    when: 'Assessment due tomorrow', action: 'Review assessment', flow: 'reply', urgency: 'tomorrow',
+    insight: 'Shortlisted for the take-home assessment. Finishing it is what moves you to a round.',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '1d ago', movedVia: 'Gmail',
+    movedNote: 'Assessment link detected',
+  },
+  {
+    id: 'amazon-app', company: 'Amazon', role: 'SDE III', initials: 'AM', color: '#232f3e',
+    stage: 'applied', source: 'Naukri', preferenceMatch: 84, appliedAgo: '4d ago',
+    when: 'Applied 4d ago', movedBy: 'north', movedFrom: null, movedAgo: '4d ago', movedVia: 'Naukri',
+    movedNote: 'Application confirmed',
+  },
+  {
+    id: 'flipkart-app', company: 'Flipkart', role: 'Lead Software Engineer', initials: 'FK', color: '#2874f0',
+    stage: 'applied', source: 'Naukri', preferenceMatch: 74, appliedAgo: '16d ago',
+    when: 'Recruiter viewed · 2d ago', movedBy: 'north', movedFrom: null, movedAgo: '2d ago', movedVia: 'Naukri',
+    movedNote: 'Recruiter view detected',
+  },
+  {
+    id: 'swiggy-app', company: 'Swiggy', role: 'Backend Engineer', initials: 'SW', color: '#fc8019',
+    stage: 'applied', source: 'Gmail', preferenceMatch: 80, appliedAgo: '8d ago',
+    when: 'Applied 8d ago', movedBy: 'north', movedFrom: null, movedAgo: '8d ago', movedVia: 'Gmail',
+    movedNote: 'Application confirmed',
+  },
+
+  /* ---- Interview scheduled: one booked round, one already sat ------------------ */
+  {
+    id: 'google-app', company: 'Google', role: 'Software Engineer III', initials: 'GO', color: '#4285f4',
+    stage: 'interview', phase: 'pre', source: 'Gmail', preferenceMatch: 78, appliedAgo: '21d ago',
+    when: 'Slots offered 3d ago', action: 'Choose interview slots', flow: 'prep', urgency: 'overdue',
+    insight: 'The role is a stretch on level, but your distributed-systems work is relevant.',
+    interview: { round: 'Round 1 of 5', mode: 'Google Meet', duration: '45 min', interviewer: 'Not named yet' },
+    invitedAgo: 3,
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '3d ago', movedVia: 'Gmail',
+    movedNote: 'Interview invite detected',
+  },
+  {
+    id: 'paytm-app', company: 'Paytm', role: 'Senior Backend Engineer', initials: 'PA', color: '#00baf2',
+    stage: 'interview', phase: 'post', source: 'Gmail', preferenceMatch: 79, appliedAgo: '27d ago',
+    when: 'Interviewed 2d ago', action: 'Tell North how it went', flow: 'debrief', urgency: 'today',
+    insight: 'Nothing in an inbox reports how a round actually went. Two days is when it is still fresh.',
+    interview: { round: 'Round 2 of 4', mode: 'On site, Noida', duration: '60 min', interviewer: 'Vikram Sethi · Engineering Manager' },
+    interviewedAgo: 2,
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '9d ago', movedVia: 'Gmail',
+    movedNote: 'Calendar invite detected',
+  },
+
+  /* ---- Ghosted: three origins, three different follow-ups --------------------- */
+  {
+    id: 'ola-app', company: 'Ola', role: 'Backend Engineer III', initials: 'OL', color: '#1c1c1c',
+    stage: 'ghosted', ghostedFrom: 'applied', source: 'Gmail', preferenceMatch: 72,
+    appliedAgo: '52d ago', silentDays: 52,
+    when: 'Applied 52d ago · no reply', action: 'Send a follow-up', flow: 'ghosted',
+    insight: 'Fifty-two days with nothing back. One note either restarts it or lets you close it.',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '7d ago', movedVia: 'the 45-day rule',
+    movedNote: 'Passed 45 days of silence',
+  },
+  {
+    id: 'pinelabs-app', company: 'Pine Labs', role: 'Lead Backend Engineer', initials: 'PL', color: '#0d3f67',
+    stage: 'ghosted', ghostedFrom: 'interviewed', source: 'Gmail', preferenceMatch: 77,
+    appliedAgo: '34d ago', silentDays: 14,
+    when: 'Interviewed 14d ago · no update', action: 'Ask for an update', flow: 'ghosted',
+    insight: 'You sat a round and heard nothing. Asking where it stands is normal and expected.',
+    interview: { round: 'Round 2 of 3', mode: 'Video', duration: '60 min', interviewer: 'Anita Desai · Director' },
+    movedBy: 'north', movedFrom: 'interview', movedAgo: '4d ago', movedVia: 'the 10-day rule',
+    movedNote: 'Passed 10 days after the round',
+  },
+  {
+    id: 'bharatpe-app', company: 'BharatPe', role: 'Senior Backend Engineer', initials: 'BP', color: '#123c2b',
+    stage: 'ghosted', ghostedFrom: 'applied', source: 'Gmail', preferenceMatch: 70,
+    appliedAgo: '61d ago', silentDays: 61, followedUpAgo: 9,
+    when: 'Followed up 9d ago · still nothing', action: 'Close this one', flow: 'ghosted',
+    insight: 'You have already sent one note. Nine days on, closing it clears the board.',
+    movedBy: 'you', movedFrom: 'applied', movedAgo: '9d ago', movedVia: 'you',
+    movedNote: 'You followed up',
+  },
+
+  /* ---- Rejected: finished, and the only stage that explains itself ------------- */
+  {
+    id: 'navi-app', company: 'Navi', role: 'Senior Backend Engineer', initials: 'NV', color: '#2c3e8f',
+    stage: 'rejected', source: 'Gmail', appliedAgo: '41d ago', when: '6d ago',
+    outcome: 'Not selected after the final round', action: 'See what to take from it', flow: 'rejection',
+    reachedRound: 'Round 4 of 4',
+    movedBy: 'north', movedFrom: 'interview', movedAgo: '6d ago', movedVia: 'Gmail',
+    movedNote: 'Rejection detected',
+  },
+  {
+    id: 'dream11-app', company: 'Dream11', role: 'Senior Backend Engineer', initials: 'D11', color: '#d6202f',
+    stage: 'rejected', source: 'Gmail', appliedAgo: '30d ago', when: '12d ago',
+    outcome: 'Not selected after the assessment', reachedRound: 'Assessment',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '12d ago', movedVia: 'Gmail',
+    movedNote: 'Rejection detected',
+  },
+  {
+    id: 'uber-app', company: 'Uber', role: 'Senior Software Engineer', initials: 'UB', color: '#111111',
+    stage: 'rejected', source: 'Gmail', appliedAgo: '35d ago', when: '18d ago',
+    outcome: 'Role put on hold by the company', reachedRound: 'Round 1 of 4',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '18d ago', movedVia: 'Gmail',
+    movedNote: 'Role withdrawn by the company',
+  },
+  {
+    id: 'myntra-app', company: 'Myntra', role: 'Backend Engineer III', initials: 'MY', color: '#ff3f6c',
+    stage: 'rejected', source: 'Naukri', appliedAgo: '44d ago', when: '31d ago',
+    outcome: 'Not selected after screening', reachedRound: 'Screening',
+    movedBy: 'north', movedFrom: 'applied', movedAgo: '31d ago', movedVia: 'Naukri',
+    movedNote: 'Rejection detected',
+  },
+]
 
 /*
  * `salary` is what the employer advertised. `estSalary` is what AmbitionBox estimates the

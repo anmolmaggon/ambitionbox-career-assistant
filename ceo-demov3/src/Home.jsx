@@ -411,6 +411,85 @@ function journeyProgress(journey) {
   return [true, journey.emailConnected, journey.interviewInvited, journey.offerDetected]
 }
 
+/*
+ * How each flow presents itself on Home, and where it sits in the queue.
+ *
+ * Rank is by who is waiting on whom. An offer has money and a deadline on it. A booked
+ * round is a fixed date. A recruiter holding an open thread is a person waiting. A
+ * debrief decays — two days out it is still fresh, two weeks out it is invention. Quiet
+ * applications and rejections wait on nobody, and a ranked role waits on nobody at all.
+ */
+const FLOW_RANK = { offer: 0, prep: 1, reply: 2, debrief: 3, ghosted: 4, rejection: 5, job: 6 }
+
+const FLOW_PRESENTATION = {
+  reply: { kicker: 'RECRUITER REPLY NEEDED', tone: 'reply', shape: 'reply', icon: <MessageSquare size={14} /> },
+  prep: { kicker: 'INTERVIEW SCHEDULED', tone: 'interview', shape: 'task', icon: <Clock3 size={14} /> },
+  debrief: { kicker: 'HOW DID IT GO', tone: 'interview', shape: 'task', icon: <MessageSquare size={14} /> },
+  ghosted: { kicker: 'GONE QUIET', tone: 'update', shape: 'task', icon: <BriefcaseBusiness size={14} /> },
+  rejection: { kicker: 'NOT SELECTED', tone: 'update', shape: 'task', icon: <BriefcaseBusiness size={14} /> },
+  offer: { kicker: 'OFFER ON THE TABLE', tone: 'offer', shape: 'offer', icon: <Target size={14} /> },
+  job: { kicker: 'RANKED ROLE', tone: 'role', shape: 'role', icon: <Target size={14} /> },
+}
+
+/*
+ * The reason a card gives for its position has to be state-derived, or it is decoration:
+ * if a reason could move to another row and stay true, the row should not be there. So
+ * each one names the thing that outranks it, and `dated` — whether the pick is a fixed
+ * date — changes what that thing is.
+ */
+function flowReason(item, dated) {
+  switch (item.flow) {
+    case 'reply':
+      return dated ? 'A fixed date beats an open message.' : 'Someone is holding this thread open.'
+    case 'prep':
+      return item.urgency === 'overdue'
+        ? 'Overdue, but it is their slot list — you cannot close it alone.'
+        : 'A booked round is the date you control least.'
+    case 'debrief':
+      return 'Only you know how it went, and the Tracker is stale until you say.'
+    case 'ghosted':
+      return item.followedUpAgo
+        ? 'You already sent one note. This one is yours to close.'
+        : 'Nobody is coming back to this on their own.'
+    case 'rejection':
+      return 'Nothing to do here, but there is something to take from it.'
+    default:
+      return dated ? 'Strong fit, but a booked round outranks an open listing.' : 'Nobody is waiting on you for this one.'
+  }
+}
+
+/* The pipeline line a card carries: for a ghosted card, where it fell from. */
+function stageNote(item) {
+  if (item.stage !== 'ghosted') return stageLabel(item.stage)
+  const origin = item.ghostedFrom === 'interviewed' ? 'Interview' : 'Applied'
+  return `Ghosted · from ${origin}`
+}
+
+function applicationCard(item, dated) {
+  const presentation = FLOW_PRESENTATION[item.flow] || FLOW_PRESENTATION.job
+  return {
+    id: item.id,
+    initials: item.initials,
+    color: item.color,
+    company: item.company,
+    detail: item.action,
+    when: item.when,
+    rank: FLOW_RANK[item.flow] ?? 9,
+    ctaLabel: item.action,
+    role: item.role,
+    stage: stageNote(item),
+    quote: item.quote,
+    sender: item.recruiter,
+    flow: item.flow,
+    reason: flowReason(item, dated),
+    onSelect: () => go(`/flow/${item.flow}?application=${item.id}`),
+    ...presentation,
+    // A quote is what makes the reply shape a message rather than a task; without one
+    // the shape has nothing to lead with, so it falls back to the task composition.
+    shape: presentation.shape === 'reply' && !item.quote ? 'task' : presentation.shape,
+  }
+}
+
 function setAside({ journey, action }) {
   const rows = []
   const add = (row) => { if (row.id !== action.id) rows.push(row) }
@@ -461,22 +540,18 @@ function setAside({ journey, action }) {
         onSelect: () => go('/home?action=phonepe'),
       })
     }
-    for (const item of applications.attention) {
+    /*
+     * Everything Home surfaces, driven off the pipeline rather than authored per state.
+     *
+     * Seven flows, settled 2026-09-10: a ranked role, a reply that is owed, prep before a
+     * round, a debrief after one, a rejection worth reading, an offer to weigh, and an
+     * application that has gone quiet. `FLOW_RANK` is the only place their order lives, and
+     * it is ordered by who is waiting on whom — money on the table first, then a booked
+     * date, then a person holding a thread, then things only the user can close.
+     */
+    for (const item of applications.filter((entry) => entry.action)) {
       if (item.company === 'PhonePe') continue
-      add({
-        id: item.company.toLowerCase(), initials: item.company.slice(0, 2).toUpperCase(), color: item.color,
-        company: item.company, detail: item.action, when: item.when, rank: urgency(item.when),
-        kicker: 'APPLICATION UPDATE', ctaLabel: 'Open in Tracker', tone: 'update', icon: <BriefcaseBusiness size={14} />,
-        // `stage` is real fixture data that Home has never surfaced. `insight` is left
-        // alone — the row's reason already occupies that slot and two explanations fight.
-        shape: 'task', role: item.role, stage: stageLabel(item.stage),
-        reason: item.when === 'Overdue'
-          ? (dated
-            ? 'Overdue, but it is their slot list — and Tuesday is the date you control least.'
-            : 'Overdue, but it is their slot list — you cannot close it alone.')
-          : (dated ? 'Tomorrow, and it keeps until the round is done.' : 'Tomorrow, not today.'),
-        onSelect: () => go('/tracker'),
-      })
+      add(applicationCard(item, dated))
     }
     add({
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,
@@ -503,6 +578,26 @@ function setAside({ journey, action }) {
   }
 
   rows.sort((a, b) => a.rank - b.rank)
+
+  /*
+   * One card per flow. Home is what needs you today, not an inventory — three ghosted
+   * cards in a row taught the reader that this stage is a list, and a list belongs in
+   * Tracker. Keeping the best-ranked of each kind means Home shows the shape of the
+   * whole search in one screen: a reply, a round, a debrief, a quiet one, a rejection,
+   * a role. Everything it drops is one tap away on the tab below it.
+   */
+  // The pick counts as its flow. It is on screen as card one, so a queue card of the
+  // same kind directly beneath it is the duplicate this rule exists to remove.
+  const PICK_FLOW = { reply: 'reply', interview: 'prep', offer: 'offer', opportunity: 'job', roles: 'job' }
+  const seen = new Set(PICK_FLOW[action.id] ? [PICK_FLOW[action.id]] : [])
+  const deduped = rows.filter((row) => {
+    if (!row.flow) return true
+    if (seen.has(row.flow)) return false
+    seen.add(row.flow)
+    return true
+  })
+  rows.length = 0
+  rows.push(...deduped)
   // Only the head of the queue can claim it goes next, which is what stops these
   // reasons from being interchangeable decoration.
   // Only the head of the queue can claim it goes next, which is what stops these
