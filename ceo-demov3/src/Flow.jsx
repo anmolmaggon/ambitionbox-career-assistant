@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, Check, Copy, Send } from 'lucide-react'
 import { AppLink, NorthMark, go } from './AppUI'
 import { useJourney } from './store'
-import { buildFlow } from './flows'
+import { answerQuestion, buildFlow, followUps } from './flows'
 
 /*
  * The flow screen.
@@ -39,6 +39,12 @@ export function FlowScreen() {
   const [draft, setDraft] = useState('')
   const [copied, setCopied] = useState(false)
   const [closing, setClosing] = useState(null)
+  /*
+   * Turns the user added by asking rather than by answering. The script and the
+   * conversation live in one thread, so a flow that has said its piece does not dead-end
+   * into a screen with nothing to do.
+   */
+  const [asides, setAsides] = useState([])
   const endRef = useRef(null)
 
   /*
@@ -72,7 +78,7 @@ export function FlowScreen() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: reduceMotion ? 'instant' : 'smooth', block: 'end' })
-  }, [turn, reduceMotion])
+  }, [turn, asides.length, reduceMotion])
 
   if (!flow) {
     return (
@@ -87,6 +93,20 @@ export function FlowScreen() {
   const answer = (key, value) => {
     setAnswers((current) => ({ ...current, [key]: value }))
     setTurn((value) => value + 1)
+  }
+
+  /*
+   * Asking is not answering. A question adds a pair of turns to the end of the thread and
+   * leaves the script exactly where it was, so someone can ask what a company pays in the
+   * middle of picking a slot and still be picking a slot afterwards.
+   */
+  const ask = (question) => {
+    if (!question.trim()) return
+    setAsides((current) => [
+      ...current,
+      { id: `q${current.length}`, from: 'you', text: question.trim() },
+      { id: `a${current.length}`, from: 'north', ...answerQuestion(type, flow.app, question) },
+    ])
   }
 
   const HANDOFF = {
@@ -146,33 +166,60 @@ export function FlowScreen() {
             setCopied={setCopied}
           />
         ))}
+        {asides.map((turn, index) => (
+          turn.from === 'you'
+            ? (
+              <motion.div key={turn.id} className="flow-turn flow-turn--you" initial={reduceMotion ? false : { y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                <span className="flow-said">{turn.text}</span>
+              </motion.div>
+            )
+            : (
+              <motion.div key={turn.id} className="flow-turn flow-turn--north" initial={reduceMotion ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                <span className="flow-avatar"><NorthMark state="arrive" /></span>
+                <div className="flow-turn-body"><FlowElement step={turn} answers={answers} /></div>
+              </motion.div>
+            )
+        ))}
         <div ref={endRef} />
       </div>
 
-      <AnimatePresence mode="wait">
+      <div className="flow-dock">
         {closing ? (
-          <motion.div
-            key="closed"
-            className="flow-dock flow-dock--closed"
-            initial={reduceMotion ? false : { y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-          >
+          <>
             <span className="flow-closed-line"><Check size={16} /> {closingLine(closing.result)}</span>
-            <button className="primary-button" onClick={() => go('/home')}>Back to Home</button>
-          </motion.div>
-        ) : waiting ? (
-          <motion.div
-            key={current.id}
-            className="flow-dock"
-            initial={reduceMotion ? false : { y: 24, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={reduceMotion ? undefined : { y: 12, opacity: 0 }}
-            transition={{ duration: .28, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <FlowInput step={current} answers={answers} onAnswer={answer} onFinish={finish} />
-          </motion.div>
+            {/* A finished flow still has to let go of the reader. The chips below stay
+                live, so leaving is a choice rather than the only thing left. */}
+            <div className="flow-dock-actions">
+              <button className="ghost-button" onClick={() => go('/home')}>Back to Home</button>
+            </div>
+          </>
+        ) : waiting && current.type === 'actions' ? (
+          <div className="flow-dock-actions">
+            {resolve(current.options, answers).map((option) => (
+              <button
+                key={option.label}
+                className={option.primary ? 'primary-button' : 'ghost-button'}
+                onClick={() => finish(option)}
+              >{option.label}</button>
+            ))}
+          </div>
         ) : null}
-      </AnimatePresence>
+
+        <FlowChips
+          step={waiting ? current : null}
+          answers={answers}
+          suggestions={followUps(type, flow.app)}
+          onAnswer={answer}
+          onAsk={ask}
+        />
+
+        <FlowComposer
+          step={waiting && current.type === 'input' ? current : null}
+          onAnswer={answer}
+          onAsk={ask}
+        />
+      </div>
+
     </main>
   )
 }
@@ -350,54 +397,24 @@ function FlowElement({ step, answers, draft, setDraft, copied, setCopied }) {
 
 /* --------------------------------------------------------------------------- */
 
-function FlowInput({ step, answers, onAnswer, onFinish }) {
+/*
+ * The chip rail.
+ *
+ * One row, scrolled horizontally, always showing something. What it shows depends on where
+ * the thread is: at a question, the answers; everywhere else, the things worth asking next.
+ *
+ * The suggestions are only ever questions North can actually answer — a chip is a promise,
+ * and one that lands on a shrug costs more trust than the chip was worth.
+ */
+function FlowChips({ step, answers, suggestions, onAnswer, onAsk }) {
   const [picked, setPicked] = useState([])
-  const [typed, setTyped] = useState('')
-  const options = resolve(step.options, answers)
+  const choosing = step && step.type === 'choice'
+  const options = choosing ? resolve(step.options, answers) : []
 
-  if (step.type === 'actions') {
-    return (
-      <div className="flow-dock-actions">
-          {options.map((option) => (
-            <button
-              key={option.label}
-              className={option.primary ? 'primary-button' : 'ghost-button'}
-              onClick={() => onFinish(option)}
-            >{option.label}</button>
-          ))}
-      </div>
-    )
-  }
-
-  if (step.type === 'input') {
-    return (
-      <>
-        <div className="flow-dock-field">
-          <input
-            value={typed}
-            onChange={(event) => setTyped(event.target.value)}
-            placeholder={step.placeholder}
-            aria-label={resolve(step.text, answers)}
-            onKeyDown={(event) => { if (event.key === 'Enter' && typed.trim()) onAnswer(step.key, typed.trim()) }}
-          />
-          <button
-            className="flow-send"
-            aria-label="Send"
-            disabled={!typed.trim()}
-            onClick={() => onAnswer(step.key, typed.trim())}
-          ><Send size={16} /></button>
-        </div>
-        <button className="flow-skip" onClick={() => onAnswer(step.key, 'Nothing to add')}>Skip</button>
-      </>
-    )
-  }
-
-  // A multi-select collects, then confirms. A single choice answers on the tap — asking
-  // someone to pick one thing and then press Confirm is one tap of pure ceremony.
   return (
-    <>
-      <div className="flow-chips">
-        {options.map((option) => {
+    <div className="flow-rail" role="group" aria-label={choosing ? 'Answers' : 'Suggested questions'}>
+      {choosing
+        ? options.map((option) => {
           const on = picked.includes(option)
           return (
             <button
@@ -405,20 +422,64 @@ function FlowInput({ step, answers, onAnswer, onFinish }) {
               className={`flow-chip ${on ? 'is-on' : ''}`}
               aria-pressed={step.multi ? on : undefined}
               onClick={() => {
+                // A single choice answers on the tap. Asking someone to pick one thing and
+                // then press Confirm is a tap of pure ceremony.
                 if (!step.multi) return onAnswer(step.key, option)
                 setPicked((current) => (on ? current.filter((entry) => entry !== option) : [...current, option]))
               }}
             >{option}</button>
           )
-        })}
-      </div>
-      {step.multi && (
+        })
+        : suggestions.map((entry) => (
+          <button key={entry.label} className="flow-chip flow-chip--ask" onClick={() => onAsk(entry.label)}>
+            {entry.label}
+          </button>
+        ))}
+
+      {choosing && step.multi && (
         <button
-          className="primary-button"
+          className="flow-chip flow-chip--confirm"
           disabled={!picked.length}
-          onClick={() => onAnswer(step.key, picked)}
+          onClick={() => { onAnswer(step.key, picked); setPicked([]) }}
         >{picked.length ? `Add ${picked.length}` : 'Pick what came up'}</button>
       )}
-    </>
+    </div>
+  )
+}
+
+/*
+ * The composer, present at every point in the thread.
+ *
+ * When the script is waiting on a typed answer it submits that answer; otherwise it asks a
+ * question and the script stays where it was. One field doing both is what stops the flow
+ * being a wizard you can only walk forwards through.
+ */
+function FlowComposer({ step, onAnswer, onAsk }) {
+  const [typed, setTyped] = useState('')
+  const answering = Boolean(step)
+
+  const submit = () => {
+    if (!typed.trim()) return
+    if (answering) onAnswer(step.key, typed.trim())
+    else onAsk(typed)
+    setTyped('')
+  }
+
+  return (
+    <div className="flow-composer">
+      <input
+        value={typed}
+        onChange={(event) => setTyped(event.target.value)}
+        placeholder={answering ? (step.placeholder || 'Type your answer') : 'Ask North anything about this'}
+        aria-label={answering ? resolve(step.text, {}) : 'Ask North about this'}
+        onKeyDown={(event) => { if (event.key === 'Enter') submit() }}
+      />
+      {answering && (
+        <button className="flow-skip" onClick={() => onAnswer(step.key, 'Nothing to add')}>Skip</button>
+      )}
+      <button className="flow-send" aria-label={answering ? 'Send answer' : 'Ask'} disabled={!typed.trim()} onClick={submit}>
+        <NorthMark />
+      </button>
+    </div>
   )
 }

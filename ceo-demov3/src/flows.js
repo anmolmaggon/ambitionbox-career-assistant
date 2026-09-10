@@ -526,6 +526,251 @@ function offerFlow() {
   ]
 }
 
+
+/* --------------------------------------------------------------------------- */
+
+/*
+ * Follow-ups: what the user can ask once North has said its piece, and what it answers.
+ *
+ * THE CHIPS ARE THE QUESTIONS NORTH CAN ACTUALLY ANSWER. That is the whole selection
+ * rule. A suggestion chip is a promise, and one that lands on a shrug is worse than no
+ * chip at all — so every one of these resolves against a real fixture, and anything
+ * outside the set gets an honest miss rather than a guess.
+ *
+ * `match` is what a typed question has to contain for the same answer to fire, so
+ * tapping and typing reach the same place.
+ */
+const FOLLOW_UPS = {
+  prep: (app) => {
+    const intel = roundIntel[app.id]
+    const weak = (intel?.stand || []).find((row) => row.tone === 'warn')
+    return [
+      {
+        label: 'What do I revise first?',
+        match: ['revise', 'study', 'prepare first', 'focus'],
+        answer: {
+          type: 'verdict',
+          title: weak ? weak.label : 'Start with the round, not the role.',
+          text: weak
+            ? `${weak.meta}. Everything else on this list you can already evidence, so it is the only one where two hours changes the outcome.`
+            : 'Prepare for what this round covers rather than the whole job description. The reports are specific and the posting is not.',
+        },
+      },
+      {
+        label: 'How long should I spend?',
+        match: ['how long', 'time', 'hours'],
+        answer: {
+          type: 'message',
+          text: `You have until ${'the slot you picked'} — realistically two evenings. One on the weak ground, one reading back your own projects so the examples come out clean. More than that and you start rehearsing rather than remembering.`,
+        },
+      },
+      {
+        label: 'What do they pay?',
+        match: ['pay', 'salary', 'ctc', 'compensation'],
+        answer: {
+          type: 'list',
+          title: `What ${app.company} pays for this level.`,
+          items: [
+            { label: 'AmbitionBox estimate: ₹32–41L', meta: 'From employee-reported salaries at this level', tone: 'ok' },
+            { label: 'Above your ₹22L target', meta: 'And well above your current ₹15L', tone: 'ok' },
+          ],
+          source: 'AmbitionBox salary data. The posting itself does not state a range.',
+        },
+      },
+      {
+        label: 'Who else is in the loop?',
+        match: ['who else', 'loop', 'panel', 'interviewer'],
+        answer: {
+          type: 'message',
+          text: 'I do not know. The invitation names nobody, and nothing in the thread says who follows. If you ask the recruiter directly they will usually tell you, and it is a normal thing to ask.',
+        },
+      },
+    ]
+  },
+
+  debrief: (app) => [
+    {
+      label: 'What happens next?',
+      match: ['what happens', 'next', 'after this'],
+      answer: {
+        type: 'message',
+        text: `Nothing you control. ${app.company} decides, and I watch the thread. If it goes quiet past ten days I will bring it back with a note already written.`,
+      },
+    },
+    {
+      label: 'Should I follow up?',
+      match: ['follow up', 'chase', 'nudge'],
+      answer: {
+        type: 'verdict',
+        title: 'Not yet.',
+        text: 'Two days after a round is too early — it reads as anxious rather than keen. Give it the week they implied, and if nothing lands I will write the note for you.',
+      },
+    },
+    {
+      label: 'How did this compare to my other rounds?',
+      match: ['compare', 'other rounds', 'last time'],
+      answer: {
+        type: 'list',
+        title: 'Your logged rounds.',
+        items: roundHistory.map((entry) => ({
+          label: `${entry.company} · ${entry.round}`,
+          meta: `${entry.topics.join(', ')} · ${entry.outcome.toLowerCase()}`,
+          tone: entry.outcome === 'Went well' ? 'ok' : entry.outcome === 'Hard to read' ? 'neutral' : 'warn',
+        })),
+        source: 'From the debriefs you have logged, not from any email',
+      },
+    },
+    {
+      label: 'What do I prepare for the next round?',
+      match: ['next round', 'prepare', 'round 3'],
+      answer: {
+        type: 'verdict',
+        title: 'Whatever you said you would want back.',
+        text: 'That answer is worth more than the reports, because it came from the room. I build the next briefing around it and leave the rest as background.',
+      },
+    },
+  ],
+
+  rejection: (app) => [
+    {
+      label: 'How do I get past this next time?',
+      match: ['next time', 'get past', 'improve', 'fix'],
+      answer: {
+        type: 'verdict',
+        title: 'Evidence, not effort.',
+        text: 'Two of the three reasons are things your profile does not prove rather than things you cannot do. Closing that gap is a writing job, and I can do most of it with you in twenty minutes.',
+      },
+    },
+    {
+      label: 'Show me roles where this matters less',
+      match: ['roles', 'show me', 'other jobs', 'matters less'],
+      answer: {
+        type: 'message',
+        text: 'Three of them are in your Jobs tab already, ranked. All Go-heavy payments teams inside your experience band, so the level stretch and the Java gap both stop applying.',
+      },
+    },
+    {
+      label: 'Was the level the problem?',
+      match: ['level', 'seniority', 'band'],
+      answer: {
+        type: 'message',
+        text: `I cannot know, and neither can you from that email. What I can see is that ${app.company} posted a 7–10 year band and you are at six. That is not disqualifying on its own — it just means everything else had to carry more weight.`,
+      },
+    },
+  ],
+
+  ghosted: (app) => [
+    {
+      label: 'How long should I wait?',
+      match: ['how long', 'wait', 'when'],
+      answer: {
+        type: 'message',
+        text: `You already have. ${app.silentDays} days is past the point where waiting is a strategy — this is why the card came back rather than sitting in Tracker.`,
+      },
+    },
+    {
+      label: 'Does following up actually work?',
+      match: ['work', 'worth it', 'point', 'useful'],
+      answer: {
+        type: 'verdict',
+        title: 'Sometimes, and it costs you nothing.',
+        text: 'A follow-up either restarts the conversation or gives you permission to close it. Both are better than an application sitting open in your head for another month.',
+      },
+    },
+    {
+      label: 'Should I just close it?',
+      match: ['close', 'give up', 'move on'],
+      answer: {
+        type: 'message',
+        text: 'Your call, and there is no wrong answer. Closing it moves the card to Rejected with a note that you closed it, not them — which matters when you look back at this search.',
+      },
+    },
+  ],
+
+  reply: () => [
+    {
+      label: 'Make it shorter',
+      match: ['shorter', 'brief', 'cut'],
+      answer: { type: 'message', text: 'Edit it directly in the draft above — it is a live field, and whatever you leave there is what gets copied.' },
+    },
+    {
+      label: 'What does PhonePe pay?',
+      match: ['pay', 'salary', 'ctc'],
+      answer: {
+        type: 'list',
+        title: 'PhonePe, Backend Engineer III.',
+        items: [
+          { label: 'AmbitionBox estimate: ₹31L', meta: 'From 540 employee-reported salaries', tone: 'ok' },
+          { label: 'Posted range ₹28–36L', meta: 'What PhonePe advertised', tone: 'neutral' },
+        ],
+        source: 'AmbitionBox salary data',
+      },
+    },
+    {
+      label: 'Should I name a number yet?',
+      match: ['number', 'expectation', 'how much'],
+      answer: {
+        type: 'verdict',
+        title: 'No.',
+        text: 'Not in the first reply. Whoever names a figure first anchors the conversation, and you have nothing to gain from anchoring it before you know what the role is.',
+      },
+    },
+  ],
+
+  offer: () => [
+    {
+      label: 'What is my monthly take-home?',
+      match: ['take home', 'in hand', 'monthly'],
+      answer: {
+        type: 'message',
+        text: `Fixed pay is ${offer.fixed}, and that is the part that recurs monthly. I will not put a take-home figure on it — that turns on the tax regime and deductions I do not hold, and a confident wrong number here is worse than none.`,
+      },
+    },
+    {
+      label: 'Is this fair for my experience?',
+      match: ['fair', 'experience', 'worth', 'market'],
+      answer: {
+        type: 'list',
+        title: 'Against the market.',
+        items: [
+          { label: `Band for this role: ${offer.market}`, meta: 'From 212 employee-reported salaries at Juspay', tone: 'ok' },
+          { label: `Your offer: ${offer.total}, below the midpoint`, meta: 'Fair, and not the top of what they pay', tone: 'neutral' },
+        ],
+        source: 'AmbitionBox salary data',
+      },
+    },
+    {
+      label: 'How do I ask for more?',
+      match: ['ask for more', 'negotiate', 'counter'],
+      answer: {
+        type: 'verdict',
+        title: 'One number, one reason, once.',
+        text: 'Ask for the fixed component at ₹26L, cite the band and your payments depth, and leave the variable alone. Arguing the variable is standard here and reads as inexperience.',
+      },
+    },
+  ],
+}
+
+/*
+ * The honest miss. A fallback that pretends to answer is how an assistant loses the
+ * trust every grounded answer above earns.
+ */
+const NO_ANSWER = {
+  type: 'message',
+  text: 'I do not have that. Everything I say here traces back to your inbox, your profile, or reported data, and that question falls outside all three — so I would be guessing, and you would not be able to tell.',
+}
+
+export function followUps(type, app) {
+  const build = FOLLOW_UPS[type]
+  return build ? build(app || {}) : []
+}
+
+export function answerQuestion(type, app, question) {
+  const asked = question.trim().toLowerCase()
+  const hit = followUps(type, app).find((entry) => entry.match.some((word) => asked.includes(word)))
+  return hit ? hit.answer : NO_ANSWER
+}
+
 /* --------------------------------------------------------------------------- */
 
 const BUILDERS = {

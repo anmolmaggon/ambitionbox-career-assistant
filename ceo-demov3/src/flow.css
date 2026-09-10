@@ -12,7 +12,7 @@
 
 .flow-screen {
   min-height: 100dvh;
-  padding: 0 0 max(232px, env(safe-area-inset-bottom));
+  padding: 0 0 max(210px, env(safe-area-inset-bottom));
   background: var(--canvas);
   display: flex;
   flex-direction: column;
@@ -214,13 +214,11 @@
 /* The dock -------------------------------------------------------------- */
 
 /*
- * Everything North is waiting for lives here, so the answer is always in the same place
- * no matter which flow you are in or how long the thread has run.
+ * Everything the user can do lives here, in the same place at every point in the thread:
+ * a rail of chips, and a field. What changes is what the chips hold — the answers to the
+ * question North just asked, or the things worth asking next.
  */
 .flow-dock {
-  /* Same positioning contract as the app-wide home dock: fixed to the bottom, capped at
-     the phone shell's own width. Centring it independently put it out of step with every
-     other bottom surface in the app. */
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -229,50 +227,90 @@
   z-index: 30;
   display: grid;
   gap: 10px;
-  padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom));
   background: var(--surface);
   border-radius: 26px 26px 0 0;
   box-shadow: 0 -14px 40px rgba(23, 25, 43, .1);
 }
 
-.flow-dock-lead { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
-.flow-dock-actions { display: grid; gap: 8px; }
+.flow-dock-actions { display: grid; gap: 8px; padding: 0 20px; }
 
-.flow-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/*
+ * One row, scrolled sideways. It never wraps: a chip rail that grows to two or three rows
+ * pushes the field it belongs to off the screen, and the field is the more important half.
+ * The gutter padding is on the rail rather than the dock so the first and last chip can
+ * scroll clear of the edges.
+ */
+.flow-rail {
+  display: flex;
+  gap: 8px;
+  padding: 2px 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.flow-rail::-webkit-scrollbar { display: none; }
+
 .flow-chip {
-  padding: 10px 15px;
-  min-height: 44px;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 9px 15px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: var(--canvas);
+  background: var(--surface);
   color: var(--ink);
   font-size: 13.5px;
   font-weight: 600;
+  white-space: nowrap;
   transition: border-color var(--ab-motion-fast) var(--ab-ease-out), background var(--ab-motion-fast) var(--ab-ease-out);
 }
 .flow-chip:hover { border-color: var(--primary); }
 .flow-chip.is-on { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 
-.flow-dock-field { display: flex; align-items: center; gap: 8px; }
-.flow-dock-field input {
-  flex: 1; min-width: 0; min-height: 44px;
-  padding: 11px 14px;
-  border-radius: var(--input-radius);
-  border: 1px solid var(--line);
+/* A question the user could ask reads quieter than an answer North is waiting for. */
+.flow-chip--ask { background: var(--canvas); border-color: transparent; color: var(--muted); font-weight: 500; }
+.flow-chip--ask:hover { background: var(--surface); border-color: var(--primary); color: var(--ink); }
+
+.flow-chip--confirm { border-color: var(--primary); color: var(--primary); }
+.flow-chip--confirm:disabled { opacity: .45; }
+
+.flow-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 20px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 999px;
   background: var(--canvas);
+  border: 1px solid var(--line);
+}
+.flow-composer:focus-within { border-color: var(--primary); box-shadow: var(--focus-ring); }
+.flow-composer input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
   font-size: 14px;
 }
-.flow-dock-field input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
-.flow-send {
-  width: 44px; height: 44px; flex: 0 0 auto;
-  display: grid; place-items: center;
-  border-radius: 50%; background: var(--ink); color: var(--surface);
-}
-.flow-send:disabled { opacity: .35; }
-.flow-skip { justify-self: start; font-size: 12.5px; font-weight: 600; color: var(--subtle); text-decoration: underline; text-underline-offset: 3px; }
+.flow-composer input:focus { outline: none; }
 
-.flow-dock--closed { gap: 12px; }
-.flow-closed-line { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--teal); }
+.flow-send {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+}
+.flow-send .north-mark { width: 14px; height: 14px; }
+.flow-send:disabled { opacity: .3; }
+
+.flow-skip { flex: 0 0 auto; font-size: 12.5px; font-weight: 600; color: var(--subtle); text-decoration: underline; text-underline-offset: 3px; }
+
+.flow-closed-line { display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; font-size: 13.5px; font-weight: 600; color: var(--teal); }
 
 .ghost-button {
   min-height: 44px;
