@@ -118,7 +118,7 @@ test('the interview is visible on Home and Tracker without stealing the offer ca
   await expect(page.getByText('See what to expect and start tailored prep')).toBeVisible()
   await expect(page.getByText('Tue 11:00')).toBeVisible()
   await page.goto('/home?preset=offer')
-  await expect(page.getByRole('heading', { name: 'Your ₹28L offer is ready to understand.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Below the midpoint of the band.' })).toBeVisible()
 })
 
 test('adding an interview manually is reachable and honest about its limits', async ({ page }) => {

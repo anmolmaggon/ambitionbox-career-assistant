@@ -178,16 +178,16 @@ function introLine(journey, firstArrival, count) {
     if (count === 0) {
       return firstArrival
         ? 'You won’t have to go looking any more. Nothing needs you right now.'
-        : 'I looked across everything — nothing is waiting on you right now.'
+        : 'Nothing needs you today. That is not nothing.'
     }
     if (count <= 1) {
       return firstArrival
         ? 'You won’t have to go looking any more. One thing needs you today.'
-        : 'I looked across everything — one thing needs you.'
+        : 'One thing needs you.'
     }
     return firstArrival
       ? `You won’t have to go looking any more. ${count} things need you today.`
-      : `I looked across everything — ${count} things need a look.`
+      : `${count} things need you. Most urgent first.`
   }
   if (journey.emailSkipped) {
     return firstArrival
@@ -239,19 +239,19 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       variant: 'priority-card--offer',
       tone: 'offer', icon: <CircleDollarSign size={14} />,
       shape: 'offer',
-      kicker: 'OFFER RECEIVED',
+      kicker: 'OFFER IN',
       badge: <Pill tone="success">Today</Pill>,
       when: 'Today',
       company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · ${juspay.location}` },
       // The number is the fact this card exists to deliver, so the card leads with it
       // and splits it — a CTC headline with the variable folded in flatters the offer.
       money: { total: offer.total, fixed: offer.fixed, variable: offer.variable, market: offer.market, delta: offer.currentDelta },
-      headline: 'Your ₹28L offer is ready to understand.',
-      support: 'See what employees report, what the move changes, and where you have room to negotiate.',
+      headline: 'Below the midpoint of the band.',
+      support: `Inside ${offer.market}. The room is in the fixed pay, not the variable.`,
       why: 'A live decision outranks everything else in your search.',
       whyQuestion: 'Why is reviewing this offer my next move?',
       foot: offer.total,
-      cta: { label: 'Review my offer', onClick: () => go('/flow/offer') },
+      cta: { label: 'See what it is worth', onClick: () => go('/flow/offer') },
     }
   }
 
@@ -275,16 +275,16 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       variant: 'priority-card--interview',
       tone: 'interview', icon: <UserRoundCheck size={14} />,
       shape: 'debrief',
-      kicker: 'INTERVIEW DONE',
+      kicker: 'HOW DID IT GO',
       badge: <Pill tone="attention">Yesterday</Pill>,
       when: 'Yesterday',
       company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · Round 1 of 4` },
-      headline: `How did your ${juspay.company} interview go?`,
-      support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
+      headline: `You sat ${round ? round.label.toLowerCase() : 'your round'} at ${juspay.company} yesterday.`,
+      support: 'No email reports how a round actually went. Thirty seconds, and your next round gets sharper.',
       why: 'Nothing else in your search can move until this one is settled.',
       whyQuestion: 'Why does logging this interview matter?',
       foot: interviewIntel.invitation.day.split(',')[0],
-      cta: { label: 'Tell North how it went', onClick: () => go('/flow/debrief?application=juspay') },
+      cta: { label: 'Tell me how it went', onClick: () => go('/flow/debrief?application=juspay') },
     }
   }
 
@@ -294,7 +294,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       variant: 'priority-card--interview',
       tone: 'interview', icon: <Clock3 size={14} />,
       shape: 'interview',
-      kicker: 'INTERVIEW SCHEDULED',
+      kicker: 'INTERVIEW BOOKED',
       badge: <Pill tone={journey.prepComplete ? 'success' : 'attention'}>{interviewIntel.invitation.day.split(',')[0]}</Pill>,
       when: interviewIntel.invitation.day.split(',')[0],
       // "Round 1 of 4" moves out of company.detail and into the schedule block so the
@@ -321,19 +321,19 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       variant: '',
       tone: 'reply', icon: <MessageSquare size={14} />,
       shape: 'reply',
-      kicker: 'RECRUITER REPLY NEEDED',
+      kicker: 'THEY REPLIED',
       badge: <span className="time-chip">2h ago</span>,
       when: '2h ago',
       company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', detail: 'Backend Engineer III' },
       headline: '“Can you confirm your availability for a quick conversation?”',
-      support: 'Replying today keeps a high-paying opportunity warm.',
+      support: 'Sneha at PhonePe, waiting since 7:40. Your draft is written.',
       // Split out of `support` so the byline can sit under the quote where a message
       // puts its sender. The full stop stays — onboarding.spec matches the string.
       source: 'Detected in Gmail.',
       why: 'A person is waiting, and a recruiter reply ages faster than an application.',
       whyQuestion: 'Why should I reply to PhonePe first?',
       foot: '2h waiting',
-      cta: { label: 'Review reply', onClick: () => go('/flow/reply?application=phonepe-app') },
+      cta: { label: 'Review the draft', onClick: () => go('/flow/reply?application=phonepe-app') },
     }
   }
 
@@ -343,19 +343,20 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       variant: 'priority-card--juspay',
       tone: 'role', icon: <Target size={14} />,
       shape: 'role',
-      kicker: 'BEST NEXT OPPORTUNITY',
+      kicker: `NEW MATCH · ${juspay.preferenceMatch}%`,
       when: juspay.posted,
       company: { initials: juspay.initials, name: juspay.company, detail: juspay.role },
-      headline: 'Your payments experience makes this unusually relevant.',
+      headline: `${juspay.role} at ${juspay.company}.`,
       // `facts` is still what the three legacy directions render. `stats` is the same
       // evidence given columns, which is what stops it wrapping into a grey sentence.
       facts: [`${juspay.preferenceMatch}% Preference Match`, juspay.salary, juspay.mode, `${juspay.rating} ★`],
       stats: roleStats(juspay),
+      support: `Your CV is missing ${juspay.readinessTotal - juspay.initialReadiness} of their ${juspay.readinessTotal} requirements. I can close them before you apply.`,
       why: journey.emailConnected
         ? 'Nothing in your inbox is waiting on you, so preference ranking takes over.'
         : 'It sits closest to the preferences you just reviewed.',
       whyQuestion: 'Why is Juspay my next move?',
-      cta: { label: 'See why it fits', onClick: () => go('/jobs/juspay') },
+      cta: { label: 'Tailor my CV', onClick: () => go('/jobs/juspay') },
     }
   }
 
@@ -421,41 +422,38 @@ function journeyProgress(journey) {
  */
 const FLOW_RANK = { offer: 0, prep: 1, reply: 2, debrief: 3, ghosted: 4, rejection: 5, job: 6 }
 
+/*
+ * The kicker is the news, not the category. "APPLICATION UPDATE" named the system that
+ * spoke; "NOT THIS ONE" and "THEY REPLIED" name what happened. Someone reading only the
+ * kickers down the carousel should come away knowing their week.
+ *
+ * Rejection sits on `quiet`, not on a warning tone. Red and amber mean you broke
+ * something or something is broken, and a rejection is neither. Colouring it that way
+ * teaches people to flinch at their own Home screen.
+ */
 const FLOW_PRESENTATION = {
-  reply: { kicker: 'RECRUITER REPLY NEEDED', tone: 'reply', shape: 'reply', icon: <MessageSquare size={14} /> },
-  prep: { kicker: 'INTERVIEW SCHEDULED', tone: 'interview', shape: 'task', icon: <Clock3 size={14} /> },
+  reply: { kicker: 'THEY REPLIED', tone: 'reply', shape: 'reply', icon: <MessageSquare size={14} /> },
+  prep: { kicker: 'SLOTS OFFERED', tone: 'interview', shape: 'task', icon: <Clock3 size={14} /> },
   debrief: { kicker: 'HOW DID IT GO', tone: 'interview', shape: 'task', icon: <MessageSquare size={14} /> },
   ghosted: { kicker: 'GONE QUIET', tone: 'update', shape: 'task', icon: <BriefcaseBusiness size={14} /> },
-  rejection: { kicker: 'NOT SELECTED', tone: 'update', shape: 'task', icon: <BriefcaseBusiness size={14} /> },
-  offer: { kicker: 'OFFER ON THE TABLE', tone: 'offer', shape: 'offer', icon: <Target size={14} /> },
-  job: { kicker: 'RANKED ROLE', tone: 'role', shape: 'role', icon: <Target size={14} /> },
+  rejection: { kicker: 'NOT THIS ONE', tone: 'quiet', shape: 'task', icon: <BriefcaseBusiness size={14} /> },
+  offer: { kicker: 'OFFER IN', tone: 'offer', shape: 'offer', icon: <Target size={14} /> },
+  job: { kicker: 'NEW MATCH', tone: 'role', shape: 'role', icon: <Target size={14} /> },
 }
 
 /*
- * The reason a card gives for its position has to be state-derived, or it is decoration:
- * if a reason could move to another row and stay true, the row should not be there. So
- * each one names the thing that outranks it, and `dated` — whether the pick is a fixed
- * date — changes what that thing is.
+ * The line under the claim. Its job changed on 2026-09-10: it used to argue why this card
+ * sits where it sits, which the order already shows. It now names something North has
+ * already done or seen — a draft written, eleven of fourteen reports, two of fifteen
+ * requirements — because that is what makes tapping feel like collecting something rather
+ * than starting work.
+ *
+ * The old rule survives in a stronger form: if a line could move to another card and stay
+ * true, it is decoration. Every one of these names a number or a name only its own card
+ * has.
  */
-function flowReason(item, dated) {
-  switch (item.flow) {
-    case 'reply':
-      return dated ? 'A fixed date beats an open message.' : 'Someone is holding this thread open.'
-    case 'prep':
-      return item.urgency === 'overdue'
-        ? 'Overdue, but it is their slot list — you cannot close it alone.'
-        : 'A booked round is the date you control least.'
-    case 'debrief':
-      return 'Only you know how it went, and the Tracker is stale until you say.'
-    case 'ghosted':
-      return item.followedUpAgo
-        ? 'You already sent one note. This one is yours to close.'
-        : 'Nobody is coming back to this on their own.'
-    case 'rejection':
-      return 'Nothing to do here, but there is something to take from it.'
-    default:
-      return dated ? 'Strong fit, but a booked round outranks an open listing.' : 'Nobody is waiting on you for this one.'
-  }
+function cardSupport(item) {
+  return item.insight
 }
 
 /*
@@ -479,7 +477,7 @@ function stageNote(item) {
   return `Ghosted · from ${origin}`
 }
 
-function applicationCard(item, dated) {
+function applicationCard(item) {
   const presentation = FLOW_PRESENTATION[item.flow] || FLOW_PRESENTATION.job
   return {
     id: item.id,
@@ -487,6 +485,7 @@ function applicationCard(item, dated) {
     color: item.color,
     company: item.company,
     detail: item.action,
+    claim: item.claim,
     when: item.when,
     rank: FLOW_RANK[item.flow] ?? 9,
     ctaLabel: item.action,
@@ -503,7 +502,7 @@ function applicationCard(item, dated) {
      * what stops the band from being a slot that sometimes has nothing in it.
      */
     foot: cardFigure(item),
-    reason: flowReason(item, dated),
+    reason: cardSupport(item),
     onSelect: () => go(`/flow/${item.flow}?application=${item.id}`),
     ...presentation,
     // A quote is what makes the reply shape a message rather than a task; without one
@@ -528,7 +527,7 @@ function setAside({ journey, action }) {
         // else rather than printing the same string twice on one card.
         id: 'interview', initials: 'JP', company: 'Juspay', detail: 'The round is still ahead of you.',
         when: interviewIntel.invitation.day.split(',')[0], rank: 0,
-        kicker: 'INTERVIEW SCHEDULED', ctaLabel: 'Review my prep', tone: 'interview', icon: <Clock3 size={14} />,
+        kicker: 'INTERVIEW BOOKED', ctaLabel: 'Review my prep', tone: 'interview', icon: <Clock3 size={14} />,
         shape: 'interview', schedule: interviewSchedule(),
         reason: 'Prep is saved. The decision lands before the round does.',
         onSelect: () => go('/prep/juspay'),
@@ -541,7 +540,7 @@ function setAside({ journey, action }) {
       // what the contract asks for anyway.
       id: 'roles', initials: juspay.initials, company: 'Your ranked roles', detail: `${juspay.preferenceMatch}% Preference Match`,
       when: 'Open', rank: 1,
-      kicker: 'RANKED ROLES', ctaLabel: 'See ranked roles', tone: 'role', icon: <Target size={14} />,
+      kicker: 'RANKED ROLES', ctaLabel: 'See my roles', tone: 'role', icon: <Target size={14} />,
       // `detail` stays the Preference Match string because the CTA's accessible name is
       // built from it, and that is what the email-skip test matches. `title` is what the
       // card actually shows, so the stat row below is not the same words twice.
@@ -554,7 +553,7 @@ function setAside({ journey, action }) {
       add({
         id: 'reply', initials: 'PP', color: '#5f259f', company: 'PhonePe', detail: 'Reply to recruiter',
         when: '2h ago', rank: 1,
-        kicker: 'RECRUITER REPLY NEEDED', ctaLabel: 'Review reply', tone: 'reply', icon: <MessageSquare size={14} />,
+        kicker: 'THEY REPLIED', ctaLabel: 'Review reply', tone: 'reply', icon: <MessageSquare size={14} />,
         // A demoted reply is a task, not a message: the quote belongs to the card that
         // is actually asking you to read it, and repeating it here would just be noise.
         shape: 'task',
@@ -573,16 +572,14 @@ function setAside({ journey, action }) {
      */
     for (const item of applications.filter((entry) => entry.action)) {
       if (item.company === 'PhonePe') continue
-      add(applicationCard(item, dated))
+      add(applicationCard(item))
     }
     add({
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,
       when: juspay.posted, rank: 4,
-      kicker: 'RANKED ROLE', ctaLabel: 'See why it fits', tone: 'role', icon: <Target size={14} />,
+      kicker: `NEW MATCH · ${juspay.preferenceMatch}%`, ctaLabel: 'Tailor my CV', tone: 'role', icon: <Target size={14} />,
       shape: 'role', title: juspay.role, stats: roleStats(juspay),
-      reason: dated
-        ? 'Strong fit, but a booked round outranks an open listing.'
-        : 'Best fit you have, but nobody is waiting on you.',
+      reason: `Your CV is missing ${juspay.readinessTotal - juspay.initialReadiness} of their ${juspay.readinessTotal} requirements. I can close them before you apply.`,
       onSelect: () => go('/jobs/juspay'),
     })
   } else {
@@ -591,7 +588,7 @@ function setAside({ journey, action }) {
       add({
         id: job.id, initials: job.initials, company: job.company, detail: `${job.preferenceMatch}% Preference Match`,
         when: job.salary, rank: 100 - job.preferenceMatch,
-        kicker: 'RANKED ROLE', ctaLabel: 'See the match', tone: 'role', icon: <Target size={14} />,
+        kicker: 'NEW MATCH', ctaLabel: 'See the match', tone: 'role', icon: <Target size={14} />,
         shape: 'role', title: job.role, stats: roleStats(job),
         reason: job.reason,
         onSelect: () => go('/matches'),
@@ -620,12 +617,11 @@ function setAside({ journey, action }) {
   })
   rows.length = 0
   rows.push(...deduped)
-  // Only the head of the queue can claim it goes next, which is what stops these
-  // reasons from being interchangeable decoration.
-  // Only the head of the queue can claim it goes next, which is what stops these
-  // reasons from being interchangeable. It does not name the pick — the hero already
-  // does, one card above.
-  if (rows.length) rows[0] = { ...rows[0], reason: `Next in line. ${rows[0].reason}` }
+  /*
+   * The "Next in line." prefix went with the reasons it used to qualify. The support line
+   * is a sentence about what North found, and a prefix announcing queue position cut
+   * across it. Position is already visible: the card is second.
+   */
   return rows
 }
 
@@ -685,7 +681,7 @@ function carouselCards({ action, aside, journey, sheets }) {
       kicker: row.kicker,
       when: row.when,
       company: { initials: row.initials, color: row.color, name: row.company, detail: row.role },
-      headline: row.detail,
+      headline: row.claim || row.detail,
       title: row.title,
       support: row.reason,
       schedule: row.schedule,

@@ -18,10 +18,10 @@ test('offer-first prologue opens, reveals, previews, and rewinds', async ({ page
 test('offer celebration can close and reopen from Home', async ({ page }) => {
   await page.goto('/offer/juspay?preset=offer&stage=reveal&moment=celebration&story=finale')
   await page.getByRole('button', { name: 'Close offer celebration' }).click()
-  await expect(page.getByRole('heading', { name: 'Your ₹28L offer is ready to understand.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Below the midpoint of the band.' })).toBeVisible()
   // Home's offer card opens the thread now, and the thread hands you the breakdown once
   // it knows what you want out of the move — the one thing the letter cannot tell it.
-  await page.getByRole('button', { name: 'Review my offer' }).click()
+  await page.getByRole('button', { name: 'See what it is worth' }).click()
   await expect(page.getByText('Juspay sent the letter this morning')).toBeVisible()
   await page.getByRole('button', { name: 'The money', exact: true }).click()
   await expect(page.getByRole('heading', { name: /There is a case for asking/ })).toBeVisible()

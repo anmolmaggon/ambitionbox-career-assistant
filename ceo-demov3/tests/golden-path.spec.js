@@ -16,14 +16,14 @@ test('Arjun’s golden path runs from empty tracker to reviewed offer', async ({
 
   // The reply is a thread now rather than a sheet: North shows the message, names the one
   // thing it cannot know, and hands back a draft the user sends themselves.
-  await page.getByRole('button', { name: /PhonePe Backend Engineer III — Reply to recruiter/ }).click()
+  await page.getByRole('button', { name: /PhonePe Backend Engineer III — Review the draft/ }).click()
   await expect(page.getByText('Can you confirm your availability for a quick conversation?')).toBeVisible()
   await page.getByRole('button', { name: '60 days', exact: true }).click()
   await expect(page.locator('.flow-draft-body')).toHaveValue(/notice period is 60 days/)
   await page.getByRole('button', { name: 'Copy and open Gmail' }).click()
   await page.getByRole('button', { name: 'Back to Home' }).click()
-  await expect(page.getByText('BEST NEXT OPPORTUNITY')).toBeVisible()
-  await expect(page.getByRole('heading', { name: /payments experience makes this unusually relevant/i })).toBeVisible()
+  await expect(page.getByText(/NEW MATCH · \d+%/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Senior Backend Engineer at Juspay/i })).toBeVisible()
 
   // The tab was relabelled Matches -> Jobs on 2026-08-19; the route is unchanged.
   await page.getByRole('link', { name: 'Jobs', exact: true }).click()

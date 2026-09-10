@@ -101,9 +101,9 @@ test('first open turns a Naukri profile and Gmail into a prioritized Home', asyn
   // count). The handoff is still proved here: the greeting counts what arrived, and the
   // inbox-derived recruiter moment leads the sequence.
   await expect(page.getByText(/6 things need you/)).toBeVisible()
-  await expect(page.getByText('PhonePe')).toBeVisible()
+  await expect(page.getByText('PhonePe').first()).toBeVisible()
   await expect(page.getByText('Detected in Gmail.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Review reply' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Review the draft' })).toBeVisible()
   await expect(page.getByRole('button', { name: /Ask North about your next move/ })).toBeVisible()
   await expect.poll(async () => journeyState(page)).toMatchObject({
     authProvider: 'naukri',
@@ -298,7 +298,7 @@ test('setting every card aside leaves the greeting agreeing with the rail', asyn
   // The suite runs with reduced motion, which is the path where a set-aside card is
   // removed immediately rather than fading first.
   await page.goto('/home?preset=offer')
-  await expect(page.getByText(/3 things need a look/)).toBeVisible()
+  await expect(page.getByText(/3 things need you/)).toBeVisible()
 
   for (let remaining = 3; remaining > 0; remaining -= 1) {
     await page.locator('.action-card').first().locator('.action-card-dismiss').click()
@@ -306,7 +306,7 @@ test('setting every card aside leaves the greeting agreeing with the rail', asyn
     await expect(page.locator('.action-card')).toHaveCount(remaining - 1)
   }
 
-  await expect(page.getByText(/nothing is waiting on you right now/)).toBeVisible()
+  await expect(page.getByText(/Nothing needs you today/)).toBeVisible()
   // The greeting owns the only count on Home, so nothing restates it underneath.
   await expect(page.locator('.action-carousel')).toHaveCount(0)
 })
@@ -316,12 +316,12 @@ test('the post-interview card names the interview and asks for the outcome first
   await page.goto('/home?preset=postinterview')
   // A day of the week is not an interview. The card names the company, the role and the
   // round, because this screen can hold more than one.
-  await expect(page.getByRole('heading', { name: 'How did your Juspay interview go?' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /You sat .* at Juspay yesterday/ })).toBeVisible()
   await expect(page.getByText('Senior Backend Engineer · Round 1 of 4')).toBeVisible()
 
   // The debrief is a thread now. The outcome is asked first because it is the part that
   // serves the user; what North wants — the questions that came up — comes after.
-  await page.getByRole('button', { name: /Tell North how it went/ }).first().click()
+  await page.getByRole('button', { name: /Tell me how it went/ }).first().click()
   await expect(page.getByText('No email reports how a round actually went')).toBeVisible()
   await expect(page.getByText('Which of these came up?')).toHaveCount(0)
   await page.getByRole('button', { name: 'Hard to read', exact: true }).click()
