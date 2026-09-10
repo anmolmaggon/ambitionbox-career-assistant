@@ -150,17 +150,11 @@
 }
 
 /*
- * Weight, not hue. A live event is black; a role you could choose stays white. The six
- * category fields collapse into two states here, which is what keeps the accent unique.
+ * Every card is dark here. What separates them is the status tint further down, so these
+ * only carry the ink — a `background` shorthand at this specificity would reset the
+ * gradient underneath it to none, which is exactly what it used to do.
  */
-[data-look="bold"] .action-card--field,
-[data-look="bold"] .action-card--reply.action-card--field,
-[data-look="bold"] .action-card--interview.action-card--field,
-[data-look="bold"] .action-card--offer.action-card--field,
-[data-look="bold"] .action-card--update.action-card--field {
-  background: #0b0b0b;
-  color: #fff;
-}
+[data-look="bold"] .action-card--field { color: #fff; }
 
 [data-look="bold"] .action-card h2 {
   font-size: 21px;
@@ -373,13 +367,7 @@
   border-radius: 28px;
 }
 
-/* Every card is dark in this treatment. Urgency moves to the accent on the action and to
-   position in the sequence, so the six category hues are not doing it any more. */
-[data-look="bold"] .action-card--queued,
-[data-look="bold"] .action-card:not(.action-card--field) {
-  background: var(--bold-card);
-  color: #fff;
-}
+[data-look="bold"] .action-card--queued { color: #fff; }
 
 [data-look="bold"] .action-card-head {
   display: flex;
@@ -395,7 +383,10 @@
   height: 38px;
   border-radius: 11px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
+  /* Ola and Uber ship near-black brand colours, which vanish on a near-black card. A
+     hairline gives every tile an edge without touching the brand colour inside it. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
 }
 
 [data-look="bold"] .action-card-org { display: grid; gap: 1px; min-width: 0; flex: 1; }
@@ -637,6 +628,14 @@
 
 [data-look="bold"] .action-card {
   --status: #94a3b8;
+  /*
+   * Per-hue strength, because one alpha across six hues does not read as one system.
+   * Amber and emerald carry far more luminance than indigo at the same opacity, so the
+   * amber card came out a hot yellow wash while the blue one was barely there. These are
+   * tuned by eye against near-black until each tint has the same presence.
+   */
+  --tint: 38%;
+  --tint-wash: 14%;
   position: relative;
   /*
    * Two stops, not one. A single radial at low alpha disappeared against near-black; a
@@ -644,17 +643,22 @@
    * status rather than as a coloured patch stuck on it.
    */
   background:
-    radial-gradient(115% 78% at 2% 0%, color-mix(in srgb, var(--status) 38%, transparent), transparent 64%),
-    linear-gradient(168deg, color-mix(in srgb, var(--status) 14%, transparent), transparent 48%),
+    radial-gradient(115% 78% at 2% 0%, color-mix(in srgb, var(--status) var(--tint), transparent), transparent 64%),
+    linear-gradient(168deg, color-mix(in srgb, var(--status) var(--tint-wash), transparent), transparent 48%),
     var(--bold-card);
+  /* On paper: a dark card needs a real shadow on a near-white ground, or it reads as a
+     hole cut in the page rather than an object resting on it. */
+  box-shadow: 0 10px 30px rgba(15, 20, 35, .13), 0 1px 2px rgba(15, 20, 35, .1);
 }
 
-[data-look="bold"] .action-card--offer { --status: #34d399; }
+[data-look="bold"] .action-card--offer { --status: #10b981; --tint: 30%; --tint-wash: 11%; }
 [data-look="bold"] .action-card--interview { --status: #a78bfa; }
 [data-look="bold"] .action-card--reply { --status: #60a5fa; }
-[data-look="bold"] .action-card--update { --status: #fbbf24; }
+/* A deeper amber than the chip wants, because the tint is a large area and the chip is
+   not. The chip lightens it back up on its own. */
+[data-look="bold"] .action-card--update { --status: #d97706; --tint: 24%; --tint-wash: 8%; }
 [data-look="bold"] .action-card--role { --status: #818cf8; }
-[data-look="bold"] .action-card--quiet { --status: #94a3b8; }
+[data-look="bold"] .action-card--quiet { --status: #94a3b8; --tint: 30%; --tint-wash: 10%; }
 
 /* A hairline of the status colour along the top edge, fading as it goes. The reference
    uses a full band; on a dark card a band would fight the masthead sitting under it. */
@@ -668,8 +672,9 @@
 }
 
 [data-look="bold"] .action-card-kicker {
-  background: color-mix(in srgb, var(--status) 16%, transparent);
-  color: color-mix(in srgb, var(--status) 78%, white);
+  background: color-mix(in srgb, var(--status) 18%, transparent);
+  /* Lifted toward white so a deep amber or emerald still clears its own tinted chip. */
+  color: color-mix(in srgb, var(--status) 62%, white);
 }
 
 /* The floor stays neutral. It is where the action lives, and a tinted floor under a
@@ -683,8 +688,3 @@
 [data-look="bold"] .action-card-head,
 [data-look="bold"] .card-mid { position: relative; z-index: 1; }
 
-/* On paper. A dark card needs a real shadow to sit on a near-white ground rather than
-   look like a hole cut in it. */
-[data-look="bold"] .action-card {
-  box-shadow: 0 10px 30px rgba(15, 20, 35, .13), 0 1px 2px rgba(15, 20, 35, .1);
-}
