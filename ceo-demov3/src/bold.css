@@ -1,0 +1,341 @@
+/*
+ * NORTH — the bold look.  `?look=bold`
+ *
+ * An exploration, not a replacement. Everything here is scoped under
+ * [data-look="bold"], so the current design is untouched and the two can be compared on
+ * the same screens with the same data.
+ *
+ * THE LANGUAGE, in one line: set the sentence enormous, keep everything else quiet, and
+ * spend the accent once per screen on the thing North is actually pointing at.
+ *
+ * Three rules it lives by:
+ *
+ * 1. TYPE CARRIES THE SCREEN. The greeting runs at 46px, weight 900, leading below 1 and
+ *    tracking pulled to -.045em, so it wraps to three lines and reads as a statement
+ *    rather than a label. Everything under it drops to 11–13px. The jump between those
+ *    two sizes is the hierarchy; there is deliberately nothing in the middle.
+ *
+ * 2. THE ACCENT IS A POINTER, NOT A PALETTE. Acid lime appears on exactly one surface per
+ *    screen — the action North wants you to take — plus the active tab. The moment a
+ *    second thing wears it, neither is the answer any more.
+ *
+ * 3. WEIGHT MEANS URGENCY. A black card is something happening to you now. A grey card is
+ *    context. A white card is a thing you can choose. That replaces the six-hue category
+ *    system in this look: hue is expensive here because the accent has to stay unique.
+ *
+ * Semantic collision, handled: success cannot stay green beside an acid-lime accent, so
+ * it becomes a deep forest ink that reads as "settled" rather than "go".
+ */
+
+:root[data-look="bold"] {
+  --ab-color-canvas: #f1f1ef;
+  --ab-color-stage: #e4e4e1;
+  --ab-color-white: #ffffff;
+  --ab-color-ink: #0b0b0b;
+  --ab-color-muted: #55565a;
+  --ab-color-subtle: #8b8c90;
+  --ab-color-line: #e2e2df;
+
+  /* The pointer. */
+  --ab-color-primary: #cdfa46;
+  --ab-color-primary-dark: #b6e02f;
+  --bold-on-accent: #0b0b0b;
+
+  /* Deep, not bright: success has to read as settled next to the accent, not compete. */
+  --ab-color-success: #12503c;
+  --ab-color-warning: #8a5410;
+  --ab-color-danger: #b3323f;
+
+  --canvas: var(--ab-color-canvas);
+  --surface: var(--ab-color-white);
+  --ink: var(--ab-color-ink);
+  --muted: var(--ab-color-muted);
+  --subtle: var(--ab-color-subtle);
+  --line: var(--ab-color-line);
+  --primary: var(--ab-color-primary);
+  --primary-dark: var(--ab-color-primary-dark);
+  --teal: var(--ab-color-success);
+  --amber: var(--ab-color-warning);
+  --danger: var(--ab-color-danger);
+
+  --ab-radius-surface: 30px;
+  --ab-radius-input: 18px;
+  --surface-radius: 30px;
+  --input-radius: 18px;
+
+  /* Flat. Depth in this look comes from a black card against a grey ground, not shadow. */
+  --shadow: none;
+  --focus-ring: 0 0 0 3px rgba(11, 11, 11, .3);
+
+  --north-ground: #0b0b0b;
+  --north-lit: #cdfa46;
+  --north-needle: #ffffff;
+
+  background: var(--ab-color-stage);
+}
+
+/* Buttons ---------------------------------------------------------------- */
+
+[data-look="bold"] .primary-button,
+[data-look="bold"] .job-action--view,
+[data-look="bold"] .b-ready__cta {
+  background: var(--primary);
+  color: var(--bold-on-accent);
+  border: 0;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  box-shadow: none;
+}
+
+[data-look="bold"] .secondary-button,
+[data-look="bold"] .ghost-button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Home ------------------------------------------------------------------- */
+
+/*
+ * The statement. Three lines of it, because two would fit on one and stop being a
+ * statement. `text-wrap: balance` is deliberately not used — an even rag is the wrong
+ * instinct here; the ragged left-weighted block is the look.
+ */
+[data-look="bold"] .home-intro--adaptive h1 {
+  font-size: 46px;
+  font-weight: 900;
+  line-height: .94;
+  letter-spacing: -.045em;
+  max-width: 9ch;
+}
+
+[data-look="bold"] .home-intro--adaptive > p {
+  margin-top: 14px;
+  max-width: 26em;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+[data-look="bold"] .home-eyebrow,
+[data-look="bold"] .home-intro--adaptive > span {
+  color: var(--subtle);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+/* Carousel cards --------------------------------------------------------- */
+
+[data-look="bold"] .action-card {
+  border-radius: 30px;
+  border: 0;
+  background: var(--surface);
+  box-shadow: none;
+}
+
+/*
+ * Weight, not hue. A live event is black; a role you could choose stays white. The six
+ * category fields collapse into two states here, which is what keeps the accent unique.
+ */
+[data-look="bold"] .action-card--field,
+[data-look="bold"] .action-card--reply.action-card--field,
+[data-look="bold"] .action-card--interview.action-card--field,
+[data-look="bold"] .action-card--offer.action-card--field,
+[data-look="bold"] .action-card--update.action-card--field {
+  background: #0b0b0b;
+  color: #fff;
+}
+
+[data-look="bold"] .action-card h2 {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+
+[data-look="bold"] .action-card-kicker {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+[data-look="bold"] .action-card-mark {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  color: #fff;
+}
+[data-look="bold"] .action-card:not(.action-card--field) .action-card-mark {
+  background: #0b0b0b;
+  color: #fff;
+}
+
+/* The one loud thing on the card, and the reason the card exists. */
+[data-look="bold"] .action-card-cta {
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--bold-on-accent);
+  font-weight: 800;
+  letter-spacing: -.01em;
+  border: 0;
+}
+[data-look="bold"] .action-card--pick .action-card-cta { background: var(--primary); color: var(--bold-on-accent); }
+
+[data-look="bold"] .action-card-facts span:first-child { color: var(--ink); }
+[data-look="bold"] .action-card--field .action-card-facts span:first-child { color: var(--primary); }
+
+/* Quote ------------------------------------------------------------------ */
+
+[data-look="bold"] .home-quote blockquote {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+[data-look="bold"] .home-quote-mark { color: var(--primary); opacity: 1; }
+
+/* Bottom cluster --------------------------------------------------------- */
+
+[data-look="bold"] .home-dock {
+  border-radius: 34px 34px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -20px 44px rgba(11, 11, 11, .09);
+}
+
+[data-look="bold"] .home-dock-ask {
+  border-radius: 999px;
+  background: var(--ab-color-canvas);
+  font-weight: 600;
+}
+
+/*
+ * Four circles, the way the reference draws them. A tab is a shape you can hit rather
+ * than a glyph floating over a label, and the active one is the only lime on the row.
+ */
+[data-look="bold"] .bottom-nav { background: transparent; gap: 8px; padding: 8px 16px env(safe-area-inset-bottom); }
+[data-look="bold"] .bottom-nav a,
+[data-look="bold"] .bottom-nav button {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  border-radius: 999px;
+  background: var(--ab-color-canvas);
+  color: var(--ink);
+  gap: 0;
+  font-size: 0;
+}
+[data-look="bold"] .bottom-nav a span,
+[data-look="bold"] .bottom-nav button span { display: none; }
+[data-look="bold"] .bottom-nav a.is-active,
+[data-look="bold"] .bottom-nav button.is-active {
+  background: var(--primary);
+  color: var(--bold-on-accent);
+}
+[data-look="bold"] .bottom-nav a.is-active svg,
+[data-look="bold"] .bottom-nav button.is-active svg { fill: none; }
+
+/* Brand ------------------------------------------------------------------ */
+
+[data-look="bold"] .brand-word { font-weight: 900; letter-spacing: .2em; }
+[data-look="bold"] .brand-mark { border-radius: 9px; }
+[data-look="bold"] .avatar { border-radius: 999px; background: #0b0b0b; color: #fff; }
+
+/* Tracker ---------------------------------------------------------------- */
+
+[data-look="bold"] .tracker-summary,
+[data-look="bold"] .application-card,
+[data-look="bold"] .job-card {
+  border-radius: 26px;
+  border: 0;
+  box-shadow: none;
+}
+
+[data-look="bold"] .tracker-summary h1 {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: -.05em;
+  line-height: .95;
+}
+
+[data-look="bold"] .stage-head__title { font-size: 15px; font-weight: 900; letter-spacing: -.03em; }
+[data-look="bold"] .stage-group { border-radius: 26px; border: 0; background: #e8e8e5; }
+[data-look="bold"] .stage-chips button { border-radius: 999px; font-weight: 700; }
+[data-look="bold"] .stage-chips button[aria-pressed="true"],
+[data-look="bold"] .stage-chips button.is-active { background: #0b0b0b; color: #fff; }
+
+[data-look="bold"] .job-score { border-radius: 16px; background: #0b0b0b; color: #fff; }
+[data-look="bold"] .job-score b { color: #fff; }
+[data-look="bold"] .job-score i { color: rgba(255, 255, 255, .6); }
+
+[data-look="bold"] .application-moved { border-radius: 16px; background: #f1f1ef; }
+[data-look="bold"] .application-moved .needle { color: var(--ink); }
+
+/* Flow ------------------------------------------------------------------- */
+
+[data-look="bold"] .flow-header-copy h1 { font-size: 18px; font-weight: 900; letter-spacing: -.03em; }
+[data-look="bold"] .flow-message { font-size: 15.5px; font-weight: 500; letter-spacing: -.015em; }
+[data-look="bold"] .flow-turn--gap .flow-message { border-left-color: var(--ink); }
+
+[data-look="bold"] .flow-card,
+[data-look="bold"] .flow-quote,
+[data-look="bold"] .flow-verdict {
+  border-radius: 26px;
+  box-shadow: none;
+}
+[data-look="bold"] .flow-quote { border-left: 0; background: #0b0b0b; color: #fff; }
+[data-look="bold"] .flow-quote p { font-weight: 600; letter-spacing: -.02em; }
+[data-look="bold"] .flow-quote footer span { color: rgba(255, 255, 255, .55); }
+
+[data-look="bold"] .flow-verdict { border-top: 0; background: #0b0b0b; color: #fff; }
+[data-look="bold"] .flow-verdict h2 { font-size: 22px; font-weight: 900; letter-spacing: -.04em; }
+[data-look="bold"] .flow-verdict p { color: rgba(255, 255, 255, .7); }
+
+/* The figure is the loudest thing in the product, so it takes the accent outright. */
+[data-look="bold"] .flow-figure { border-radius: 30px; background: var(--primary); color: var(--bold-on-accent); box-shadow: none; }
+[data-look="bold"] .flow-figure-label { color: rgba(11, 11, 11, .6); }
+[data-look="bold"] .flow-figure strong { font-size: 52px; font-weight: 900; letter-spacing: -.055em; }
+[data-look="bold"] .flow-figure .flow-rows dt { color: rgba(11, 11, 11, .62); }
+[data-look="bold"] .flow-figure .flow-rows dd { color: var(--bold-on-accent); }
+
+[data-look="bold"] .flow-said { border-radius: 999px; background: #0b0b0b; }
+[data-look="bold"] .flow-dock { border-radius: 34px 34px 0 0; box-shadow: 0 -20px 44px rgba(11, 11, 11, .1); }
+[data-look="bold"] .flow-chip { border: 0; background: var(--ab-color-canvas); font-weight: 700; }
+[data-look="bold"] .flow-chip.is-on { background: var(--primary); color: var(--bold-on-accent); }
+[data-look="bold"] .flow-copy { border: 0; background: #0b0b0b; color: #fff; }
+[data-look="bold"] .flow-send { background: var(--primary); color: var(--bold-on-accent); }
+[data-look="bold"] .flow-avatar { border: 0; background: #0b0b0b; color: #fff; }
+[data-look="bold"] .flow-avatar.is-hidden { background: transparent; }
+
+/* Jobs ------------------------------------------------------------------- */
+
+[data-look="bold"] .b-pref__score { font-size: 34px; font-weight: 900; letter-spacing: -.05em; }
+[data-look="bold"] .id-title { font-weight: 900; letter-spacing: -.04em; }
+[data-look="bold"] .b-chip { border-radius: 999px; font-weight: 700; }
+
+/* The switcher ----------------------------------------------------------- */
+
+.look-switch {
+  position: fixed;
+  z-index: 60;
+  right: 12px;
+  top: 12px;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(11, 11, 11, .82);
+  backdrop-filter: blur(6px);
+}
+.look-switch button {
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, .62);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+.look-switch button[aria-pressed="true"] { background: #fff; color: #0b0b0b; }
+:root[data-look="bold"] .look-switch button[aria-pressed="true"] { background: #cdfa46; }
