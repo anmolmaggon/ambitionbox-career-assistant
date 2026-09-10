@@ -12,7 +12,7 @@ const states = [
   ['/onboarding?step=curation&hold=1&preset=baseline', 'Curating jobs worth your time'],
   ['/onboarding?step=email&preset=baseline', 'take it from there'],
   ['/onboarding?step=scan&hold=1&preset=tracker', 'Putting your search together...'],
-  ['/profile?preset=tracker', 'What AmbitionBox knows'],
+  ['/profile?preset=tracker', 'What North knows'],
   ['/tracker?preset=baseline', 'Every application. One smart Tracker.'],
   ['/home?preset=tracker', 'Good morning, Arjun.'],
   // The Jobs intro block was removed on 2026-08-19; the feed's own control anchors it now.

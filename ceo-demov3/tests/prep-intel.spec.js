@@ -127,7 +127,7 @@ test('adding an interview manually is reachable and honest about its limits', as
   // the single entry point, so the test follows that path instead. Preset is `tracker`
   // because the capability routes to /prep once an interview already exists.
   await page.goto('/home?preset=tracker')
-  await page.getByRole('button', { name: /Ask AmbitionBox about your next move/ }).click()
+  await page.getByRole('button', { name: /Ask North about your next move/ }).click()
   await page.getByRole('button', { name: /Add or prepare an interview/ }).click()
   const sheet = page.getByRole('dialog', { name: 'Add an interview manually' })
   await expect(sheet).toBeVisible()

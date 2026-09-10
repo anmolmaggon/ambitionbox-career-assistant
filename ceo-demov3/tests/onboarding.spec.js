@@ -14,7 +14,7 @@ test('brand opening establishes AmbitionBox and hands off to the first-open hero
 
 test('Naukri import shows a branded transfer and meaningful progress', async ({ page }) => {
   await page.goto('/onboarding?step=import&hold=1&preset=baseline')
-  await expect(page.getByRole('heading', { name: 'Bringing your Naukri profile to AmbitionBox' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bringing your Naukri profile to North' })).toBeVisible()
   await expect(page.locator('.import-endpoint.naukri img')).toHaveAttribute('src', '/naukri-symbol.png')
   await expect(page.getByRole('progressbar', { name: 'Build profile, step 1 of 4' })).toBeVisible()
   await expect(page.locator('.onboarding-progress i')).toHaveCount(4)
@@ -32,13 +32,13 @@ test('first open turns a Naukri profile and Gmail into a prioritized Home', asyn
   await expect(page.getByText('See the roles worth your time')).toBeVisible()
 
   await page.getByRole('button', { name: /Continue with Naukri/ }).click()
-  await expect(page.getByRole('heading', { name: 'Bringing your Naukri profile to AmbitionBox' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bringing your Naukri profile to North' })).toBeVisible()
   await expect(page.getByRole('progressbar', { name: 'Build profile, step 1 of 4' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Review your profile.' })).toBeVisible()
   await expect(page.getByRole('progressbar', { name: 'Review profile, step 2 of 4' })).toBeVisible()
   const transferBrands = page.locator('.profile-transfer-brands img')
   await expect(transferBrands).toHaveCount(2)
-  await expect(transferBrands.first()).toHaveAttribute('src', '/favicon.svg')
+  await expect(transferBrands.first()).toHaveAttribute('src', '/north-mark.svg')
   await expect(transferBrands.last()).toHaveAttribute('src', '/naukri-symbol.png')
   await expect(page.locator('.profile-detail-toggle')).toHaveCount(7)
   await expect(page.getByText('Your profile, autofilled in seconds')).toBeVisible()
@@ -100,11 +100,11 @@ test('first open turns a Naukri profile and Gmail into a prioritized Home', asyn
   // The live-email row was removed from Home on 2026-08-19 (Tracker owns the organised
   // count). The handoff is still proved here: the greeting counts what arrived, and the
   // inbox-derived recruiter moment leads the sequence.
-  await expect(page.getByText(/4 things need you/)).toBeVisible()
+  await expect(page.getByText(/6 things need you/)).toBeVisible()
   await expect(page.getByText('PhonePe')).toBeVisible()
   await expect(page.getByText('Detected in Gmail.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Review reply' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Ask AmbitionBox about your next move/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Ask North about your next move/ })).toBeVisible()
   await expect.poll(async () => journeyState(page)).toMatchObject({
     authProvider: 'naukri',
     profileSource: 'naukri',
@@ -219,10 +219,10 @@ test('Home assistant is contextual and names evidence limits', async ({ page }) 
   // The suggested-question chips were removed from the dock on 2026-08-19, so the test
   // types the question instead of tapping a shortcut to it. Same question, same answer —
   // it is now asked through the composer, which is the path that actually remains.
-  await page.getByRole('button', { name: /Ask AmbitionBox about your next move/ }).click()
-  const sheet = page.getByRole('dialog', { name: 'Ask AmbitionBox' })
+  await page.getByRole('button', { name: /Ask North about your next move/ }).click()
+  const sheet = page.getByRole('dialog', { name: 'Ask North' })
   await expect(sheet).toBeVisible()
-  await sheet.getByRole('textbox', { name: 'Ask AmbitionBox' }).fill('How ready am I for my next interview?')
+  await sheet.getByRole('textbox', { name: 'Ask North' }).fill('How ready am I for my next interview?')
   await sheet.getByRole('button', { name: 'Send question' }).click()
   await expect(page.getByText('I do not have an interview invitation yet.')).toBeVisible()
   await expect(page.getByText('Nothing is sent or changed automatically.')).toBeVisible()
@@ -311,29 +311,6 @@ test('setting every card aside leaves the greeting agreeing with the rail', asyn
   await expect(page.locator('.action-carousel')).toHaveCount(0)
 })
 
-test('the review ask appears only on a calm day, last, and is never counted', async ({ page }) => {
-  // A calm day has nothing dated on it. Application updates do not disqualify one —
-  // those run on someone else's clock.
-  await page.goto('/home?preset=resume')
-  const cards = page.locator('.action-card')
-  await expect(cards.last()).toHaveClass(/action-card--contribute/)
-
-  // The greeting counts what needs the user. The ask is not one of those things, so the
-  // count is one lower than the number of cards on screen.
-  await expect(page.getByText(/3 things need a look/)).toBeVisible()
-  await expect(cards).toHaveCount(4)
-
-  // It goes somewhere that exists, and that somewhere is honest about not submitting.
-  await page.getByRole('button', { name: /Rate working at Razorpay/ }).click()
-  const sheet = page.getByRole('dialog', { name: 'Rate working at Razorpay' })
-  await expect(sheet).toBeVisible()
-  await expect(sheet.getByText(/isn’t wired up in this prototype/)).toBeVisible()
-  await sheet.getByRole('button', { name: 'Got it' }).click()
-
-  // A booked round is a dated day, so the ask stays away.
-  await page.goto('/home?preset=interview')
-  await expect(page.locator('.action-card--contribute')).toHaveCount(0)
-})
 
 test('the post-interview card names the interview and asks for the outcome first', async ({ page }) => {
   await page.goto('/home?preset=postinterview')
@@ -342,18 +319,16 @@ test('the post-interview card names the interview and asks for the outcome first
   await expect(page.getByRole('heading', { name: 'How did your Juspay interview go?' })).toBeVisible()
   await expect(page.getByText('Senior Backend Engineer · Round 1 of 4')).toBeVisible()
 
-  await page.getByRole('button', { name: /Tell AmbitionBox how it went/ }).click()
-  const sheet = page.getByRole('dialog', { name: 'How the Juspay interview went' })
-  await expect(sheet).toBeVisible()
+  // The debrief is a thread now. The outcome is asked first because it is the part that
+  // serves the user; what North wants — the questions that came up — comes after.
+  await page.getByRole('button', { name: /Tell North how it went/ }).first().click()
+  await expect(page.getByText('No email reports how a round actually went')).toBeVisible()
+  await expect(page.getByText('Which of these came up?')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Hard to read', exact: true }).click()
+  await expect(page.getByText('Which of these came up?')).toBeVisible()
 
-  // The contribution is never the price of entry: the questions only appear once the
-  // outcome — the part that serves the user — has been answered.
-  await expect(sheet.getByText('What did they actually ask?')).toHaveCount(0)
-  await sheet.getByRole('button', { name: 'Hard to read' }).click()
-  await expect(sheet.getByText('What did they actually ask?')).toBeVisible()
-  await expect(sheet.getByText(/isn’t wired up in this prototype/)).toBeVisible()
-
-  // Logging it clears the card.
-  await sheet.getByRole('button', { name: /Save how it went/ }).click()
-  await expect(page.getByRole('heading', { name: 'How did your Juspay interview go?' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'System design', exact: true }).click()
+  await page.getByRole('button', { name: /Add 1/ }).click()
+  await page.getByRole('button', { name: 'Skip' }).click()
+  await expect(page.getByRole('heading', { name: 'Logged. Hard to read is normal at this stage.' })).toBeVisible()
 })

@@ -250,9 +250,10 @@ function TrackerScreen() {
   const [query, setQuery] = useState('')
   const [manualOpen, setManualOpen] = useState(false)
   const [moving, setMoving] = useState(null)
-  // Closed lands collapsed — seven finished applications should not stand between the
-  // user and the stages that still need them. Everything else opens.
-  const [collapsed, setCollapsed] = useState(() => ({ closed: true }))
+  // Rejected lands collapsed — finished applications should not stand between the user
+  // and the stages that still need them. Everything else opens, Ghosted included: those
+  // are the ones most likely to be forgotten, which is the reason they have a stage.
+  const [collapsed, setCollapsed] = useState(() => ({ rejected: true }))
   const [stageFilter, setStageFilter] = useState(null)
   const [actionNotice, setActionNotice] = useState('')
   const [assistant, setAssistant] = useState(null)

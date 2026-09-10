@@ -25,6 +25,27 @@ import { applications, candidate, interviewIntel, juspay, offer } from './data'
 
 const byId = (id) => applications.find((item) => item.id === id) || {}
 
+/*
+ * The golden path's interview is Juspay's, and it has never lived in `applications` — it
+ * is assembled in TrackerScreen from `interviewIntel`. A flow opened on it builds the same
+ * record from the same fixture rather than duplicating one into the applications list.
+ */
+function juspayInterview() {
+  return {
+    id: 'juspay', company: juspay.company, role: juspay.role, initials: juspay.initials,
+    stage: 'interview', phase: 'post', source: 'Gmail',
+    when: `Interviewed ${interviewIntel.invitation.day.split(',')[0]}`,
+    appliedAgo: '18d ago',
+    interview: {
+      round: `Round 1 of ${interviewIntel.loop.total}`,
+      mode: interviewIntel.invitation.mode,
+      duration: interviewIntel.invitation.duration,
+      interviewer: `${interviewIntel.invitation.with} · Engineering`,
+    },
+    interviewedAgo: 1,
+  }
+}
+
 /* ---- 1 · A recruiter is waiting on a reply --------------------------------- */
 
 function replyFlow(app) {
@@ -412,7 +433,7 @@ export const flowMeta = {
 export function buildFlow(type, applicationId) {
   const build = BUILDERS[type]
   if (!build) return null
-  const app = applicationId ? byId(applicationId) : {}
+  const app = applicationId === 'juspay' ? juspayInterview() : (applicationId ? byId(applicationId) : {})
   if (type !== 'offer' && !app.id) return null
   return { steps: build(app), app, meta: flowMeta[type] }
 }

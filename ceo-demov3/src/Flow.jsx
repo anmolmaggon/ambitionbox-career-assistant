@@ -96,13 +96,30 @@ export function FlowScreen() {
     jobs: '/matches',
   }
 
+  /*
+   * A flow has to leave the same mark the screen it replaced did, or finishing one
+   * changes nothing and Home offers the same card again tomorrow. These are the only
+   * consequences: a reply the user says they sent, and a quiet application they close.
+   * Nothing here sends, books or applies.
+   */
+  const effect = (option) => {
+    if (type === 'reply' && option.result === 'sent') return { phonepeReplied: true }
+    if (type === 'ghosted' && option.result === 'closed') {
+      return { applicationStages: { ...(journey.applicationStages || {}), [applicationId]: 'rejected' } }
+    }
+    return {}
+  }
+
   const finish = (option) => {
     setClosing(option)
     if (HANDOFF[option.result]) setTimeout(() => go(HANDOFF[option.result]), 900)
     // The flow's outcome is recorded on the journey so Home and Tracker can reflect it.
     // Nothing here sends, books, or applies — every result is a note about what the user
     // said they would do next.
-    update({ flowResults: { ...(journey.flowResults || {}), [`${type}:${applicationId || 'juspay'}`]: option.result } })
+    update({
+      flowResults: { ...(journey.flowResults || {}), [`${type}:${applicationId || 'juspay'}`]: option.result },
+      ...effect(option),
+    })
   }
 
   return (

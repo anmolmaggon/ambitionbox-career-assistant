@@ -14,9 +14,14 @@ test('Arjun’s golden path runs from empty tracker to reviewed offer', async ({
   await expect(page.getByRole('heading', { name: '15 applications', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /Juspay Senior Backend Engineer — Prepare for interview/ })).toBeVisible()
 
+  // The reply is a thread now rather than a sheet: North shows the message, names the one
+  // thing it cannot know, and hands back a draft the user sends themselves.
   await page.getByRole('button', { name: /PhonePe Backend Engineer III — Reply to recruiter/ }).click()
-  await expect(page.getByRole('heading', { name: 'Review before sending' })).toBeVisible()
-  await page.getByRole('button', { name: 'Send reply' }).click()
+  await expect(page.getByText('Can you confirm your availability for a quick conversation?')).toBeVisible()
+  await page.getByRole('button', { name: '60 days', exact: true }).click()
+  await expect(page.locator('.flow-draft-body')).toHaveValue(/notice period is 60 days/)
+  await page.getByRole('button', { name: 'Copy and open Gmail' }).click()
+  await page.getByRole('button', { name: 'Back to Home' }).click()
   await expect(page.getByText('BEST NEXT OPPORTUNITY')).toBeVisible()
   await expect(page.getByRole('heading', { name: /payments experience makes this unusually relevant/i })).toBeVisible()
 
@@ -122,29 +127,31 @@ test('tracker supports another email and manual application entry', async ({ pag
   await expect(page.getByText('Atlassian')).toBeVisible()
 })
 
-// Seven stages, led by the user's own shortlist: 2 saved + 15 applications.
-const PIPELINE = ['2', '2', '2', '2', '2', '0', '7']
+// Five stages, 15 applications. Ghosted cuts across the pipeline rather than following
+// Offer, so it holds cards that fell quiet from Applied and from Interview alike.
+const PIPELINE = ['5', '3', '0', '3', '4']
 
 test('list and board render the same pipeline with the same counts', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
   expect(await page.locator('.stage-head__count').allInnerTexts()).toEqual(PIPELINE)
   const chips = (await page.locator('.stage-chips button').allInnerTexts()).map((text) => text.replace(/\s+/g, ' ').trim())
   expect(chips).toEqual([
-    'All 17', 'Shortlisted 2', 'Applied 2', 'Recruiter review 2', 'Recruiter shortlist 2', 'Interviewing 2', 'Offer 0', 'Closed 7',
+    'All 15', 'Applied 5', 'Interview scheduled 3', 'Offer 0', 'Ghosted 3', 'Rejected 4',
   ])
   await page.getByRole('button', { name: 'Board' }).click()
   await expect(page.getByLabel('Application board')).toBeVisible()
   expect(await page.locator('.kanban-column > header strong').allInnerTexts()).toEqual(PIPELINE)
   await page.getByRole('button', { name: 'List' }).click()
-  await expect(page.getByRole('heading', { name: 'From shortlist to offer' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'From applied to offer' })).toBeVisible()
 })
 
-test('stage sections collapse, and Closed starts closed', async ({ page }) => {
+test('stage sections collapse, and Rejected starts closed', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
-  // Closed holds seven finished applications and should not stand in the way on arrival.
+  // Rejected holds the finished applications and should not stand in the way on arrival.
+  // Ghosted deliberately does not collapse — those are the ones most likely to be forgotten.
   await expect(page.locator('.application-card--closed')).toHaveCount(0)
-  await page.locator('.stage-head', { hasText: 'Closed' }).click()
-  await expect(page.locator('.application-card--closed')).toHaveCount(7)
+  await page.locator('.stage-head', { hasText: 'Rejected' }).click()
+  await expect(page.locator('.application-card--closed')).toHaveCount(4)
   await expect(page.getByText('Not selected after the final round')).toBeVisible()
   // A live stage collapses the other way.
   await page.locator('.stage-head', { hasText: 'Applied' }).click()
@@ -153,44 +160,62 @@ test('stage sections collapse, and Closed starts closed', async ({ page }) => {
 
 test('chips filter the list down to one stage', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
-  await page.locator('.stage-chips button', { hasText: 'Interviewing' }).click()
+  await page.locator('.stage-chips button', { hasText: 'Ghosted' }).click()
   await expect(page.locator('.stage-group')).toHaveCount(1)
-  await expect(page.locator('.application-card')).toHaveCount(2)
+  await expect(page.locator('.application-card')).toHaveCount(3)
   await page.locator('.stage-chips button', { hasText: 'All' }).click()
-  await expect(page.locator('.stage-group')).toHaveCount(7)
+  await expect(page.locator('.stage-group')).toHaveCount(5)
 })
 
-test('the pipeline leads with saved roles, which are not counted as applications', async ({ page }) => {
+test('the pipeline leads with Applied, and names what has gone quiet', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
   const stages = await page.locator('.stage-head__title').allInnerTexts()
-  expect(stages[0]).toBe('Shortlisted')
+  expect(stages[0]).toBe('Applied')
   await expect(page.getByRole('heading', { name: '15 applications', exact: true })).toBeVisible()
-  await expect(page.getByText('+ 2 saved roles you have not applied to')).toBeVisible()
+  await expect(page.getByText('3 have gone quiet · North is watching them')).toBeVisible()
   await expect(page.getByText('Tracked from')).toBeVisible()
+})
+
+test('a ghosted card says which stage it fell from', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  // Ghosting is not a step in the pipeline, so the card has to carry its own origin —
+  // one fell silent after applying, the other after a round that already happened.
+  await expect(page.getByText('Applied 52d ago · no reply')).toBeVisible()
+  await expect(page.getByText('Interviewed 14d ago · no update')).toBeVisible()
+})
+
+test('every card says who moved it, and North’s moves can be undone', async ({ page }) => {
+  await page.goto('/tracker?preset=tracker')
+  // The Gmail promise, made visible. Without this line the claim lives only in the pitch.
+  await expect(page.getByText('Recruiter reply detected').first()).toBeVisible()
+  await expect(page.locator('.application-moved__undo').first()).toBeVisible()
+  // A move the user made says so, and offers no undo — nothing rewrites it.
+  await expect(page.locator('.application-moved--you').first()).toContainText('You moved this')
 })
 
 test('an application can be moved from one stage to another', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
   await page.getByRole('button', { name: 'Move Amazon SDE III to another stage' }).click()
   await expect(page.getByRole('dialog', { name: 'Move Amazon' })).toBeVisible()
-  await page.locator('.stage-picker button', { hasText: 'Recruiter shortlist' }).click()
-  await expect(page.getByText('Amazon moved to Recruiter shortlist.')).toBeVisible()
-  // Applied loses one, Recruiter shortlist gains one, the total is untouched.
-  expect(await page.locator('.stage-head__count').allInnerTexts()).toEqual(['2', '1', '2', '3', '2', '0', '7'])
+  await page.locator('.stage-picker button', { hasText: 'Interview scheduled' }).click()
+  await expect(page.getByText('Amazon moved to Interview scheduled.')).toBeVisible()
+  // Applied loses one, Interview scheduled gains one, the total is untouched.
+  expect(await page.locator('.stage-head__count').allInnerTexts()).toEqual(['4', '4', '0', '3', '4'])
 })
 
-test('tracker search finds anything in the pipeline, including saved roles', async ({ page }) => {
+test('tracker search finds anything in the pipeline, at any stage', async ({ page }) => {
   await page.goto('/tracker?preset=tracker')
   await page.getByLabel('Search applications').fill('flipkart')
   await expect(page.getByRole('heading', { name: '1 result for “flipkart”' })).toBeVisible()
   await expect(page.getByText('Lead Software Engineer')).toBeVisible()
-  // A closed application and a saved role are both reachable from the same field.
+  // A rejected application and a ghosted one are both reachable from the same field —
+  // finding a half-remembered application should not depend on guessing its stage.
   await page.getByLabel('Search applications').fill('navi')
   await expect(page.getByRole('heading', { name: '1 result for “navi”' })).toBeVisible()
-  await page.getByLabel('Search applications').fill('zerodha')
-  await expect(page.getByRole('heading', { name: '1 result for “zerodha”' })).toBeVisible()
+  await page.getByLabel('Search applications').fill('ola')
+  await expect(page.getByRole('heading', { name: '1 result for “ola”' })).toBeVisible()
   await page.getByRole('button', { name: 'Clear search' }).click()
-  await expect(page.getByRole('heading', { name: 'From shortlist to offer' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'From applied to offer' })).toBeVisible()
 })
 
 test('tailored résumé downloads as a real PDF', async ({ page }) => {

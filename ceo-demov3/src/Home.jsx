@@ -63,12 +63,11 @@ function useHomeSheets() {
   const [assistant, setAssistant] = useState(false)
   const [assistantQuestion, setAssistantQuestion] = useState('')
   const [offerStart, setOfferStart] = useState(false)
-  const [contribute, setContribute] = useState(false)
   const [debrief, setDebrief] = useState(false)
   const [sent, setSent] = useState(false)
 
   return {
-    reply, addInterview, assistant, assistantQuestion, offerStart, contribute, debrief, sent,
+    reply, addInterview, assistant, assistantQuestion, offerStart, debrief, sent,
     openReply: () => setReply(true),
     closeReply: () => setReply(false),
     sendReply: () => {
@@ -83,8 +82,6 @@ function useHomeSheets() {
     openDebrief: () => setDebrief(true),
     closeDebrief: () => setDebrief(false),
     logInterview: () => { update({ interviewLogged: true }); setDebrief(false) },
-    openContribute: () => setContribute(true),
-    closeContribute: () => setContribute(false),
     openOfferStart: () => setOfferStart(true),
     closeOfferStart: () => setOfferStart(false),
     useDemoOffer: () => {
@@ -145,7 +142,7 @@ function useHomeContext(sheets) {
     // The contribution card is deliberately not counted: it is not a thing that needs
     // the user, and counting it would have the greeting claim four things need you when
     // one of them is AmbitionBox asking for a favour.
-    intro: introLine(journey, firstArrival, cards.filter((card) => card.kind !== 'contribute').length),
+    intro: introLine(journey, firstArrival, cards.length),
     grounding: journey.emailConnected
       ? 'Uses your profile, preferences, and live applications.'
       : 'Uses your reviewed profile and preferences.',
@@ -285,7 +282,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
       why: 'Nothing else in your search can move until this one is settled.',
       whyQuestion: 'Why does logging this interview matter?',
-      cta: { label: 'Tell North how it went', onClick: () => go('/flow/debrief?application=paytm-app') },
+      cta: { label: 'Tell North how it went', onClick: () => go('/flow/debrief?application=juspay') },
     }
   }
 
@@ -588,7 +585,7 @@ function setAside({ journey, action }) {
    */
   // The pick counts as its flow. It is on screen as card one, so a queue card of the
   // same kind directly beneath it is the duplicate this rule exists to remove.
-  const PICK_FLOW = { reply: 'reply', interview: 'prep', offer: 'offer', opportunity: 'job', roles: 'job' }
+  const PICK_FLOW = { reply: 'reply', interview: 'prep', debrief: 'debrief', offer: 'offer', opportunity: 'job', roles: 'job' }
   const seen = new Set(PICK_FLOW[action.id] ? [PICK_FLOW[action.id]] : [])
   const deduped = rows.filter((row) => {
     if (!row.flow) return true
@@ -696,43 +693,12 @@ function carouselCards({ action, aside, journey, sheets }) {
   }
 
   /*
-   * The contribution card — a third kind of card, and the only one that asks the user
-   * for something rather than telling them something.
-   *
-   * It is drawn dotted and unfilled because of that. Solid means AmbitionBox ranked this
-   * for you; the two colour states say whether it is happening to you or waiting for you
-   * to choose. This is neither, so it takes a border treatment rather than a fifth hue,
-   * and the existing colour language stays intact.
-   *
-   * Three rules keep it honest. It appears only on a calm day, so it never competes with
-   * something real. It is always last. And it is excluded from the greeting's count —
-   * see `useHomeContext` — because it is not a thing that needs the user, and counting it
-   * would put us straight back into the screen contradicting itself.
-   *
-   * The subject is the employer the user is at right now, not anyone in their search:
-   * this is the review AmbitionBox is short of, and it is the one they can actually give.
+   * The contribution card was removed on 2026-09-10. It asked the user to review their
+   * current employer, which is not one of the seven things Home surfaces, and it could
+   * no longer appear in any case: a post-interview debrief is a dated card, so no day
+   * with one on it was ever calm again. Left in, it would have been a rule that never
+   * fired. `ContributeSheet` went with it rather than sitting unreachable.
    */
-  const calm = !cards.some((card) => DATED_TONES.has(card.tone))
-  if (calm) {
-    const current = offerDecision.currentCompany
-    cards.push({
-      id: 'contribute',
-      kind: 'contribute',
-      tone: 'contribute',
-      shape: 'contribute',
-      icon: <MessageSquare size={14} />,
-      // Every other kicker announces something that happened to the user. This one is
-      // pointed the other way, so it does not borrow that voice.
-      kicker: 'FROM PEOPLE LIKE YOU',
-      // The reciprocity is the claim, so it leads: the evidence this product quotes all
-      // day came from people in exactly this position.
-      headline: 'Every rating you have read came from someone like you.',
-      support: `${current.reviews.replace(' reviews', '')} people have rated ${current.company}. Yours is the one the next backend engineer reads.`,
-      footnote: 'Anonymous. Two minutes. Nothing is posted without your review.',
-      cta: { label: `Rate working at ${current.company}`, onClick: () => sheets?.openContribute?.() },
-      dismissable: true,
-    })
-  }
 
   return cards
 }
@@ -1196,15 +1162,6 @@ function CardMiddle({ card }) {
 
   // A contribution: no entity row, because the subject is the user's own workplace
   // rather than a company being reported on, and the reciprocity is the claim.
-  if (card.shape === 'contribute') {
-    return (
-      <div className="card-mid">
-        <h2>{card.headline}</h2>
-        {card.support && <p>{card.support}</p>}
-        {card.footnote && <small className="action-card-note"><ShieldCheck size={12} /> {card.footnote}</small>}
-      </div>
-    )
-  }
 
   // A setup step: no entity to name, and a trust boundary that belongs beside the action.
   return (
@@ -1708,7 +1665,6 @@ export function HomeScreen() {
         {sheets.addInterview && <AddInterviewSheet onClose={sheets.closeAddInterview} />}
         {sheets.assistant && <HomeAssistantSheet journey={ctx.journey} initialQuestion={sheets.assistantQuestion} onClose={sheets.closeAssistant} index={contextualCapabilities(ctx, sheets, 'home')} />}
         {sheets.offerStart && <OfferStartSheet onClose={sheets.closeOfferStart} onUseDemo={sheets.useDemoOffer} />}
-        {sheets.contribute && <ContributeSheet onClose={sheets.closeContribute} />}
         {sheets.debrief && <DebriefSheet onClose={sheets.closeDebrief} onDone={sheets.logInterview} />}
       </AnimatePresence>
     </main>
@@ -1906,31 +1862,6 @@ function DebriefSheet({ onClose, onDone }) {
   )
 }
 
-/*
- * What a review would actually collect. Same posture as AddInterviewSheet: it names the
- * fields and then says plainly that the prototype does not submit anything, rather than
- * miming a form. This is the first flow in the demo pointed outward, so the trust line
- * has to be about posting rather than about reading.
- */
-function ContributeSheet({ onClose }) {
-  const current = offerDecision.currentCompany
-  return (
-    <Sheet label={`Rate working at ${current.company}`} onClose={onClose}>
-      <div className="sheet-body">
-        <span className="eyebrow">FROM PEOPLE LIKE YOU</span>
-        <h2>Rate working at {current.company}.</h2>
-        <p>{current.reviews.replace(' reviews', '')} people have already rated it, at {current.overall} overall. The ratings AmbitionBox showed you all along came from people doing exactly this.</p>
-        <ul className="add-interview-fields">
-          <li>Salary, work-life balance, culture, and growth</li>
-          <li>What is genuinely good, and what you would warn someone about</li>
-          <li>Whether you would recommend it to someone like you</li>
-        </ul>
-        <p className="add-interview-note"><Info size={15} /> Submitting isn’t wired up in this prototype. In the product this posts anonymously, and nothing leaves this screen until you have read it back.</p>
-        <button className="primary-button" onClick={onClose}>Got it</button>
-      </div>
-    </Sheet>
-  )
-}
 
 function AddInterviewSheet({ onClose }) {
   return (
