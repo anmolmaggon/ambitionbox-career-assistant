@@ -253,7 +253,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: 'See what employees report, what the move changes, and where you have room to negotiate.',
       why: 'A live decision outranks everything else in your search.',
       whyQuestion: 'Why is reviewing this offer my next move?',
-      cta: { label: 'Review my offer', onClick: () => go('/offer/juspay?stage=decision&story=finale') },
+      cta: { label: 'Review my offer', onClick: () => go('/flow/offer') },
     }
   }
 
@@ -285,7 +285,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
       why: 'Nothing else in your search can move until this one is settled.',
       whyQuestion: 'Why does logging this interview matter?',
-      cta: { label: 'Tell North how it went', onClick: () => sheets.openDebrief() },
+      cta: { label: 'Tell North how it went', onClick: () => go('/flow/debrief?application=paytm-app') },
     }
   }
 
@@ -333,7 +333,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       source: 'Detected in Gmail.',
       why: 'A person is waiting, and a recruiter reply ages faster than an application.',
       whyQuestion: 'Why should I reply to PhonePe first?',
-      cta: { label: 'Review reply', onClick: openReply },
+      cta: { label: 'Review reply', onClick: () => go('/flow/reply?application=phonepe-app') },
     }
   }
 
@@ -537,7 +537,7 @@ function setAside({ journey, action }) {
         // is actually asking you to read it, and repeating it here would just be noise.
         shape: 'task',
         reason: 'A fixed date beats an open message.',
-        onSelect: () => go('/home?action=phonepe'),
+        onSelect: () => go('/flow/reply?application=phonepe-app'),
       })
     }
     /*

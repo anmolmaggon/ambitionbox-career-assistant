@@ -1,0 +1,287 @@
+/*
+ * Flow — the thread a Home card opens into.
+ *
+ * The screen is one column: a header that names what this is about, a thread that builds
+ * itself, and a dock that holds whatever North is waiting for. The dock is the only fixed
+ * thing, so the thread always ends just above the thing you are meant to answer.
+ *
+ * North's turns are left, unboxed, sitting straight on the canvas — the agent talks, it
+ * does not hand you cards. What it *produces* is a card: a quote, a draft, a plan, a
+ * figure. That split is the whole visual grammar. Speech is text; work is an object.
+ */
+
+.flow-screen {
+  min-height: 100dvh;
+  padding: 0 0 max(232px, env(safe-area-inset-bottom));
+  background: var(--canvas);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header ---------------------------------------------------------------- */
+
+.flow-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 12px;
+  background: linear-gradient(var(--canvas) 76%, rgba(247, 248, 252, 0));
+}
+
+.flow-header-copy { display: grid; gap: 3px; min-width: 0; }
+.flow-header-copy h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Thread ---------------------------------------------------------------- */
+
+.flow-thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 6px 20px 24px;
+}
+
+.flow-turn { display: flex; gap: 10px; align-items: flex-start; }
+.flow-turn--north { max-width: 100%; }
+.flow-turn-body { min-width: 0; flex: 1; display: grid; gap: 10px; }
+
+/*
+ * The needle is the agent's face. It sits at the top of the turn rather than centred,
+ * so a long turn does not leave the mark floating in the middle of nothing.
+ */
+.flow-avatar {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.flow-message,
+.flow-thinking {
+  margin: 0;
+  padding-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  max-width: 34ch;
+}
+
+/*
+ * The gap turn — the one moment in every flow where North says what it cannot know.
+ * It gets a rule rather than a colour: this is the honest part, not the alarming part.
+ */
+.flow-turn--gap .flow-message { border-left: 2px solid var(--primary); padding-left: 12px; margin-left: -2px; }
+
+/* Thinking: three dots that fill in while the needle swings above them. */
+.flow-thinking { color: var(--muted); display: flex; align-items: baseline; gap: 3px; }
+.flow-thinking i {
+  width: 3px; height: 3px; border-radius: 50%; background: var(--subtle);
+  animation: flow-dot 1.1s ease-in-out infinite;
+}
+.flow-thinking i:nth-child(1) { margin-left: 4px; }
+.flow-thinking i:nth-child(2) { animation-delay: .16s; }
+.flow-thinking i:nth-child(3) { animation-delay: .32s; }
+@keyframes flow-dot { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* The user's turn: a quiet chip, right-aligned, no avatar. */
+.flow-turn--you { justify-content: flex-end; }
+.flow-said {
+  padding: 8px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 13.5px;
+  font-weight: 500;
+  max-width: 80%;
+}
+
+/* What North produces --------------------------------------------------- */
+
+.flow-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.flow-card-title { margin: 0 0 10px; font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+
+.flow-quote {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--primary);
+}
+.flow-quote p { margin: 0 0 10px; font-size: 15px; line-height: 1.45; font-weight: 500; }
+.flow-quote footer { display: grid; gap: 1px; }
+.flow-quote footer strong { font-size: 12.5px; font-weight: 600; }
+.flow-quote footer span { font-size: 11px; color: var(--subtle); }
+
+.flow-rows { margin: 0; display: grid; gap: 8px; }
+.flow-rows div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.flow-rows dt { font-size: 12.5px; color: var(--muted); }
+.flow-rows dd { margin: 0; font-size: 13px; font-weight: 600; text-align: right; }
+
+.flow-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.flow-list-item { display: grid; grid-template-columns: 8px 1fr; gap: 10px; align-items: start; }
+.flow-list-item strong { display: block; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+.flow-list-item small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.flow-list-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--subtle); }
+/* Tone is status, never the accent: green confirms, amber asks you to look, red is the
+   one that could cost you the role. */
+.flow-list-item--ok .flow-list-dot { background: var(--teal); }
+.flow-list-item--warn .flow-list-dot { background: var(--amber); }
+.flow-list-item--bad .flow-list-dot { background: var(--danger); }
+
+.flow-source { margin: 12px 0 0; font-size: 11px; line-height: 1.45; color: var(--subtle); }
+
+.flow-timeline { margin: 0; padding: 2px 0 2px 4px; list-style: none; display: grid; gap: 0; }
+.flow-timeline li { display: grid; grid-template-columns: 12px 1fr; gap: 12px; padding-bottom: 16px; position: relative; }
+.flow-timeline li:last-child { padding-bottom: 0; }
+.flow-timeline li::before {
+  content: ''; position: absolute; left: 5px; top: 14px; bottom: 0; width: 2px; background: var(--line);
+}
+.flow-timeline li:last-child::before { display: none; }
+.flow-timeline-mark {
+  width: 12px; height: 12px; margin-top: 3px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--subtle); z-index: 1;
+}
+.flow-timeline .is-done .flow-timeline-mark { background: var(--ink); border-color: var(--ink); }
+/* The quiet step is drawn as an absence: dashed, unfilled, the one that never happened. */
+.flow-timeline .is-quiet .flow-timeline-mark { border-style: dashed; border-color: var(--amber); }
+.flow-timeline strong { display: block; font-size: 13.5px; font-weight: 600; }
+.flow-timeline small { display: block; font-size: 11.5px; color: var(--muted); }
+.flow-timeline .is-quiet strong { color: var(--amber); }
+
+.flow-figure {
+  padding: 18px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(150deg, #1d285c, #3f5cfb);
+  box-shadow: 0 15px 34px rgba(50, 66, 178, .2);
+}
+.flow-figure-label { font-size: 9px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; color: #c5cfff; }
+.flow-figure strong { display: block; margin: 4px 0 14px; font-size: 40px; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.flow-figure .flow-rows dt { color: rgba(255, 255, 255, .68); }
+.flow-figure .flow-rows dd { color: #fff; font-variant-numeric: tabular-nums; }
+
+.flow-draft-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.flow-draft-top .flow-card-title { margin: 0; }
+.flow-copy {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--canvas); color: var(--ink); font-size: 12px; font-weight: 600;
+}
+.flow-copy:hover { border-color: var(--primary); color: var(--primary); }
+.flow-draft-body {
+  width: 100%; border: 0; padding: 0; resize: none; background: transparent;
+  font: inherit; font-size: 13.5px; line-height: 1.55; color: var(--ink);
+}
+.flow-draft-body:focus { outline: none; }
+
+.flow-verdict {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--primary);
+}
+.flow-verdict h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
+.flow-verdict p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+
+/* The dock -------------------------------------------------------------- */
+
+/*
+ * Everything North is waiting for lives here, so the answer is always in the same place
+ * no matter which flow you are in or how long the thread has run.
+ */
+.flow-dock {
+  /* Same positioning contract as the app-wide home dock: fixed to the bottom, capped at
+     the phone shell's own width. Centring it independently put it out of step with every
+     other bottom surface in the app. */
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 430px;
+  box-sizing: border-box;
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -14px 40px rgba(23, 25, 43, .1);
+}
+
+.flow-dock-lead { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.flow-dock-actions { display: grid; gap: 8px; }
+
+.flow-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.flow-chip {
+  padding: 10px 15px;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: border-color var(--ab-motion-fast) var(--ab-ease-out), background var(--ab-motion-fast) var(--ab-ease-out);
+}
+.flow-chip:hover { border-color: var(--primary); }
+.flow-chip.is-on { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+
+.flow-dock-field { display: flex; align-items: center; gap: 8px; }
+.flow-dock-field input {
+  flex: 1; min-width: 0; min-height: 44px;
+  padding: 11px 14px;
+  border-radius: var(--input-radius);
+  border: 1px solid var(--line);
+  background: var(--canvas);
+  font-size: 14px;
+}
+.flow-dock-field input:focus { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.flow-send {
+  width: 44px; height: 44px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  border-radius: 50%; background: var(--ink); color: var(--surface);
+}
+.flow-send:disabled { opacity: .35; }
+.flow-skip { justify-self: start; font-size: 12.5px; font-weight: 600; color: var(--subtle); text-decoration: underline; text-underline-offset: 3px; }
+
+.flow-dock--closed { gap: 12px; }
+.flow-closed-line { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--teal); }
+
+.ghost-button {
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: var(--button-radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ghost-button:hover { border-color: var(--ink); }
+
+.flow-empty { padding: 0 20px 20px; color: var(--muted); }
+

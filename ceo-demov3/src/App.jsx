@@ -18,6 +18,7 @@ import { useJourney } from './store'
 import { HomeAssistantSheet, contextualCapabilities } from './Home'
 import { OnboardingScreen, ProfileScreen } from './Onboarding'
 import { HomeScreen } from './Home'
+import { FlowScreen } from './Flow'
 import {
   AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, Pill, ProgressRing, Sheet, Topbar, go,
 } from './AppUI'
@@ -40,6 +41,7 @@ function App() {
     '/states': StatesBoard,
     '/onboarding': OnboardingScreen,
     '/home': HomeScreen,
+    '/flow': FlowScreen,
     '/profile': ProfileScreen,
     '/tracker': TrackerScreen,
     '/matches': MatchesScreen,
@@ -48,7 +50,9 @@ function App() {
     '/prep/juspay': PrepScreen,
     '/offer/juspay': OfferScreen,
   }
-  const Component = routes[pathname] || DemoLauncher
+  // `/flow/reply`, `/flow/ghosted` … all resolve to the one flow screen, which reads the
+  // type off the path and the application off the query.
+  const Component = (pathname.startsWith('/flow/') ? FlowScreen : routes[pathname]) || DemoLauncher
   const openingStory = pathname === '/offer/juspay' && new URLSearchParams(search).get('story') === 'opening'
   // The states board is a wall of phones, so it is the one route that renders outside
   // the phone shell rather than inside it.
