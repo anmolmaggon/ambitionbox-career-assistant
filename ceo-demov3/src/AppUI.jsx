@@ -23,45 +23,57 @@ export function AppLink({ to, children, onNavigate, ...props }) {
 }
 
 /*
- * NORTH — the needle.
+ * NORTH — the chevron.
  *
- * The mark is a compass needle: the north half lit, the south half in brand blue,
- * a pivot punched through the waist. The concept is "the needle settles" — NORTH
- * reads every scattered signal in a job hunt and comes to rest pointing at one
- * thing. That settle is the app's signature motion (see `.needle` in north.css):
- * it plays on the splash and stands in for every thinking state inside a flow.
+ * The mark is the wordmark's own N: a heavy chevron pointing up, standing in for the
+ * letter and reading as a bearing at the same time. One glyph doing both jobs is why it
+ * works small — at 16px the letterform is gone and the arrow is all that is left, which
+ * is the right half to keep.
  *
- * Renamed from AmbitionBox on Pranoy's instruction 2026-09-10. This reverses the
- * standing FEEDBACK.md rule "brand the experience simply as AmbitionBox"; the
- * parent brand survives as the `byline` under the wordmark rather than vanishing.
+ * It is drawn as a stroked path rather than a filled polygon so the weight, the mitre at
+ * the apex and the square-cut arm ends stay adjustable from one number.
+ *
+ * Supplied by Pranoy 2026-09-10, replacing the compass needle. The needle asked to be
+ * read as an instrument; this asks to be read as a direction, which is the shorter
+ * sentence and the one the product is actually about.
  */
-export function Logo({ small = false, byline = false }) {
+export function NorthMark({ className = '', state = 'still' }) {
   return (
-    <div className={`brand ${small ? 'brand--small' : ''}`} aria-label="North">
-      <img className="brand-mark" src="/north-mark.svg" alt="" aria-hidden="true" />
-      {!small && (
-        <span className="brand-word">
-          NORTH
-          {byline && <small>by AmbitionBox</small>}
-        </span>
-      )}
-    </div>
+    <span className={`north-mark north-mark--${state} ${className}`} aria-hidden="true">
+      {/*
+        * The viewBox is cropped to the chevron's own bounds — the mitred apex at y19 and
+        * the square-cut arm ends at y80 — so the drawn shape fills its box. Left at
+        * 0 0 100 100 the glyph floated at 44% of its container and read as a caret rather
+        * than as the N it is standing in for.
+        */}
+      <svg viewBox="5 19 90 62">
+        <path d="M14 72 L50 36 L86 72" fill="none" stroke="currentColor" strokeWidth="24" strokeLinejoin="miter" strokeLinecap="butt" />
+      </svg>
+    </span>
   )
 }
 
 /*
- * The settling needle. `state` is 'settling' while NORTH is working something out
- * and 'settled' once it has. Under reduced motion the needle is simply drawn at
- * rest — the information is "NORTH is thinking", and a caption carries that.
+ * The wordmark. The chevron replaces the N and sits at cap height beside ORTH, so the
+ * five characters read as one word rather than as a logo next to a label.
+ *
+ * The letters are set tight, not tracked out — an earlier draft ran wide-tracked caps to
+ * read as an instrument, which the chevron now does on its own. Two devices saying the
+ * same thing is one too many.
  */
-export function Needle({ size = 28, state = 'settled', className = '' }) {
+export function Logo({ small = false, byline = false }) {
   return (
-    <span className={`needle needle--${state} ${className}`} style={{ '--needle-size': `${size}px` }} aria-hidden="true">
-      <svg viewBox="0 0 240 240">
-        <path d="M120 40 C124 84 131 116 141 137 L99 137 C109 116 116 84 120 40 Z" fill="currentColor" />
-        <path className="needle-south" d="M99 137 L141 137 C131 153 124 172 120 197 C116 172 109 153 99 137 Z" />
-      </svg>
-    </span>
+    <div className={`brand ${small ? 'brand--small' : ''}`} aria-label="North">
+      {small
+        ? <img className="brand-mark" src="/north-mark.svg" alt="" aria-hidden="true" />
+        : (
+          <span className="brand-word">
+            <NorthMark className="brand-chevron" />
+            <span className="brand-letters">ORTH</span>
+            {byline && <small>by AmbitionBox</small>}
+          </span>
+        )}
+    </div>
   )
 }
 

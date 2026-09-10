@@ -73,8 +73,6 @@
   --focus-ring: 0 0 0 3px rgba(11, 11, 11, .3);
 
   --north-ground: #0b0b0b;
-  --north-lit: #cdfa46;
-  --north-needle: #ffffff;
 
   background: var(--ab-color-stage);
 }
@@ -242,7 +240,7 @@
 
 /* Brand ------------------------------------------------------------------ */
 
-[data-look="bold"] .brand-word { font-weight: 900; letter-spacing: .2em; }
+[data-look="bold"] .brand-letters { letter-spacing: -.03em; }
 [data-look="bold"] .brand-mark { border-radius: 9px; }
 [data-look="bold"] .avatar { border-radius: 999px; background: #0b0b0b; color: #fff; }
 
@@ -274,7 +272,7 @@
 [data-look="bold"] .job-score i { color: rgba(255, 255, 255, .6); }
 
 [data-look="bold"] .application-moved { border-radius: 16px; background: #f1f1ef; }
-[data-look="bold"] .application-moved .needle { color: var(--ink); }
+[data-look="bold"] .application-moved .north-mark { color: var(--ink); }
 
 /* Flow ------------------------------------------------------------------- */
 

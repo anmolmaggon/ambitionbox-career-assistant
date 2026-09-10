@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, Check, Copy, Send } from 'lucide-react'
-import { AppLink, Needle, go } from './AppUI'
+import { AppLink, NorthMark, go } from './AppUI'
 import { useJourney } from './store'
 import { buildFlow } from './flows'
 
@@ -216,7 +216,7 @@ function FlowTurn({ step, answers, reduceMotion, isLast, showAvatar, draft, setD
         transition={{ duration: .34, ease: [0.22, 1, 0.36, 1] }}
       >
         <span className={`flow-avatar ${showAvatar ? '' : 'is-hidden'}`}>
-          {showAvatar && <Needle size={16} state={step.type === 'thinking' && isLast ? 'settling' : 'settled'} />}
+          {showAvatar && <NorthMark state={step.type === 'thinking' && isLast ? 'working' : 'arrive'} />}
         </span>
         <div className="flow-turn-body">
           <FlowElement step={step} answers={answers} draft={draft} setDraft={setDraft} copied={copied} setCopied={setCopied} />

@@ -1,41 +1,51 @@
 /*
  * NORTH brand layer.
  *
- * Additive on purpose. The app's tokens, spacing and components are unchanged —
- * this file carries only what the rename brought in: the wordmark, the needle,
- * and the settle motion. Deleting this file and reverting `Logo` returns the
- * build to AmbitionBox branding without touching a single screen.
+ * Additive on purpose. The app's tokens, spacing and components are unchanged — this file
+ * carries only what the rename brought in: the chevron, the wordmark, and the rise.
+ *
+ * The mark is the wordmark's own N — a heavy chevron standing in for the letter and
+ * reading as a bearing at the same time. Small, the letterform disappears and only the
+ * arrow is left, which is the half worth keeping.
  */
 
 :root {
-  /* The needle's two halves, and the ground they sit on. */
-  --north-ground: #0f1830;
-  --north-lit: #f2f6ff;
-  --north-needle: var(--primary);
+  --north-ground: #0b0b0b;
+  --north-mark-ink: var(--ink);
 }
 
 /* Wordmark ------------------------------------------------------------- */
 
-/*
- * Caps and wide tracking, because NORTH is read as an instrument rather than a
- * company: the letterspacing is what separates it from a four-letter noun. The
- * tighter optical size on the small variant keeps it from shouting in a Topbar.
- */
 .brand-word {
   display: inline-flex;
-  flex-direction: column;
+  align-items: center;
   line-height: 1;
-  font-weight: 800;
-  font-size: 17px;
-  letter-spacing: .17em;
-  /* Tracking adds space after the last letter too; pull it back so the wordmark
-     is optically centred against the mark beside it. */
-  margin-right: -.17em;
+  font-weight: 900;
+  font-size: 21px;
   color: var(--ink);
 }
 
+/*
+ * Tight, not tracked out. An earlier draft ran wide-tracked caps so the word would read
+ * as an instrument; the chevron does that on its own now, and two devices saying the same
+ * thing is one too many.
+ */
+.brand-letters { letter-spacing: -.015em; }
+
+/*
+ * Cap height, not em height — the chevron is a letter here, so it has to sit on the same
+ * two lines the O does. Figtree's caps land at ~.72em. The slim optical gap closes the
+ * space a mitred apex opens up against a round O.
+ */
+.brand-chevron {
+  height: .72em;
+  width: calc(.72em * 1.45);
+  margin-right: .07em;
+}
+
 .brand-word small {
-  margin-top: 5px;
+  align-self: flex-end;
+  margin: 0 0 .1em .5em;
   font-size: 8.5px;
   font-weight: 700;
   letter-spacing: .1em;
@@ -43,48 +53,53 @@
   color: var(--subtle);
 }
 
-.brand--small .brand-word { font-size: 14px; }
+.brand--small .brand-word { font-size: 16px; }
 
 /* The launcher runs the wordmark on a dark field. */
 .launcher-top .brand-word { color: #fff; }
 .launcher-top .brand-word small { color: rgba(255, 255, 255, .6); }
 
-/* The needle ------------------------------------------------------------ */
+/* The mark ------------------------------------------------------------- */
 
-.needle {
-  width: var(--needle-size, 28px);
-  height: var(--needle-size, 28px);
+.north-mark {
   display: inline-block;
   flex: 0 0 auto;
-  color: var(--ink);
+  color: currentColor;
 }
 
-.needle svg { width: 100%; height: 100%; display: block; transform-origin: 50% 57%; }
-.needle .needle-south { fill: var(--north-needle); }
+.north-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  transform-origin: 50% 72%;
+}
 
 /*
- * The settle. A magnetised needle overshoots, comes back short, and stops —
- * so the keyframes are an overshoot and two decaying corrections, not a spin.
- * `settling` holds the swing; `settled` plays it once and rests at true north.
+ * The rise. A bearing does not swing, it points — so where the old needle settled from an
+ * overshoot, this lifts once and stops. `working` repeats it while North is thinking;
+ * `still` is the resting state and animates nothing.
  */
-@keyframes needle-settle {
-  0%   { transform: rotate(-34deg); }
-  35%  { transform: rotate(16deg); }
-  58%  { transform: rotate(-8deg); }
-  78%  { transform: rotate(3deg); }
-  100% { transform: rotate(0deg); }
+@keyframes north-rise {
+  0%   { transform: translateY(14%); opacity: .45; }
+  55%  { transform: translateY(-6%); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes needle-search {
-  0%, 100% { transform: rotate(-16deg); }
-  50%      { transform: rotate(16deg); }
-}
-
-.needle--settled svg { animation: needle-settle 900ms var(--ab-ease-out) both; }
-.needle--settling svg { animation: needle-search 1400ms ease-in-out infinite; }
+.north-mark--arrive svg { animation: north-rise 620ms var(--ab-ease-out) both; }
+.north-mark--working svg { animation: north-rise 1250ms var(--ab-ease-out) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .needle svg,
-  .needle--settled svg,
-  .needle--settling svg { animation: none; transform: none; }
+  .north-mark svg,
+  .north-mark--arrive svg,
+  .north-mark--working svg { animation: none; transform: none; opacity: 1; }
 }
+
+/* Sized instances ------------------------------------------------------- */
+
+/* The agent's face in a flow turn. */
+.flow-avatar .north-mark { width: 13px; height: 13px; }
+
+/* The provenance line on a Tracker card. */
+.application-moved .north-mark { width: 12px; height: 12px; color: var(--primary); }
+.application-moved--you .north-mark { color: var(--subtle); }

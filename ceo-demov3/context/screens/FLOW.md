@@ -28,10 +28,11 @@ That is the whole rule. A message, a thinking line and a question are text on th
 A quote, a plan, a draft, a figure, a timeline and a verdict are surfaces. If a new step
 type is speech it must not gain a container, and if it is work it must not lose one.
 
-The needle marks who is speaking and appears **once per run**, not on every turn — North
+The chevron marks who is speaking and appears **once per run**, not on every turn — North
 talks for four or five turns at a stretch, and repeating the mark down all of them turns
 the speaker into a column of decoration. The slot is kept but emptied, so every turn in a
-run stays on one left edge.
+run stays on one left edge. While North is working the mark rises rather than spins: a
+bearing points, it does not search.
 
 ## The context gap
 

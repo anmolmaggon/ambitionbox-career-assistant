@@ -20,7 +20,7 @@ import { OnboardingScreen, ProfileScreen } from './Onboarding'
 import { HomeScreen } from './Home'
 import { FlowScreen } from './Flow'
 import {
-  AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, Needle, Pill, ProgressRing, Sheet, Topbar, go,
+  AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, NorthMark, Pill, ProgressRing, Sheet, Topbar, go,
 } from './AppUI'
 
 function useLocation() {
@@ -568,7 +568,7 @@ function ApplicationCard({ item, action, onMove, onUndoMove }) {
         */}
       {item.movedNote && (
         <p className={`application-moved ${item.movedBy === 'you' ? 'application-moved--you' : ''}`}>
-          <Needle size={13} />
+          <NorthMark />
           <span className="application-moved__text">
             <strong>{item.movedBy === 'you' ? 'You moved this' : item.movedNote}</strong>
             {' · '}{item.movedVia === 'you' ? item.movedAgo : `${item.movedVia} · ${item.movedAgo}`}
