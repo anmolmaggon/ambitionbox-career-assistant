@@ -72,7 +72,7 @@ gaps", placed inside the flows rather than as a card on Home.
 | Type | Renders | Blocks |
 |---|---|---|
 | `message` | speech | no |
-| `thinking` | speech with dots, needle swinging | no |
+| `thinking` | speech with dots, the chevron rising | no |
 | `quote` | an email, with sender and source | no |
 | `detail` | labelled rows | no |
 | `list` | toned items with a source line | no |
