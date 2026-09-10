@@ -14,16 +14,20 @@ import './flow.css'
 import './bold.css'
 
 /*
- * Visual direction, chosen by `?look=bold` and remembered for the session so it survives
- * the bottom nav's round trips. `current` is the default and stamps nothing, which keeps
- * the Playwright suite and every capture on the existing design.
+ * Visual direction. `bold` is the design now, so it is stamped by default and the plain
+ * deployed URL — the one people get sent — shows it. `?look=current` still reaches the
+ * earlier design for comparison, and either choice is remembered for the session so it
+ * survives the bottom nav's round trips.
  */
 try {
   const asked = new URLSearchParams(window.location.search).get('look')
   if (asked) sessionStorage.setItem('north-look', asked)
-  const look = sessionStorage.getItem('north-look')
-  if (look && look !== 'current') document.documentElement.dataset.look = look
-} catch (error) { /* private mode: the default look is the right fallback */ }
+  const look = sessionStorage.getItem('north-look') || 'bold'
+  if (look !== 'current') document.documentElement.dataset.look = look
+} catch (error) {
+  /* private mode: no memory to read, so fall back to the default look rather than none */
+  document.documentElement.dataset.look = 'bold'
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
