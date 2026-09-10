@@ -285,7 +285,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       support: `Your ${round ? round.label.toLowerCase() : 'round'} with ${interviewIntel.invitation.with} was ${interviewIntel.invitation.day}, ${interviewIntel.invitation.time}. Nothing in your inbox says how it went — only you know that.`,
       why: 'Nothing else in your search can move until this one is settled.',
       whyQuestion: 'Why does logging this interview matter?',
-      cta: { label: 'Tell AmbitionBox how it went', onClick: () => sheets.openDebrief() },
+      cta: { label: 'Tell North how it went', onClick: () => sheets.openDebrief() },
     }
   }
 
@@ -366,7 +366,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
     shape: 'connect',
     kicker: 'NEXT USEFUL CONNECTION',
     headline: 'Know what needs you—before an opportunity goes cold.',
-    support: 'Connect the email you use to apply. AmbitionBox will organise updates and bring the right recruiter moment here.',
+    support: 'Connect the email you use to apply. North will organise updates and bring the right recruiter moment here.',
     cta: { label: 'Connect application email', onClick: () => go('/onboarding?step=email') },
   }
 }
@@ -593,7 +593,7 @@ function carouselCards({ action, aside, journey, sheets }) {
       icon: <Mail size={14} />,
       kicker: 'NEXT USEFUL CONNECTION',
       headline: 'Know what needs you—before an opportunity goes cold.',
-      support: 'Connect the email you use to apply and AmbitionBox brings the recruiter moment that needs you here.',
+      support: 'Connect the email you use to apply and North brings the recruiter moment that needs you here.',
       footnote: 'Job-search email only. Read only. Disconnect anytime.',
       cta: { label: 'Connect application email', onClick: () => go('/onboarding?step=email') },
       dismissable: false,
@@ -648,7 +648,7 @@ function homeAnswer(journey, question) {
   if (q.includes('without my email') || q.includes('no email') || q.includes('what can you')) {
     return 'Plenty. Your reviewed profile and preferences already rank roles, explain pay and company reality, and show where your evidence is thin. What I cannot do is see the applications you send, so recruiter replies and interview invitations stay outside AmbitionBox until you connect that email.'
   }
-  // Gratuity turns on two numbers AmbitionBox does not hold — basic pay, and tenure at
+  // Gratuity turns on two numbers North does not hold — basic pay, and tenure at
   // one employer rather than total experience. Both are stated rather than guessed at:
   // a gratuity figure derived from CTC would be exactly the confident wrong number this
   // product exists to avoid. The vesting cliff is the part that changes a job decision,
@@ -787,7 +787,7 @@ function ConnectNote() {
       <div>
         <span className="home-connect-kicker">NEXT USEFUL CONNECTION</span>
         <h3>Know what needs you—before an opportunity goes cold.</h3>
-        <p>Connect the email you use to apply and AmbitionBox brings the recruiter moment that needs you here.</p>
+        <p>Connect the email you use to apply and North brings the recruiter moment that needs you here.</p>
         <button className="home-connect-action" onClick={() => go('/onboarding?step=email')}>Connect application email <ArrowRight size={14} /></button>
         <small><ShieldCheck size={12} /> Job-search email only. Read only. Disconnect anytime.</small>
       </div>
@@ -809,7 +809,7 @@ function Composer({ grounding, onOpen }) {
     <button className="home-composer" onClick={() => onOpen('')}>
       <span className="home-composer-orb"><Sparkles size={17} /></span>
       <span className="home-composer-label">
-        <strong>Ask AmbitionBox about your next move</strong>
+        <strong>Ask North about your next move</strong>
         <small>{grounding}</small>
       </span>
       <Send size={16} />
@@ -1491,7 +1491,7 @@ export function capabilities({ journey }, sheets, context = 'home') {
       // it is about the assistant rather than about the search.
       // Matches the heading on /profile, and a noun phrase reads as a destination —
       // which also keeps the longest row in the menu to one line at 360px.
-      id: 'knows', label: 'What AmbitionBox knows about me',
+      id: 'knows', label: 'What North knows about me',
       icon: ShieldCheck, onSelect: () => go('/profile'),
     },
   ].map((row) => row)
@@ -1551,7 +1551,7 @@ function HomeChrome({ ctx, design }) {
   return (
     <AssistantDock
       active="home"
-      label="Ask AmbitionBox about your next move"
+      label="Ask North about your next move"
       examples={ASK_EXAMPLES}
       reduceMotion={ctx.reduceMotion}
       onOpen={ctx.ask}
@@ -1669,7 +1669,7 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
   // height the menu and the composer were fighting over the same few hundred pixels.
   // No `onClose` passed to Sheet — this sheet carries its own header instead of the
   // floating Close every other sheet uses.
-  return <Sheet label="Ask AmbitionBox" className="home-assistant-sheet">
+  return <Sheet label="Ask North" className="home-assistant-sheet">
     <header className="assistant-bar">
       <button onClick={back} aria-label={view === 'menu' ? 'Close assistant' : 'Back'}><ArrowLeft size={20} /></button>
       <button onClick={() => setView(view === 'chats' ? 'menu' : 'chats')} aria-label="Past chats" aria-expanded={view === 'chats'}><Menu size={20} /></button>
@@ -1700,7 +1700,7 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
       {view === 'menu' && <>
         {/* Two groups because the rows behave differently, not for decoration: the first
             set leaves the sheet, the second answers inside it. */}
-        {index && <nav className="assistant-menu" aria-label="What AmbitionBox can do">
+        {index && <nav className="assistant-menu" aria-label="What North can do">
           {index.map(({ id, label, icon: Icon, onSelect }) => (
             <button key={id} onClick={() => { onClose(); onSelect() }}>
               <Icon size={20} />
@@ -1709,7 +1709,7 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
           ))}
         </nav>}
         <span className="assistant-group">Tools</span>
-        <nav className="assistant-menu" aria-label="AmbitionBox tools">
+        <nav className="assistant-menu" aria-label="North tools">
           {tools.map(({ id, label, question, icon: Icon }) => (
             <button key={id} onClick={() => ask(question)}>
               <Icon size={20} />
@@ -1727,12 +1727,12 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
     {/* Browsing history is not asking, so the composer steps out of the way for it. */}
     {view !== 'chats' && <div className="assistant-composer-shell">
       <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); if (draft.trim()) ask(draft.trim()) }}>
-        <input aria-label="Ask AmbitionBox" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === 'thread' ? 'Ask something else' : 'What do you want to know?'} />
+        <input aria-label="Ask North" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === 'thread' ? 'Ask something else' : 'What do you want to know?'} />
         <div className="assistant-composer-foot">
           <AssistantMark className="assistant-composer-mark" />
           {/* The assistant signs the field it answers from. The state-dependent grounding
               line that used to sit here restated what the answer already qualifies. */}
-          <small>AmbitionBox Career Intelligence</small>
+          <small>North Career Intelligence</small>
           <button aria-label="Send question" disabled={!draft.trim()}><Send size={16} /></button>
         </div>
       </form>
@@ -1741,7 +1741,7 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
 }
 
 function OfferStartSheet({ onClose, onUseDemo }) {
-  return <Sheet label="Evaluate an offer" onClose={onClose} wide><Pill tone="soft">OFFER DECISION</Pill><h2>Bring an offer into context.</h2><p className="sheet-lead">AmbitionBox can compare the letter with salary evidence, employee reviews, your preferences, and what a move changes.</p><div className="permission-list"><div><FileCheck2 size={18} /><span><strong>Review the offer facts</strong><small>Pay, role, location, work policy, and unknowns.</small></span></div><div><ShieldCheck size={18} /><span><strong>You stay in control</strong><small>Nothing is accepted or sent automatically.</small></span></div></div><button className="primary-button" onClick={onUseDemo}>Use demo Juspay offer <ArrowRight size={17} /></button><p className="fine-print">Deterministic simulation—no real document is uploaded.</p></Sheet>
+  return <Sheet label="Evaluate an offer" onClose={onClose} wide><Pill tone="soft">OFFER DECISION</Pill><h2>Bring an offer into context.</h2><p className="sheet-lead">North can compare the letter with salary evidence, employee reviews, your preferences, and what a move changes.</p><div className="permission-list"><div><FileCheck2 size={18} /><span><strong>Review the offer facts</strong><small>Pay, role, location, work policy, and unknowns.</small></span></div><div><ShieldCheck size={18} /><span><strong>You stay in control</strong><small>Nothing is accepted or sent automatically.</small></span></div></div><button className="primary-button" onClick={onUseDemo}>Use demo Juspay offer <ArrowRight size={17} /></button><p className="fine-print">Deterministic simulation—no real document is uploaded.</p></Sheet>
 }
 
 function ReplySheet({ sent, onClose, onSend }) {
@@ -1797,7 +1797,7 @@ function DebriefSheet({ onClose, onDone }) {
             {/* The reciprocity is the whole pitch, and it is literal rather than a
                 goodwill appeal: these become the questions we prepare him on next. */}
             <h3>What did they actually ask?</h3>
-            <p>Whatever you remember. AmbitionBox prepares you on these before your next round, and adds them to the {interviewIntel.evidence.reports} reports that told you what to expect for this one.</p>
+            <p>Whatever you remember. North prepares you on these before your next round, and adds them to the {interviewIntel.evidence.reports} reports that told you what to expect for this one.</p>
             <label className="message-box">
               <span>Questions they asked</span>
               <textarea name="interview-questions" autoComplete="off" rows={4} value={questions} onChange={(e) => setQuestions(e.target.value)} placeholder="How would you make a retry safe to run twice?" />

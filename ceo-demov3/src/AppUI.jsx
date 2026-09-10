@@ -22,12 +22,46 @@ export function AppLink({ to, children, onNavigate, ...props }) {
   }} {...props}>{children}</a>
 }
 
-export function Logo({ small = false }) {
+/*
+ * NORTH — the needle.
+ *
+ * The mark is a compass needle: the north half lit, the south half in brand blue,
+ * a pivot punched through the waist. The concept is "the needle settles" — NORTH
+ * reads every scattered signal in a job hunt and comes to rest pointing at one
+ * thing. That settle is the app's signature motion (see `.needle` in north.css):
+ * it plays on the splash and stands in for every thinking state inside a flow.
+ *
+ * Renamed from AmbitionBox on Pranoy's instruction 2026-09-10. This reverses the
+ * standing FEEDBACK.md rule "brand the experience simply as AmbitionBox"; the
+ * parent brand survives as the `byline` under the wordmark rather than vanishing.
+ */
+export function Logo({ small = false, byline = false }) {
   return (
-    <div className={`brand ${small ? 'brand--small' : ''}`} aria-label="AmbitionBox">
-      <img className="brand-mark" src="/favicon.svg" alt="" aria-hidden="true" />
-      {!small && <span>Ambition<span>Box</span></span>}
+    <div className={`brand ${small ? 'brand--small' : ''}`} aria-label="North">
+      <img className="brand-mark" src="/north-mark.svg" alt="" aria-hidden="true" />
+      {!small && (
+        <span className="brand-word">
+          NORTH
+          {byline && <small>by AmbitionBox</small>}
+        </span>
+      )}
     </div>
+  )
+}
+
+/*
+ * The settling needle. `state` is 'settling' while NORTH is working something out
+ * and 'settled' once it has. Under reduced motion the needle is simply drawn at
+ * rest — the information is "NORTH is thinking", and a caption carries that.
+ */
+export function Needle({ size = 28, state = 'settled', className = '' }) {
+  return (
+    <span className={`needle needle--${state} ${className}`} style={{ '--needle-size': `${size}px` }} aria-hidden="true">
+      <svg viewBox="0 0 240 240">
+        <path d="M120 40 C124 84 131 116 141 137 L99 137 C109 116 116 84 120 40 Z" fill="currentColor" />
+        <path className="needle-south" d="M99 137 L141 137 C131 153 124 172 120 197 C116 172 109 153 99 137 Z" />
+      </svg>
+    </span>
   )
 }
 
@@ -156,7 +190,7 @@ export function PromptChips({ prompts, onAsk, className = 'home-dock-chips' }) {
 export function AssistantDock({ active, label, examples, reduceMotion, onOpen }) {
   return (
     <div className="home-dock">
-      <button className="home-dock-handle" onClick={() => onOpen('')} aria-label="Open AmbitionBox assistant"><i /></button>
+      <button className="home-dock-handle" onClick={() => onOpen('')} aria-label="Open North"><i /></button>
       <AskPill label={label} examples={examples} reduceMotion={reduceMotion} onOpen={() => onOpen('')} />
       <BottomNav active={active} />
     </div>

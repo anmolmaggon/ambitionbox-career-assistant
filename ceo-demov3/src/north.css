@@ -1,0 +1,90 @@
+/*
+ * NORTH brand layer.
+ *
+ * Additive on purpose. The app's tokens, spacing and components are unchanged —
+ * this file carries only what the rename brought in: the wordmark, the needle,
+ * and the settle motion. Deleting this file and reverting `Logo` returns the
+ * build to AmbitionBox branding without touching a single screen.
+ */
+
+:root {
+  /* The needle's two halves, and the ground they sit on. */
+  --north-ground: #0f1830;
+  --north-lit: #f2f6ff;
+  --north-needle: var(--primary);
+}
+
+/* Wordmark ------------------------------------------------------------- */
+
+/*
+ * Caps and wide tracking, because NORTH is read as an instrument rather than a
+ * company: the letterspacing is what separates it from a four-letter noun. The
+ * tighter optical size on the small variant keeps it from shouting in a Topbar.
+ */
+.brand-word {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: .17em;
+  /* Tracking adds space after the last letter too; pull it back so the wordmark
+     is optically centred against the mark beside it. */
+  margin-right: -.17em;
+  color: var(--ink);
+}
+
+.brand-word small {
+  margin-top: 5px;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+
+.brand--small .brand-word { font-size: 14px; }
+
+/* The launcher runs the wordmark on a dark field. */
+.launcher-top .brand-word { color: #fff; }
+.launcher-top .brand-word small { color: rgba(255, 255, 255, .6); }
+
+/* The needle ------------------------------------------------------------ */
+
+.needle {
+  width: var(--needle-size, 28px);
+  height: var(--needle-size, 28px);
+  display: inline-block;
+  flex: 0 0 auto;
+  color: var(--ink);
+}
+
+.needle svg { width: 100%; height: 100%; display: block; transform-origin: 50% 57%; }
+.needle .needle-south { fill: var(--north-needle); }
+
+/*
+ * The settle. A magnetised needle overshoots, comes back short, and stops —
+ * so the keyframes are an overshoot and two decaying corrections, not a spin.
+ * `settling` holds the swing; `settled` plays it once and rests at true north.
+ */
+@keyframes needle-settle {
+  0%   { transform: rotate(-34deg); }
+  35%  { transform: rotate(16deg); }
+  58%  { transform: rotate(-8deg); }
+  78%  { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes needle-search {
+  0%, 100% { transform: rotate(-16deg); }
+  50%      { transform: rotate(16deg); }
+}
+
+.needle--settled svg { animation: needle-settle 900ms var(--ab-ease-out) both; }
+.needle--settling svg { animation: needle-search 1400ms ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .needle svg,
+  .needle--settled svg,
+  .needle--settling svg { animation: none; transform: none; }
+}

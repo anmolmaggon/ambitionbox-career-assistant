@@ -22,7 +22,7 @@ function navigate(path) {
 }
 
 function OnboardingLogo({ compact = false }) {
-  return <div className={`onboarding-brand ${compact ? 'is-compact' : ''}`} aria-label="AmbitionBox"><img src="/favicon.svg" alt="" /><span>Ambition<span>Box</span></span></div>
+  return <div className={`onboarding-brand ${compact ? 'is-compact' : ''}`} aria-label="AmbitionBox"><img src="/north-mark.svg" alt="" /><span>Ambition<span>Box</span></span></div>
 }
 
 const onboardingProgressPlans = {
@@ -44,7 +44,7 @@ const onboardingProgressPlans = {
   ],
 }
 
-function FlowHeader({ plan, stage, onBack, onClose, onSkip, label = 'Setting up AmbitionBox' }) {
+function FlowHeader({ plan, stage, onBack, onClose, onSkip, label = 'Setting up North' }) {
   const steps = plan ? onboardingProgressPlans[plan] : null
   const currentMarker = steps ? Math.max(0, steps.findIndex((item) => item.id === stage)) : -1
   const currentStep = steps?.[currentMarker]
@@ -174,15 +174,15 @@ function ImportingProfile({ source, onDone, onBack, hold = false }) {
     return () => { clearInterval(interval); clearTimeout(timer) }
   }, [hold, onDone, steps.length])
   return <main className="onboarding-flow onboarding-import" id="main-content">
-    <FlowHeader plan="imported" stage="profile" onBack={onBack} onClose={onBack} label="Setting up AmbitionBox" />
+    <FlowHeader plan="imported" stage="profile" onBack={onBack} onClose={onBack} label="Setting up North" />
     <section>
       <div className="import-transfer-hero">
-        <div className="import-transfer" aria-label={source === 'resume' ? 'Résumé moving into AmbitionBox' : 'Naukri profile moving into AmbitionBox'}>
+        <div className="import-transfer" aria-label={source === 'resume' ? 'Résumé moving into North' : 'Naukri profile moving into North'}>
           <div className={`import-endpoint ${source === 'resume' ? 'resume' : 'naukri'}`}><span>{source === 'resume' ? <FileCheck2 size={27} /> : <img src="/naukri-symbol.png" alt="" />}</span><small>{source === 'resume' ? 'Résumé' : 'Naukri'}</small></div>
           <div className="import-transfer-track" aria-hidden="true"><i /></div>
-          <div className="import-endpoint ambitionbox"><span><img src="/favicon.svg" alt="" /></span><small>AmbitionBox</small></div>
+          <div className="import-endpoint ambitionbox"><span><img src="/north-mark.svg" alt="" /></span><small>North</small></div>
         </div>
-        <h1>{source === 'resume' ? 'Building your profile from your résumé' : 'Bringing your Naukri profile to AmbitionBox'}</h1>
+        <h1>{source === 'resume' ? 'Building your profile from your résumé' : 'Bringing your Naukri profile to North'}</h1>
       </div>
       <div className="import-progress-card">
         <header><span>Import progress</span><strong>Step {active + 1} of {steps.length}</strong></header>
@@ -240,7 +240,7 @@ function ManualProfile({ initial, onDone, onBack }) {
 function ProfileEditSheet({ field, value, onSave, onClose }) {
   const [nextValue, setNextValue] = useState(Array.isArray(value) ? value.join(', ') : value)
   const label = field === 'titleCompany' ? 'Role and company' : field === 'skills' ? 'Skills' : field
-  return <FlowSheet label={`Edit ${label}`} onClose={onClose}><h2>Edit {label}</h2><p>Keep this accurate. AmbitionBox will use it across recommendations.</p><label className="sheet-edit-field"><span>{label}</span><input autoFocus name={`edit-${field}`} autoComplete="off" value={nextValue} onChange={(event) => setNextValue(event.target.value)} /></label><button className="primary-button" onClick={() => onSave(nextValue)}>Save changes</button></FlowSheet>
+  return <FlowSheet label={`Edit ${label}`} onClose={onClose}><h2>Edit {label}</h2><p>Keep this accurate. North will use it across recommendations.</p><label className="sheet-edit-field"><span>{label}</span><input autoFocus name={`edit-${field}`} autoComplete="off" value={nextValue} onChange={(event) => setNextValue(event.target.value)} /></label><button className="primary-button" onClick={() => onSave(nextValue)}>Save changes</button></FlowSheet>
 }
 
 const richProfileSectionLabels = {
@@ -271,7 +271,7 @@ function RichProfileEditSheet({ section, value, onSave, onClose }) {
     : <input name={`edit-${name}`} autoComplete="off" value={next[name] || ''} onChange={(event) => setField(name, event.target.value)} />}</label>
   return <FlowSheet label={`Edit ${richProfileSectionLabels[section]}`} onClose={onClose}>
     <h2>Edit {richProfileSectionLabels[section]}</h2>
-    <p>These details came from Naukri. Changes here will be used by AmbitionBox.</p>
+    <p>These details came from Naukri. Changes here will be used by North.</p>
     <div className="profile-sheet-fields">
       {section === 'about' && <>{field('name', 'Name')}{field('profileHeadline', 'Profile headline')}{field('profileSummary', 'Profile summary', { multiline: true })}</>}
       {section === 'professional' && <>{field('title', 'Current role')}{field('company', 'Current employer')}{field('experience', 'Total experience')}{field('location', 'Current location')}{field('currentPay', 'Current compensation')}{field('noticePeriod', 'Notice period')}{field('industry', 'Industry')}{field('department', 'Department')}</>}
@@ -328,7 +328,7 @@ function ProfileReview({ draft, source, onChange, onContinue, onBack }) {
 
         <section className="profile-review-surface profile-review-complete">
           <section className="profile-transfer-receipt" aria-label="Naukri autofill summary">
-            <header><span className="profile-transfer-brands" role="img" aria-label="AmbitionBox and Naukri"><img src="/favicon.svg" alt="" /><b>×</b><img src="/naukri-symbol.png" alt="" /></span><div><strong>Your profile, autofilled in seconds</strong><small>From Naukri · {draft.profileFreshness}</small></div></header>
+            <header><span className="profile-transfer-brands" role="img" aria-label="North and Naukri"><img src="/north-mark.svg" alt="" /><b>×</b><img src="/naukri-symbol.png" alt="" /></span><div><strong>Your profile, autofilled in seconds</strong><small>From Naukri · {draft.profileFreshness}</small></div></header>
           </section>
           <div className="profile-review-person profile-review-about">
             <span>AM</span>
@@ -381,7 +381,7 @@ function ProfileReview({ draft, source, onChange, onContinue, onBack }) {
     <FlowHeader plan={source === 'manual' ? 'manual' : 'imported'} stage="review" onBack={onBack} />
     <section className="onboarding-flow-body">
       <h1>Here’s the profile we’ll start with.</h1>
-      <p>Review what AmbitionBox will use. Every detail stays editable.</p>
+      <p>Review what North will use. Every detail stays editable.</p>
       <div className="profile-review-surface">
         <div className={`profile-review-source is-${source}`}>
           <span>{source === 'naukri' ? <img src="/naukri-symbol.png" alt="" /> : source === 'resume' ? <FileCheck2 size={18} /> : <Check size={17} />}</span>
@@ -430,7 +430,7 @@ function PreferencesScreen({ initial, profileSource, onDone, onBack }) {
 
         <section className="preference-review-surface" aria-label="Imported job preferences">
           <header className="preference-source-header">
-            <span className="profile-transfer-brands" role="img" aria-label="AmbitionBox and Naukri"><img src="/favicon.svg" alt="" /><b>×</b><img src="/naukri-symbol.png" alt="" /></span>
+            <span className="profile-transfer-brands" role="img" aria-label="North and Naukri"><img src="/north-mark.svg" alt="" /><b>×</b><img src="/naukri-symbol.png" alt="" /></span>
             <span><strong>Your job preferences from Naukri</strong><small>Review or change them anytime</small></span>
           </header>
           <div className="preference-review-list">
@@ -512,7 +512,7 @@ function PreferenceEditSheet({ field, value, onSave, onClose }) {
   }
   return <FlowSheet label={`${action} ${preferenceEditLabels[field]}`} onClose={onClose}>
     <h2>{action} {preferenceEditLabels[field]}</h2>
-    <p>{isOptional ? 'Add only what should sharpen your matches. You can leave this empty.' : 'AmbitionBox uses this to decide which roles should rise first.'}</p>
+    <p>{isOptional ? 'Add only what should sharpen your matches. You can leave this empty.' : 'North uses this to decide which roles should rise first.'}</p>
     {options ? <fieldset className="preference-sheet-options">
       <legend>{isMultiple ? 'Choose all that apply' : 'Choose one'}</legend>
       <div>{options.map((option) => {
@@ -586,7 +586,7 @@ function JobCurationTransition({ onDone, hold = false }) {
         </AnimatePresence>
       </div>
 
-      <div className="job-curation-network" aria-label="Bringing jobs from multiple sources into AmbitionBox">
+      <div className="job-curation-network" aria-label="Bringing jobs from multiple sources into North">
         <div className="job-curation-orbit" aria-hidden="true">
           {curationSources.map((source, index) => <span className={`job-source-slot is-${source.id}`} key={source.id}>
             <span className="job-source-upright"><motion.span
@@ -604,7 +604,7 @@ function JobCurationTransition({ onDone, hold = false }) {
             key={direction}
           />)}
         </div>
-        <motion.span className="job-curation-hub" initial={reducedMotion ? false : { opacity: 0, scale: .7 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 22, delay: reducedMotion ? 0 : .54 }}><img src="/favicon.svg" alt="" /></motion.span>
+        <motion.span className="job-curation-hub" initial={reducedMotion ? false : { opacity: 0, scale: .7 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 22, delay: reducedMotion ? 0 : .54 }}><img src="/north-mark.svg" alt="" /></motion.span>
       </div>
     </section>
   </motion.main>
@@ -813,7 +813,7 @@ export function ProfileScreen() {
   return <main className="screen profile-memory-screen" id="main-content">
     <header className="profile-memory-header"><OnboardingLogo /><button className="profile-memory-avatar">AM</button></header>
     <section className="profile-memory-hero"><span className="profile-memory-avatar large">AM</span><div><span>Your career context</span><h1>{profile.name}</h1><p>{profile.title} at {profile.company}</p></div></section>
-    <section className="profile-memory-section"><h2>What AmbitionBox knows</h2><div className="profile-memory-list"><div><span>Experience</span><strong>{profile.experience}</strong></div><div><span>Current city</span><strong>{profile.location}</strong></div><div><span>Current compensation</span><strong>{profile.currentPay || 'Not added'}</strong></div><div><span>Target compensation</span><strong>{preferences.targetPay}</strong></div></div></section>
+    <section className="profile-memory-section"><h2>What North knows</h2><div className="profile-memory-list"><div><span>Experience</span><strong>{profile.experience}</strong></div><div><span>Current city</span><strong>{profile.location}</strong></div><div><span>Current compensation</span><strong>{profile.currentPay || 'Not added'}</strong></div><div><span>Target compensation</span><strong>{preferences.targetPay}</strong></div></div></section>
     <section className="profile-memory-section"><h2>Your next move</h2><div className="profile-memory-list"><div><span>Target role</span><strong>{preferences.targetRole}</strong></div><div><span>Location</span><strong>{preferences.locations.join(' · ')}</strong></div><div><span>Work mode</span><strong>{preferences.workModes.join(' · ')}</strong></div></div></section>
     <section className="profile-memory-section profile-memory-source"><ShieldCheck size={18} /><span><strong>You stay in control</strong><small>{journey.profileSource === 'naukri' ? 'Profile imported from Naukri and reviewed by you.' : journey.profileSource === 'resume' ? 'Profile created from a demo résumé and reviewed by you.' : 'Profile details confirmed by you.'}</small></span></section>
     {/* The nav is no longer hand-rolled here. The copy referenced an unimported `Home`
