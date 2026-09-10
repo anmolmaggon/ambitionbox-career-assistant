@@ -176,7 +176,7 @@ export const stageLabel = (id) => (applicationStages.find((stage) => stage.id ==
 export const applications = [
   /* ---- Applied: sent, or someone is reading you ------------------------------- */
   {
-    id: 'phonepe-app', company: 'PhonePe', role: 'Backend Engineer III', initials: 'PP', color: '#5f259f', rating: '4.0', appliedVia: 'Naukri', signalVia: 'Gmail',
+    id: 'phonepe-app', company: 'PhonePe', role: 'Backend Engineer III', initials: 'PP', color: '#5f259f',
     stage: 'applied', source: 'Gmail', preferenceMatch: 83, appliedAgo: '11d ago',
     when: 'Recruiter replied · 2h ago', action: 'Review the draft', flow: 'reply', urgency: 'today',
     insight: 'Sneha at PhonePe, waiting since 7:40. Your draft is written.',
@@ -186,7 +186,7 @@ export const applications = [
     movedNote: 'Recruiter reply detected',
   },
   {
-    id: 'cred-app', company: 'CRED', role: 'Senior Backend Engineer', initials: 'CR', color: '#17192b', rating: '3.7', appliedVia: 'Company site', signalVia: 'Gmail',
+    id: 'cred-app', company: 'CRED', role: 'Senior Backend Engineer', initials: 'CR', color: '#17192b',
     claim: 'CRED’s assessment is due tomorrow.',
     stage: 'applied', source: 'Gmail', preferenceMatch: 81, appliedAgo: '9d ago',
     when: 'Assessment due tomorrow', action: 'Open the assessment', flow: 'reply', urgency: 'tomorrow',
@@ -195,19 +195,19 @@ export const applications = [
     movedNote: 'Assessment link detected',
   },
   {
-    id: 'amazon-app', company: 'Amazon', role: 'SDE III', initials: 'AM', color: '#232f3e', rating: '4.1', appliedVia: 'Naukri', signalVia: 'Naukri',
+    id: 'amazon-app', company: 'Amazon', role: 'SDE III', initials: 'AM', color: '#232f3e',
     stage: 'applied', source: 'Naukri', preferenceMatch: 84, appliedAgo: '4d ago',
     when: 'Applied 4d ago', movedBy: 'north', movedFrom: null, movedAgo: '4d ago', movedVia: 'Naukri',
     movedNote: 'Application confirmed',
   },
   {
-    id: 'flipkart-app', company: 'Flipkart', role: 'Lead Software Engineer', initials: 'FK', color: '#2874f0', rating: '4.0', appliedVia: 'Naukri', signalVia: 'Naukri',
+    id: 'flipkart-app', company: 'Flipkart', role: 'Lead Software Engineer', initials: 'FK', color: '#2874f0',
     stage: 'applied', source: 'Naukri', preferenceMatch: 74, appliedAgo: '16d ago',
     when: 'Recruiter viewed · 2d ago', movedBy: 'north', movedFrom: null, movedAgo: '2d ago', movedVia: 'Naukri',
     movedNote: 'Recruiter view detected',
   },
   {
-    id: 'swiggy-app', company: 'Swiggy', role: 'Backend Engineer', initials: 'SW', color: '#fc8019', rating: '3.8', appliedVia: 'Referral', signalVia: 'Gmail',
+    id: 'swiggy-app', company: 'Swiggy', role: 'Backend Engineer', initials: 'SW', color: '#fc8019',
     stage: 'applied', source: 'Gmail', preferenceMatch: 80, appliedAgo: '8d ago',
     when: 'Applied 8d ago', movedBy: 'north', movedFrom: null, movedAgo: '8d ago', movedVia: 'Gmail',
     movedNote: 'Application confirmed',
@@ -215,7 +215,7 @@ export const applications = [
 
   /* ---- Interview scheduled: one booked round, one already sat ------------------ */
   {
-    id: 'google-app', company: 'Google', role: 'Software Engineer III', initials: 'GO', color: '#4285f4', rating: '4.4', appliedVia: 'Company site', signalVia: 'Gmail',
+    id: 'google-app', company: 'Google', role: 'Software Engineer III', initials: 'GO', color: '#4285f4',
     claim: 'Google is holding three slots for you.',
     stage: 'interview', phase: 'pre', source: 'Gmail', preferenceMatch: 78, appliedAgo: '21d ago',
     when: 'Slots offered 3d ago', action: 'Pick a slot', flow: 'prep', urgency: 'overdue',
@@ -226,7 +226,7 @@ export const applications = [
     movedNote: 'Interview invite detected',
   },
   {
-    id: 'paytm-app', company: 'Paytm', role: 'Senior Backend Engineer', initials: 'PA', color: '#00baf2', rating: '3.3', appliedVia: 'Naukri', signalVia: 'Gmail',
+    id: 'paytm-app', company: 'Paytm', role: 'Senior Backend Engineer', initials: 'PA', color: '#00baf2',
     claim: 'You sat Round 2 at Paytm two days ago.',
     stage: 'interview', phase: 'post', source: 'Gmail', preferenceMatch: 79, appliedAgo: '27d ago',
     when: 'Interviewed 2d ago', action: 'Tell me how it went', flow: 'debrief', urgency: 'today',
@@ -239,7 +239,7 @@ export const applications = [
 
   /* ---- Ghosted: three origins, three different follow-ups --------------------- */
   {
-    id: 'ola-app', company: 'Ola', role: 'Backend Engineer III', initials: 'OL', color: '#1c1c1c', rating: '3.4', appliedVia: 'Naukri', signalVia: 'Gmail',
+    id: 'ola-app', company: 'Ola', role: 'Backend Engineer III', initials: 'OL', color: '#1c1c1c',
     claim: 'Ola never came back.',
     stage: 'ghosted', ghostedFrom: 'applied', source: 'Gmail', preferenceMatch: 72,
     appliedAgo: '52d ago', silentDays: 52,
@@ -249,7 +249,7 @@ export const applications = [
     movedNote: 'Passed 45 days of silence',
   },
   {
-    id: 'pinelabs-app', company: 'Pine Labs', role: 'Lead Backend Engineer', initials: 'PL', color: '#0d3f67', rating: '3.6', appliedVia: 'LinkedIn', signalVia: 'Gmail',
+    id: 'pinelabs-app', company: 'Pine Labs', role: 'Lead Backend Engineer', initials: 'PL', color: '#0d3f67',
     claim: 'Pine Labs has gone quiet since your round.',
     stage: 'ghosted', ghostedFrom: 'interviewed', source: 'Gmail', preferenceMatch: 77,
     appliedAgo: '34d ago', silentDays: 14,
@@ -260,7 +260,7 @@ export const applications = [
     movedNote: 'Passed 10 days after the round',
   },
   {
-    id: 'bharatpe-app', company: 'BharatPe', role: 'Senior Backend Engineer', initials: 'BP', color: '#123c2b', rating: '3.6', appliedVia: 'Naukri', signalVia: 'Gmail',
+    id: 'bharatpe-app', company: 'BharatPe', role: 'Senior Backend Engineer', initials: 'BP', color: '#123c2b',
     claim: 'BharatPe still has not replied.',
     stage: 'ghosted', ghostedFrom: 'applied', source: 'Gmail', preferenceMatch: 70,
     appliedAgo: '61d ago', silentDays: 61, followedUpAgo: 9,
@@ -272,7 +272,7 @@ export const applications = [
 
   /* ---- Rejected: finished, and the only stage that explains itself ------------- */
   {
-    id: 'navi-app', company: 'Navi', role: 'Senior Backend Engineer', initials: 'NV', color: '#2c3e8f', rating: '3.5', appliedVia: 'Company site', signalVia: 'Gmail',
+    id: 'navi-app', company: 'Navi', role: 'Senior Backend Engineer', initials: 'NV', color: '#2c3e8f',
     claim: 'Navi is closed.',
     stage: 'rejected', source: 'Gmail', appliedAgo: '41d ago', when: '6d ago',
     outcome: 'Not selected after the final round', action: 'Understand why', flow: 'rejection',
@@ -291,21 +291,21 @@ export const applications = [
     movedNote: 'Rejection detected',
   },
   {
-    id: 'dream11-app', company: 'Dream11', role: 'Senior Backend Engineer', initials: 'D11', color: '#d6202f', rating: '3.7', appliedVia: 'Naukri', signalVia: 'Gmail',
+    id: 'dream11-app', company: 'Dream11', role: 'Senior Backend Engineer', initials: 'D11', color: '#d6202f',
     stage: 'rejected', source: 'Gmail', appliedAgo: '30d ago', when: '12d ago',
     outcome: 'Not selected after the assessment', reachedRound: 'Assessment',
     movedBy: 'north', movedFrom: 'applied', movedAgo: '12d ago', movedVia: 'Gmail',
     movedNote: 'Rejection detected',
   },
   {
-    id: 'uber-app', company: 'Uber', role: 'Senior Software Engineer', initials: 'UB', color: '#111111', rating: '4.2', appliedVia: 'Company site', signalVia: 'Gmail',
+    id: 'uber-app', company: 'Uber', role: 'Senior Software Engineer', initials: 'UB', color: '#111111',
     stage: 'rejected', source: 'Gmail', appliedAgo: '35d ago', when: '18d ago',
     outcome: 'Role put on hold by the company', reachedRound: 'Round 1 of 4',
     movedBy: 'north', movedFrom: 'applied', movedAgo: '18d ago', movedVia: 'Gmail',
     movedNote: 'Role withdrawn by the company',
   },
   {
-    id: 'myntra-app', company: 'Myntra', role: 'Backend Engineer III', initials: 'MY', color: '#ff3f6c', rating: '4.0', appliedVia: 'Naukri', signalVia: 'Naukri',
+    id: 'myntra-app', company: 'Myntra', role: 'Backend Engineer III', initials: 'MY', color: '#ff3f6c',
     stage: 'rejected', source: 'Naukri', appliedAgo: '44d ago', when: '31d ago',
     outcome: 'Not selected after screening', reachedRound: 'Screening',
     movedBy: 'north', movedFrom: 'applied', movedAgo: '31d ago', movedVia: 'Naukri',

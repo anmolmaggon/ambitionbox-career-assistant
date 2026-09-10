@@ -102,16 +102,7 @@ test('first open turns a Naukri profile and Gmail into a prioritized Home', asyn
   // inbox-derived recruiter moment leads the sequence.
   await expect(page.getByText(/6 things need you/)).toBeVisible()
   await expect(page.getByText('PhonePe').first()).toBeVisible()
-  /*
-   * "Detected in Gmail." was the byline under the quote until 2026-09-10, when the owner's
-   * card reference moved the sender into that slot and the channel into a chip beside it.
-   * The assertion proves the same thing it always did — that the connected inbox is what
-   * produced this card — and now proves something it could not before: that Arjun applied
-   * on Naukri and heard back in Gmail, which is the claim the single `source` field could
-   * not express.
-   */
-  await expect(page.locator('.card-signal', { hasText: 'Gmail' }).first()).toBeVisible()
-  await expect(page.getByText(/via Naukri/).first()).toBeVisible()
+  await expect(page.getByText('Detected in Gmail.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Review the draft' })).toBeVisible()
   await expect(page.getByRole('button', { name: /Ask North about your next move/ })).toBeVisible()
   await expect.poll(async () => journeyState(page)).toMatchObject({
@@ -326,14 +317,7 @@ test('the post-interview card names the interview and asks for the outcome first
   // A day of the week is not an interview. The card names the company, the role and the
   // round, because this screen can hold more than one.
   await expect(page.getByRole('heading', { name: /You sat .* at Juspay yesterday/ })).toBeVisible()
-  /*
-   * The role and the round were one string until 2026-09-10, when the masthead became
-   * three lines — company and rating, then the role, then the facts. The assertion the
-   * comment above describes is unchanged in substance; it just has two elements to find
-   * instead of one, because the role is now the line the block is built around.
-   */
-  await expect(page.locator('.entity-role', { hasText: 'Senior Backend Engineer' }).first()).toBeVisible()
-  await expect(page.getByText('Round 1 of 4').first()).toBeVisible()
+  await expect(page.getByText('Senior Backend Engineer · Round 1 of 4')).toBeVisible()
 
   /*
    * The debrief is a conversation, not a form: North reacts to each answer before asking
