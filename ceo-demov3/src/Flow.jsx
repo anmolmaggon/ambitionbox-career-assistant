@@ -145,6 +145,14 @@ export function FlowScreen() {
     if (type === 'ghosted' && option.result === 'closed') {
       return { applicationStages: { ...(journey.applicationStages || {}), [applicationId]: 'rejected' } }
     }
+    /*
+     * A debriefed round is done needing you. Home drops the card; Tracker keeps the
+     * record, and the ghost rule brings it back on its own if the company stays silent
+     * past fourteen days — which is exactly what this flow just promised.
+     */
+    if (type === 'debrief' && applicationId) {
+      return { debriefed: { ...(journey.debriefed || {}), [applicationId]: true } }
+    }
     // Picking a slot is the one moment the interview story moves: the card that offered
     // slots has to come back tomorrow as the round you booked, not as the same offer.
     if (type === 'prep' && option.result === 'booked' && answers.slot) {

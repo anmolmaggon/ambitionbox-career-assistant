@@ -140,7 +140,13 @@ export const applicationStages = [
 export const ghostRules = {
   applied: { days: 45, label: 'no reply since you applied' },
   invited: { days: 7, label: 'no slot confirmed since the invite' },
-  interviewed: { days: 10, label: 'no update since the round' },
+  /*
+   * 14, not 10, since 2026-09-11 — the owner's number. Two rules govern silence: 45 days
+   * from applying with no shortlisting, and 14 days after a round with no reply. The
+   * flow's copy states the same figure; three places used to say "ten days" while the
+   * spec said fourteen.
+   */
+  interviewed: { days: 14, label: 'no update since the round' },
 }
 
 /* A follow-up buys this many more days before North offers to close the application. */
@@ -903,6 +909,13 @@ export const initialJourney = {
    * so on its face — "Nothing is on your calendar yet — you confirm the slot with them."
    */
   bookedSlots: {},
+  /*
+   * Rounds the user has debriefed, keyed by application. Home reads it so a logged round
+   * stops asking to be logged — without it the whole conversation was recorded to
+   * `flowResults` and thrown away, and the card came back the next morning saying
+   * "Debrief due" to someone who had just answered five questions about it.
+   */
+  debriefed: {},
   phonepeReplied: false,
   naukriConnected: false,
   preferencesConfirmed: false,

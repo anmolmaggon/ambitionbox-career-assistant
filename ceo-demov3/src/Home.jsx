@@ -624,6 +624,16 @@ function setAside({ journey, action }) {
      */
     for (const item of applications.filter((entry) => entry.action)) {
       if (item.company === 'PhonePe') continue
+      /*
+       * A round the user has already debriefed does not need them again. Home is what
+       * needs you today, and the answer to "how did it go" is the one thing only they
+       * could supply — once supplied, the card has nothing left to ask.
+       *
+       * It is not gone: Tracker keeps the record, and if the company stays silent past
+       * the 14-day rule the application returns as GONE QUIET, which is what the debrief
+       * flow promises on its way out.
+       */
+      if (item.flow === 'debrief' && journey.debriefed?.[item.id]) continue
       add(applicationCard(item, journey.bookedSlots?.[item.id]))
     }
     add({

@@ -343,5 +343,8 @@ test('the post-interview card names the interview and asks for the outcome first
   await page.getByRole('button', { name: 'They did not say', exact: true }).click()
 
   // No date means the ghost clock starts today — the answer does real work.
-  await expect(page.getByText(/ten-day clock starts today/)).toBeVisible()
+  // Ten became fourteen on 2026-09-11: the owner set two silence rules, 45 days from
+  // applying with no shortlisting and 14 after a round. The assertion's intent is
+  // unchanged; only the figure the flow quotes moved to match `ghostRules`.
+  await expect(page.getByText(/14-day clock starts today/)).toBeVisible()
 })

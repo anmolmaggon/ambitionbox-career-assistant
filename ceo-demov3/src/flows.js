@@ -392,7 +392,7 @@ function debriefFlow(app) {
     {
       /*
        * The timing question does real work: the answer sets when this application starts
-       * counting as ghosted. Without it the ten-day rule runs off a date nobody agreed to.
+       * counting as ghosted. Without it the 14-day rule runs off a date nobody agreed to.
        */
       id: 'timing', from: 'north', type: 'choice',
       text: 'Last one. Did they say when you would hear back?',
@@ -414,7 +414,7 @@ function debriefFlow(app) {
         const chase = {
           'This week': 'If Friday passes with nothing, I will bring it back with a note already written.',
           'Next week': 'I will hold it quietly and raise it if next week ends in silence.',
-          'They did not say': 'No date means the ten-day clock starts today. If it runs out I will bring it back with a note already written.',
+          'They did not say': 'No date means the 14-day clock starts today. If it runs out I will bring it back with a note already written.',
         }[answers.timing] || 'I will watch the thread.'
         const prep = answers.stuck && answers.stuck !== 'Nothing I would change'
           ? ` Your next round's prep now leads with ${answers.stuck.toLowerCase()}.`
@@ -706,7 +706,7 @@ const FOLLOW_UPS = {
       match: ['what happens', 'next', 'after this'],
       answer: {
         type: 'message',
-        text: `Nothing you control. ${app.company} decides, and I watch the thread. If it goes quiet past ten days I will bring it back with a note already written.`,
+        text: `Nothing you control. ${app.company} decides, and I watch the thread. If it goes quiet past fourteen days I will bring it back with a note already written.`,
       },
     },
     {
