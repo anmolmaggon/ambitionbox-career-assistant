@@ -456,7 +456,14 @@ function rejectionFlow(app) {
       items: [
         { label: 'System-design ownership', meta: 'Named in your debrief as the hard part. Also the gap on your profile', tone: 'warn' },
         { label: 'Java in production', meta: 'The role asked for 3+ years. You confirmed you have none', tone: 'bad' },
-        { label: 'Level', meta: 'You were the only candidate at 6 years for a 7–10 band', tone: 'neutral' },
+        /*
+         * Was "You were the only candidate at 6 years for a 7-10 band". North cannot know
+         * that, in this version or the real one: who else applied is not in the rejection
+         * email, the role requirements, or the profile — and those three are exactly what
+         * the source line below claims this list is built from. The other two items each
+         * pair a requirement with something the user confirmed; this one now does too.
+         */
+        { label: 'Level', meta: `The role asked for 7–10 years. You have ${candidate.experience}`, tone: 'neutral' },
       ],
       source: 'Example reasoning — the real version reads your debrief, the role requirements, and your profile gaps',
     },
