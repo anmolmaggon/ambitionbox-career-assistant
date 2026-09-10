@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import {
   applicationStages, applications, candidate, chapters, interviewIntel, jobs, journeyPresets, juspay, moreJobs, offer,
-  offerDecision, stageLabel, trackerStats,
+  jobDetails, offerDecision, stageLabel, trackerStats,
 } from './data'
 import { useJourney } from './store'
 // Exported from Home rather than moved: the sheet is wired to Home's answer engine, and
@@ -20,7 +20,7 @@ import { OnboardingScreen, ProfileScreen } from './Onboarding'
 import { HomeScreen } from './Home'
 import { FlowScreen } from './Flow'
 import {
-  AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, Pill, ProgressRing, Sheet, Topbar, go,
+  AppLink, AssistantDock, AssistantMark, CompanyLogo, Logo, Needle, Pill, ProgressRing, Sheet, Topbar, go,
 } from './AppUI'
 
 function useLocation() {
@@ -52,7 +52,9 @@ function App() {
   }
   // `/flow/reply`, `/flow/ghosted` … all resolve to the one flow screen, which reads the
   // type off the path and the application off the query.
-  const Component = (pathname.startsWith('/flow/') ? FlowScreen : routes[pathname]) || DemoLauncher
+  const Component = (pathname.startsWith('/flow/') ? FlowScreen
+    : pathname.startsWith('/jobs/') ? JobDetailScreen
+    : routes[pathname]) || DemoLauncher
   const openingStory = pathname === '/offer/juspay' && new URLSearchParams(search).get('story') === 'opening'
   // The states board is a wall of phones, so it is the one route that renders outside
   // the phone shell rather than inside it.
@@ -367,11 +369,13 @@ function TrackerScreen() {
       return { label: journey.prepComplete ? 'Review interview prep' : 'Prepare for interview', onClick: openJuspayInterview, primary: true }
     }
     if (!item.action) return null
+    // Tracker and Home open the same thread for the same card. A second way of handling a
+    // recruiter reply, written differently, is how two screens start disagreeing.
     return {
       label: item.action,
-      onClick: () => item.company === 'PhonePe'
-        ? go('/home?action=phonepe')
-        : setActionNotice(`${item.company} details are ready in the connected email.`),
+      onClick: () => (item.flow
+        ? go(`/flow/${item.flow}?application=${item.id}`)
+        : setActionNotice(`${item.company} details are ready in the connected email.`)),
     }
   }
 
@@ -555,6 +559,25 @@ function ApplicationCard({ item, action, onMove, onUndoMove }) {
           "outlook" chip used to sit here reading "Promising" / "Competitive" — three
           hardcoded adjectives with no derivation behind them, removed 2026-08-19. */}
       {item.readiness && <div className="application-signals"><span>{item.readiness}</span></div>}
+
+      {/*
+        * The Gmail promise, made visible. North reads the inbox and moves cards, and until
+        * a card says so on its face that claim lives only in the pitch. North's own moves
+        * carry an undo; a move the user made says so and is never rewritten.
+        */}
+      {item.movedNote && (
+        <p className={`application-moved ${item.movedBy === 'you' ? 'application-moved--you' : ''}`}>
+          <Needle size={13} />
+          <span>
+            <strong>{item.movedBy === 'you' ? 'You moved this' : item.movedNote}</strong>
+            {' · '}{item.movedVia === 'you' ? item.movedAgo : `${item.movedVia} · ${item.movedAgo}`}
+          </span>
+          {item.movedBy === 'north' && item.movedFrom && (
+            <button className="application-moved__undo" onClick={onMove}>Undo</button>
+          )}
+        </p>
+      )}
+
       {item.insight && <p className="application-insight">{item.insight}</p>}
       <div className="application-card__actions">
         {/* The answer to "how do I move this?" is on every card, at every stage. */}
@@ -793,7 +816,7 @@ function MatchesScreen() {
         <div className="feed-toolbar"><span className="feed-toolbar__label">Sort jobs by</span><button className="filter-button" onClick={() => setSort(sort === 'Best match' ? 'Newest' : 'Best match')}>{sort} <ChevronDown size={15} /></button></div>
         <div className="job-feed">
           {shownJobs.length
-            ? shownJobs.map((job, index) => <JobCard key={job.id} job={job} index={index} saved={journey.savedJobs.includes(job.id)} onSave={() => toggleSaved(job.id)} onOpen={job.id === 'juspay' ? () => go('/jobs/juspay') : null} />)
+            ? shownJobs.map((job, index) => <JobCard key={job.id} job={job} index={index} saved={journey.savedJobs.includes(job.id)} onSave={() => toggleSaved(job.id)} onOpen={OPENABLE.has(job.id) ? () => go(`/jobs/${job.id}`) : null} />)
             : <p className="job-feed__empty">No roles match that yet. Try a different search or clear the filter.</p>}
         </div>
       </section>
@@ -983,7 +1006,7 @@ function SourcesSheet({ onClose, naukriConnected, onConnectNaukri }) {
 
 function SavedJobsSheet({ saved, onClose }) {
   const savedItems = jobs.filter((job) => saved.includes(job.id))
-  return <Sheet label="Saved jobs" onClose={onClose}><Pill tone="soft">YOUR SHORTLIST</Pill><h2>{savedItems.length ? `${savedItems.length} saved ${savedItems.length === 1 ? 'role' : 'roles'}` : 'Nothing saved yet'}</h2><p className="sheet-lead">Save a match to keep it here while you compare.</p><div className="saved-list">{savedItems.length ? savedItems.map((job) => <button key={job.id} onClick={() => job.id === 'juspay' && go('/jobs/juspay')}><CompanyLogo initials={job.initials} /><span><strong>{job.company}</strong><small>{job.role}{job.salary ? ` · ${job.salary}` : ''}</small></span><ChevronRight size={17} /></button>) : <div className="closed-state"><Bookmark size={26} /><p>Your saved roles will appear here.</p></div>}</div><button className="secondary-button" onClick={onClose}>Keep browsing</button></Sheet>
+  return <Sheet label="Saved jobs" onClose={onClose}><Pill tone="soft">YOUR SHORTLIST</Pill><h2>{savedItems.length ? `${savedItems.length} saved ${savedItems.length === 1 ? 'role' : 'roles'}` : 'Nothing saved yet'}</h2><p className="sheet-lead">Save a match to keep it here while you compare.</p><div className="saved-list">{savedItems.length ? savedItems.map((job) => <button key={job.id} onClick={() => OPENABLE.has(job.id) && go(`/jobs/${job.id}`)}><CompanyLogo initials={job.initials} /><span><strong>{job.company}</strong><small>{job.role}{job.salary ? ` · ${job.salary}` : ''}</small></span><ChevronRight size={17} /></button>) : <div className="closed-state"><Bookmark size={26} /><p>Your saved roles will appear here.</p></div>}</div><button className="secondary-button" onClick={onClose}>Keep browsing</button></Sheet>
 }
 
 function NaukriSuccess({ onDone }) {
@@ -1034,24 +1057,65 @@ function ReadinessGroup({ tone, count, name, sub, rows, defaultOpen }) {
   )
 }
 
+/*
+ * Preference Match chips, derived rather than authored. Every chip is one of the user's
+ * stated preferences checked against the posting: green matches, amber is a real trade-off,
+ * grey means no preference was captured so nothing is being judged. The rule from
+ * PROJECT_CONTEXT holds — this is role-to-preference alignment, never profile evidence.
+ */
+function preferenceChips(job) {
+  const target = 22
+  const floor = Number((job.salary.match(/\u20b9(\d+)/) || [])[1] || 0)
+  return [
+    { tone: floor >= target ? 'ok' : 'warn', label: floor >= target ? `${job.salary} · above \u20b922L target` : `${job.salary} · below your \u20b922L target` },
+    { tone: job.location === 'Bengaluru' || job.location === 'Remote' ? 'ok' : 'warn', label: job.location },
+    { tone: 'ok', label: 'Fintech' },
+    { tone: 'ok', label: 'Senior' },
+    { tone: job.mode === 'Office' ? 'warn' : 'ok', label: job.mode === 'Hybrid' ? 'Hybrid · 3 days' : job.mode },
+    { tone: 'neutral', label: job.experience || job.type },
+  ]
+}
+
+/*
+ * One detail screen for every role that has one. Juspay is still the only job whose
+ * readiness moves — the résumé and prep flows act on it — so it keeps the journey-driven
+ * path. The others read a static requirement list, and a role with no readiness data at
+ * all says so rather than inventing a number.
+ */
+/*
+ * Which roles have a detail screen. Juspay is the golden path and its readiness moves
+ * with the journey; Zeta reads a static requirement list; Groww opens and says it has
+ * none. Everything else in the feed stays closed and does not pretend otherwise — no
+ * arrow, no tap target — because a detail screen with nothing behind it would have to
+ * invent the evidence it shows.
+ */
+const OPENABLE = new Set(['juspay', 'zeta', 'razorline'])
+
 function JobDetailScreen() {
   const { journey, toggleSaved } = useJourney()
-  // The assistant here is the same drawer Home opens, capability index and all. It used to
-  // navigate straight into the résumé chat, so the index was unreachable from this screen.
+  const id = window.location.pathname.split('/')[2]
+  const job = [...jobs, ...moreJobs].find((entry) => entry.id === id) || juspay
+  const isJuspay = job.id === 'juspay' || !job.id
+
   const [assistant, setAssistant] = useState(null)
   const [applyOpen, setApplyOpen] = useState(false)
   const assistantSheets = {
     openAddInterview: () => go('/home?action=add-interview'),
     openOfferStart: () => go('/home'),
   }
-  const saved = journey.savedJobs.includes('juspay')
+  const saved = journey.savedJobs.includes(job.id)
   const readiness = journey.readiness
   const javaConfirmed = readiness >= 15
   const tailored = readiness >= 14
 
-  const fits = javaConfirmed ? [...FITS_BASE, ...FITS_ADDED, 'Production Java ownership'] : (tailored ? [...FITS_BASE, ...FITS_ADDED] : FITS_BASE)
-  const strengthen = tailored ? [] : FITS_ADDED
-  const missing = javaConfirmed ? [] : ['Java production experience']
+  const detail = isJuspay ? undefined : jobDetails[job.id]
+  const fits = isJuspay
+    ? (javaConfirmed ? [...FITS_BASE, ...FITS_ADDED, 'Production Java ownership'] : (tailored ? [...FITS_BASE, ...FITS_ADDED] : FITS_BASE))
+    : (detail?.fits || [])
+  const strengthen = isJuspay ? (tailored ? [] : FITS_ADDED) : (detail?.strengthen || [])
+  const missing = isJuspay ? (javaConfirmed ? [] : ['Java production experience']) : (detail?.missing || [])
+  const total = isJuspay ? 15 : (detail?.total || 0)
+  const evidenced = isJuspay ? readiness : fits.length
   const meter = [
     ...Array(fits.length).fill('ok'),
     ...Array(strengthen.length).fill('need'),
@@ -1060,88 +1124,84 @@ function JobDetailScreen() {
 
   return (
     <main id="main-content" className="detail-screen screen">
-      <Topbar back="/matches" title="Job details" right={<button className="icon-button" onClick={() => toggleSaved('juspay')} aria-label={saved ? 'Unsave job' : 'Save job'}><Bookmark size={20} fill={saved ? 'currentColor' : 'none'} /></button>} />
+      <Topbar back="/matches" title="Job details" right={<button className="icon-button" onClick={() => toggleSaved(job.id)} aria-label={saved ? 'Unsave job' : 'Save job'}><Bookmark size={20} fill={saved ? 'currentColor' : 'none'} /></button>} />
 
       <section className="identity page-pad">
         <div className="id-row">
-          <span className="id-logo">JP</span>
+          <span className="id-logo">{job.initials}</span>
           <div className="id-titlewrap">
-            <h1 className="id-title">{juspay.role}</h1>
+            <h1 className="id-title">{job.role}</h1>
             <div className="id-companyline">
-              <span className="id-company">{juspay.company}</span>
-              <span className="rating" aria-label={`AmbitionBox rating ${juspay.rating} out of 5, based on ${juspay.reviews}`}>
+              <span className="id-company">{job.company}</span>
+              <span className="rating" aria-label={`AmbitionBox rating ${job.rating} out of 5, based on ${job.reviews}`}>
                 <span className="rating__tile"><Star size={12} fill="currentColor" strokeWidth={0} /></span>
-                <span className="rating__num">{juspay.rating}</span>
-                <span className="rating__meta">· {juspay.reviews}</span>
+                <span className="rating__num">{job.rating}</span>
+                <span className="rating__meta">· {job.reviews}</span>
               </span>
             </div>
           </div>
         </div>
-        <p className="id-meta"><span className="src">via Naukri</span> · Posted 2 days ago</p>
+        <p className="id-meta"><span className="src">{job.sourceLabel || 'via Naukri'}</span> · Posted {job.posted || '2 days ago'}</p>
       </section>
 
       <div className="actions page-pad">
-        <button className="act-save" onClick={() => toggleSaved('juspay')} aria-pressed={saved}>
+        <button className="act-save" onClick={() => toggleSaved(job.id)} aria-pressed={saved}>
           <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} /> {saved ? 'Saved' : 'Save'}
         </button>
         {/* Applying happens on Naukri, not here. The sheet says so rather than the button
-            quietly leading somewhere else — it was opening the résumé chat. */}
+            quietly leading somewhere else. */}
         <button className="act-apply" onClick={() => setApplyOpen(true)}>
           <ExternalLink size={16} /> Apply on Naukri
         </button>
       </div>
 
-      <section className="b-pref" aria-label={`Preference match ${juspay.preferenceMatch} percent`}>
+      <section className="b-pref" aria-label={`Preference match ${job.preferenceMatch} percent`}>
         <div className="b-pref__head">
           <span className="b-pref__title">PREFERENCE MATCH</span>
-          <span className="b-pref__score">{juspay.preferenceMatch}%</span>
+          <span className="b-pref__score">{job.preferenceMatch}%</span>
         </div>
         <div className="b-chips">
-          <span className="b-chip b-chip--ok"><Check size={14} /> {juspay.salary} · above ₹22L target</span>
-          <span className="b-chip b-chip--ok"><Check size={14} /> {juspay.location}</span>
-          <span className="b-chip b-chip--ok"><Check size={14} /> Fintech</span>
-          <span className="b-chip b-chip--ok"><Check size={14} /> Senior</span>
-          <span className="b-chip b-chip--warn">Hybrid · 3 days</span>
-          <span className="b-chip b-chip--neutral">{juspay.type}</span>
+          {preferenceChips(job).map((chip) => (
+            <span key={chip.label} className={`b-chip b-chip--${chip.tone}`}>
+              {chip.tone === 'ok' && <Check size={14} />} {chip.label}
+            </span>
+          ))}
         </div>
-        {/* 1B's match-breakdown row. It opens the assistant with the question rather than
-            being a label that looks like a control. */}
-        {/* Asks the assistant why this matches — it used to open the résumé chat, which
-            answers a different question entirely. */}
-        <button className="b-cta" onClick={() => setAssistant('Why is Juspay a good match for me?')}>
+        <button className="b-cta" onClick={() => setAssistant(`Why is ${job.company} a good match for me?`)}>
           See match breakdown <ChevronRight size={18} />
         </button>
       </section>
 
-      <section className="b-ready">
-        <div className="b-ready__top">
-          <h2 className="ready__title">Profile Readiness</h2>
-          <p className="ready__count"><b>{readiness} of 15</b> requirements evidenced</p>
-          <div className="seg" role="img" aria-label={`Of 15 requirements: ${fits.length} confirmed matches, ${strengthen.length} need evidence, ${missing.length} mismatch`}>
-            {meter.map((tone, index) => <span key={index} className={`seg__b seg__b--${tone}`} />)}
+      {total ? (
+        <section className="b-ready">
+          <div className="b-ready__top">
+            <h2 className="ready__title">Profile Readiness</h2>
+            <p className="ready__count"><b>{evidenced} of {total}</b> requirements evidenced</p>
+            <div className="seg" role="img" aria-label={`Of ${total} requirements: ${fits.length} confirmed matches, ${strengthen.length} need evidence, ${missing.length} mismatch`}>
+              {meter.map((tone, index) => <span key={index} className={`seg__b seg__b--${tone}`} />)}
+            </div>
           </div>
-        </div>
-        <div className="b-groups">
-          <ReadinessGroup tone="ok" count={fits.length} name="What already fits" sub="Clear, relevant evidence" rows={fits} />
-          <ReadinessGroup tone="need" count={strengthen.length} name="What to strengthen" sub={tailored ? 'No unresolved evidence' : '3 need stronger proof · 1 needs confirmation'} rows={strengthen} defaultOpen={!tailored} />
-          <ReadinessGroup tone="miss" count={missing.length} name="What may hold you back" sub={javaConfirmed ? 'No confirmed gaps' : 'A confirmed gap against the role'} rows={missing} defaultOpen={!javaConfirmed} />
-        </div>
-        {/* 1B closes the readiness card with its own action, so the card that names the
-            gaps is also the one that offers to close them. */}
-        {/* The dock is the assistant, always. The forward step lives on the card that
-            names what is standing in its way. */}
-        <button className="b-ready__cta" onClick={() => go(!tailored ? '/assistant/juspay' : journey.interviewInvited ? '/prep/juspay' : '/home')}>
-          <span className="b-ready__cta-lead"><AssistantMark className="b-ready__cta-orb" /> {!tailored ? 'Close gaps · tailor your résumé' : journey.interviewInvited ? 'Prepare for interview' : 'See my next move'}</span>
-          <ChevronRight size={18} />
-        </button>
-      </section>
+          <div className="b-groups">
+            <ReadinessGroup tone="ok" count={fits.length} name="What already fits" sub="Clear, relevant evidence" rows={fits} />
+            <ReadinessGroup tone="need" count={strengthen.length} name="What to strengthen" sub={strengthen.length ? `${strengthen.length} need stronger proof` : 'No unresolved evidence'} rows={strengthen} defaultOpen={Boolean(strengthen.length)} />
+            <ReadinessGroup tone="miss" count={missing.length} name="What may hold you back" sub={missing.length ? 'Confirmed gaps against the role' : 'No confirmed gaps'} rows={missing} defaultOpen={Boolean(missing.length)} />
+          </div>
+          <button className="b-ready__cta" onClick={() => go(isJuspay ? (!tailored ? '/assistant/juspay' : journey.interviewInvited ? '/prep/juspay' : '/home') : '/assistant/juspay')}>
+            <span className="b-ready__cta-lead"><AssistantMark className="b-ready__cta-orb" /> {isJuspay && tailored ? (journey.interviewInvited ? 'Prepare for interview' : 'See my next move') : 'Close gaps · tailor your résumé'}</span>
+            <ChevronRight size={18} />
+          </button>
+        </section>
+      ) : (
+        /* No readiness data for this company. Drawn as an absence with the reason, never
+           as a finding — an empty meter would read as "you match nothing". */
+        <section className="b-ready b-ready--empty">
+          <h2 className="ready__title">Profile Readiness</h2>
+          <p className="ready__count">Not available for this role</p>
+          <p className="ready__empty">{job.company} has not published a requirement list AmbitionBox can read, and nobody has reported one. Preference Match above still applies — it checks the posting against what you asked for.</p>
+        </section>
+      )}
 
-      {/* 1B's dock: the assistant is the way forward from this screen, so the chrome is the
-          assistant rather than a generic primary button. Save already lives in the actions
-          row and the topbar, so it does not appear a third time. */}
       <div className="detail-dock">
-        {/* The dock is the assistant on every screen that has one, so it opens the drawer
-            rather than navigating. The page's forward step lives on the readiness card. */}
         <button className="detail-dock-ask" onClick={() => setAssistant('')}>
           <AssistantMark className="detail-dock-mark" />
           <span>Ask about this role</span>
@@ -1153,10 +1213,10 @@ function JobDetailScreen() {
         {assistant !== null && <HomeAssistantSheet journey={journey} initialQuestion={assistant} onClose={() => setAssistant(null)} index={contextualCapabilities({ journey }, assistantSheets, 'job')} />}
         {applyOpen && <Sheet label="Apply on Naukri" onClose={() => setApplyOpen(false)} bottom>
           <h2>Applying happens on Naukri</h2>
-          <p className="sheet-lead">This listing came from Naukri, so the application is submitted there. AmbitionBox never applies on your behalf.</p>
+          <p className="sheet-lead">This listing came from Naukri, so the application is submitted there. North never applies on your behalf.</p>
           <div className="permission-list">
             <div><FileCheck2 size={18} /><span><strong>Take your tailored résumé</strong><small>Download it here first — it is the version written against this role.</small></span></div>
-            <div><ShieldCheck size={18} /><span><strong>Nothing is sent from here</strong><small>No application, message or document leaves AmbitionBox without you.</small></span></div>
+            <div><ShieldCheck size={18} /><span><strong>Nothing is sent from here</strong><small>No application, message or document leaves North without you.</small></span></div>
           </div>
         </Sheet>}
       </AnimatePresence>

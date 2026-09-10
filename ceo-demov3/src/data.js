@@ -898,3 +898,38 @@ export const chapters = [
   { number: '07', title: 'The invite says nothing. We decode it.', path: '/home', preset: 'resume', duration: '2:10' },
   { number: '08', title: 'The offer becomes a life decision', path: '/offer/juspay?stage=notification&story=finale', preset: 'offer', duration: '1:40' },
 ]
+
+/*
+ * Readiness for the roles beyond the golden path, added 2026-09-10 so more than one job
+ * opens. These are lighter than Juspay's on purpose: Juspay's readiness moves with the
+ * journey — it is the role the résumé and prep flows act on — while these are a static
+ * read of the same profile against a different requirement list.
+ *
+ * Groww carries no readiness at all. AmbitionBox does not have depth on every company,
+ * and a role with nothing behind it is drawn as an absence with a line saying why, never
+ * as a finding. That case has to exist here or the feed only ever shows the happy path.
+ */
+export const jobDetails = {
+  zeta: {
+    total: 14,
+    fits: [
+      '6 years of backend engineering', 'Payments and fintech systems', 'REST and gRPC API design',
+      'Microservices architecture', 'PostgreSQL and data modelling', 'Redis and caching',
+      'AWS production systems', 'Monitoring and incident response', 'Code reviews and mentoring',
+    ],
+    strengthen: ['Kafka at Zeta\u2019s volume', 'Ledger and reconciliation depth', 'On-call leadership'],
+    missing: ['Kubernetes ownership', 'Formal system-design ownership'],
+  },
+  phonepe: {
+    total: 16,
+    fits: [
+      '6 years of backend engineering', 'Payments and fintech systems', 'REST and gRPC API design',
+      'Microservices architecture', 'PostgreSQL and data modelling', 'Redis and caching',
+      'Kafka and event-driven systems', 'AWS production systems', 'Monitoring and incident response',
+      'Code reviews and mentoring', 'UPI domain exposure',
+    ],
+    strengthen: ['Scale and throughput numbers', 'Cross-team technical leadership', 'Cost and capacity planning'],
+    missing: ['Production Java', 'Kubernetes ownership'],
+  },
+  razorline: null,
+}
