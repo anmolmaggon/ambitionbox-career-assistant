@@ -1038,6 +1038,22 @@ function ActionCarousel({ ctx, cards }) {
   useEffect(() => () => clearTimeout(leaveTimer.current), [])
 
   /*
+   * `?card=<id>` opens the carousel on one card instead of at the head of the queue.
+   * The order is the product's argument and does not change — this only scrolls, so a
+   * link can point at a single card without the screen pretending it ranked first.
+   *
+   * Added so the states board can show a card that is never the pick, and so a card can
+   * be linked to directly for review.
+   */
+  const carouselRef = useRef(null)
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get('card')
+    if (!wanted || !carouselRef.current) return
+    const target = carouselRef.current.querySelector(`[data-card-id="${CSS.escape(wanted)}"]`)
+    target?.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' })
+  }, [cards])
+
+  /*
    * Why the leave is a CSS class and a timer rather than AnimatePresence.
    *
    * AnimatePresence removes a child when the child disappears from *its own* render.
@@ -1068,7 +1084,7 @@ function ActionCarousel({ ctx, cards }) {
 
   return (
     <>
-      <div className="action-carousel" role="group" aria-label="What needs you, in order">
+      <div className="action-carousel" role="group" aria-label="What needs you, in order" ref={carouselRef}>
         {cards.map((card) => (
           <ActionCard
             key={card.id}
@@ -1299,6 +1315,7 @@ function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }
   const duration = reduceMotion ? 0 : 0.32
   return (
     <motion.article
+      data-card-id={card.id}
       className={`action-card action-card--${card.kind} action-card--${card.tone}${FIELD_TONES.has(card.tone) ? ' action-card--field' : ''}${leaving ? ' is-leaving' : ''}`}
       layout={!reduceMotion}
       transition={{ duration, ease: EASE }}

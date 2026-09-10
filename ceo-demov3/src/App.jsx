@@ -103,6 +103,16 @@ const HOME_STATES = [
     id: 'offer', name: 'An offer on the table', flags: 'offerDetected: true',
     note: 'A decision window outranks everything. The figure leads, but the split sits with it.',
   },
+  /*
+   * The slot-booking card, which is never the pick — a recruiter reply outranks it — so
+   * the board could not show it until `?card=` existed. Same live state as `tracker`,
+   * opened on the Google card rather than at the head of the queue.
+   */
+  {
+    id: 'slots', preset: 'tracker', query: '&card=google-app',
+    name: 'Slots offered — choose on the card', flags: 'preset: tracker · card: google-app',
+    note: 'Three recruiter-offered times, tappable from the card. Tapping one opens the thread with that slot already said, and North answers it. The CTA is the other path: the briefing first, then choose. Nothing is booked either way — North has no calendar access and says so.',
+  },
 ]
 
 const FIELD_LEGEND = [
@@ -115,7 +125,7 @@ const FIELD_LEGEND = [
 
 function StatesBoard() {
   const [zoom, setZoom] = useState(null)
-  const url = (state) => `/home?preset=${state.id}${state.query || ''}`
+  const url = (state) => `/home?preset=${state.preset || state.id}${state.query || ''}`
 
   return (
     <main id="main-content" className="states-board">
