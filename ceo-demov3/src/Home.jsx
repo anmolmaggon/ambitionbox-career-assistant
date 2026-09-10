@@ -1166,11 +1166,8 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <h2>{card.headline}</h2>
-        {(card.when || card.stage) && (
-          <div className="card-taskmeta">
-            {card.when && <span className={`card-due card-due--${card.when.toLowerCase().replace(/\s+/g, '-')}`}>{card.when}</span>}
-            {card.stage && <span className="card-stage">{card.stage}</span>}
-          </div>
+        {card.stage && card.stage.startsWith('Ghosted') && (
+          <div className="card-taskmeta"><span className="card-stage">{card.stage}</span></div>
         )}
         {card.support && <p>{card.support}</p>}
       </div>

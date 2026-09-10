@@ -71,7 +71,7 @@ test('Arjun’s golden path runs from empty tracker to reviewed offer', async ({
 
   await page.getByRole('button', { name: 'See my next move' }).click()
   await page.getByRole('button', { name: 'Jump ahead 3 days' }).click()
-  await expect(page.getByText('INTERVIEW SCHEDULED').first()).toBeVisible()
+  await expect(page.getByText('INTERVIEW BOOKED').first()).toBeVisible()
   await page.getByRole('button', { name: 'See what to expect' }).click()
   await expect(page.getByRole('heading', { name: 'Juspay wants to interview you.' })).toBeVisible()
   await expect(page.getByText('That’s the entire email.')).toBeVisible()

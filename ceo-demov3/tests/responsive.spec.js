@@ -25,7 +25,7 @@ const states = [
   ['/prep/juspay?preset=interview&stage=practice', 'worst incident you were responsible for'],
   ['/prep/juspay?preset=interview&stage=coaching', 'Strong foundation'],
   ['/prep/juspay?preset=offer&stage=ready', 'PREP COMPLETE'],
-  ['/home?preset=interview', 'INTERVIEW SCHEDULED'],
+  ['/home?preset=interview', 'INTERVIEW BOOKED'],
   ['/home?preset=interview&action=add-interview', 'Add an interview yourself.'],
   ['/tracker?preset=interview', 'Prepare for interview'],
   ['/offer/juspay?preset=offer&stage=notification&story=opening', 'Tap the notification to open'],

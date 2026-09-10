@@ -10,10 +10,11 @@
  *
  * Three rules it lives by:
  *
- * 1. TYPE CARRIES THE SCREEN. The greeting runs at 46px, weight 900, leading below 1 and
- *    tracking pulled to -.045em, so it wraps to three lines and reads as a statement
- *    rather than a label. Everything under it drops to 11–13px. The jump between those
- *    two sizes is the hierarchy; there is deliberately nothing in the middle.
+ * 1. ONE WEIGHT DOES THE WORK. The app had reached the point where the greeting, the
+ *    card claims, the section heads, the buttons, the chips and the wordmark were all
+ *    800 or 900, which is the same as none of them being bold. The scale below runs
+ *    400 / 500 / 600 and spends 700 exactly twice: the wordmark, and the one figure a
+ *    screen is about. Hierarchy comes from size and colour, which do not run out.
  *
  * 2. THE ACCENT IS A POINTER, NOT A PALETTE. Acid lime appears on exactly one surface per
  *    screen — the action North wants you to take — plus the active tab. The moment a
@@ -28,8 +29,8 @@
  */
 
 :root[data-look="bold"] {
-  --ab-color-canvas: #f1f1ef;
-  --ab-color-stage: #e4e4e1;
+  --ab-color-canvas: #f6f7f9;
+  --ab-color-stage: #eceef2;
   --ab-color-white: #ffffff;
   --ab-color-ink: #0b0b0b;
   --ab-color-muted: #55565a;
@@ -539,3 +540,151 @@
 [data-look="bold"] .action-card-mark { background: rgba(255, 255, 255, .1); color: #fff; border-radius: 11px; }
 [data-look="bold"] .action-card .time-chip { color: rgba(255, 255, 255, .5); }
 [data-look="bold"] .card-source { color: rgba(255, 255, 255, .45); }
+
+
+/* ==========================================================================
+ * TYPE
+ *
+ * Six roles, three weights. The rule that matters: nothing above 600 unless it is the
+ * wordmark or the single figure a screen exists to deliver. Weight was being used as
+ * emphasis on every element at once, and emphasis that is everywhere is decoration.
+ * Size and colour carry the hierarchy instead — both have far more range left in them.
+ *
+ *   display  30 / 600   a screen's opening sentence
+ *   title    20 / 600   a card's claim
+ *   lead     15 / 500   the line under a claim
+ *   body   13.5 / 400   paragraphs
+ *   label    13 / 600   buttons and figures
+ *   meta   10.5 / 600   kickers and eyebrows, tracked
+ * ========================================================================== */
+
+[data-look="bold"] {
+  --t-display: 30px;
+  --t-title: 20px;
+  --t-lead: 15px;
+  --t-body: 13.5px;
+  --t-label: 13px;
+  --t-meta: 10.5px;
+}
+
+/* The greeting is a sentence, not a poster. Semi-bold, on one or two lines. */
+[data-look="bold"] .home-intro--adaptive h1 {
+  font-size: var(--t-display);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -.025em;
+  max-width: 16ch;
+}
+
+[data-look="bold"] .home-intro--adaptive > p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: var(--t-lead);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+[data-look="bold"] .home-eyebrow,
+[data-look="bold"] .home-intro--adaptive > span,
+[data-look="bold"] .eyebrow {
+  font-size: var(--t-meta);
+  font-weight: 600;
+  letter-spacing: .12em;
+}
+
+[data-look="bold"] .action-card h2 { font-size: var(--t-title); font-weight: 600; line-height: 1.2; letter-spacing: -.025em; }
+[data-look="bold"] .action-card-kicker { font-size: 9.5px; font-weight: 600; letter-spacing: .12em; }
+[data-look="bold"] .action-card-org strong { font-size: var(--t-body); font-weight: 600; letter-spacing: 0; }
+[data-look="bold"] .action-card-cta { font-size: var(--t-label); font-weight: 600; letter-spacing: 0; }
+[data-look="bold"] .action-card-figure { font-size: var(--t-label); font-weight: 600; letter-spacing: 0; }
+[data-look="bold"] .action-card-facts span { font-size: 12px; font-weight: 500; }
+[data-look="bold"] .card-quote { font-size: var(--t-lead); font-weight: 500; letter-spacing: -.01em; }
+[data-look="bold"] .card-mid > p { font-size: var(--t-body); font-weight: 400; }
+
+/* 700 lives here and nowhere else on a card: the number the screen is about. */
+[data-look="bold"] .card-figure b { font-size: 32px; font-weight: 700; letter-spacing: -.04em; }
+[data-look="bold"] .flow-figure strong { font-size: 44px; font-weight: 700; letter-spacing: -.045em; }
+[data-look="bold"] .brand-letters { font-weight: 700; letter-spacing: -.01em; }
+
+[data-look="bold"] .tracker-summary h1 { font-size: 28px; font-weight: 600; letter-spacing: -.03em; line-height: 1.15; }
+[data-look="bold"] .stage-head__title { font-size: var(--t-body); font-weight: 600; letter-spacing: -.01em; }
+[data-look="bold"] .stage-chips button { font-weight: 500; }
+[data-look="bold"] .flow-header-copy h1 { font-size: 16px; font-weight: 600; letter-spacing: -.015em; }
+[data-look="bold"] .flow-verdict h2 { font-size: var(--t-title); font-weight: 600; letter-spacing: -.025em; }
+[data-look="bold"] .flow-message { font-size: var(--t-lead); font-weight: 400; letter-spacing: -.005em; }
+[data-look="bold"] .flow-chip { font-weight: 500; }
+[data-look="bold"] .flow-card-title { font-size: var(--t-body); font-weight: 600; }
+[data-look="bold"] .b-pref__score { font-size: 28px; font-weight: 700; letter-spacing: -.04em; }
+[data-look="bold"] .id-title { font-size: 22px; font-weight: 600; letter-spacing: -.025em; }
+[data-look="bold"] .primary-button,
+[data-look="bold"] .secondary-button,
+[data-look="bold"] .ghost-button,
+[data-look="bold"] .job-action--view { font-weight: 600; letter-spacing: 0; }
+
+/* ==========================================================================
+ * CARD STATUS
+ *
+ * The card stays near-black. Status arrives as a tint bleeding out of the top-left
+ * corner and as the colour of the kicker chip — never as a fill, and never as the
+ * button, because the accent has to stay the only lit thing on the screen.
+ *
+ * Two channels for one fact: a reader who cannot separate the hues still has the
+ * kicker's words, and a reader skimming without reading still has the tint.
+ *
+ * Rejection is slate. It is finished rather than wrong, and an alarm colour on it
+ * would teach people to flinch at their own Home screen.
+ * ========================================================================== */
+
+[data-look="bold"] .action-card {
+  --status: #94a3b8;
+  position: relative;
+  /*
+   * Two stops, not one. A single radial at low alpha disappeared against near-black; a
+   * stronger corner plus a long wash across the top reads as the card being lit from the
+   * status rather than as a coloured patch stuck on it.
+   */
+  background:
+    radial-gradient(115% 78% at 2% 0%, color-mix(in srgb, var(--status) 38%, transparent), transparent 64%),
+    linear-gradient(168deg, color-mix(in srgb, var(--status) 14%, transparent), transparent 48%),
+    var(--bold-card);
+}
+
+[data-look="bold"] .action-card--offer { --status: #34d399; }
+[data-look="bold"] .action-card--interview { --status: #a78bfa; }
+[data-look="bold"] .action-card--reply { --status: #60a5fa; }
+[data-look="bold"] .action-card--update { --status: #fbbf24; }
+[data-look="bold"] .action-card--role { --status: #818cf8; }
+[data-look="bold"] .action-card--quiet { --status: #94a3b8; }
+
+/* A hairline of the status colour along the top edge, fading as it goes. The reference
+   uses a full band; on a dark card a band would fight the masthead sitting under it. */
+[data-look="bold"] .action-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--status), color-mix(in srgb, var(--status) 10%, transparent) 62%, transparent);
+  z-index: 1;
+}
+
+[data-look="bold"] .action-card-kicker {
+  background: color-mix(in srgb, var(--status) 16%, transparent);
+  color: color-mix(in srgb, var(--status) 78%, white);
+}
+
+/* The floor stays neutral. It is where the action lives, and a tinted floor under a
+   blue button is two colours arguing about which one is the point. */
+[data-look="bold"] .action-card-foot {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, .045);
+}
+
+[data-look="bold"] .action-card-head,
+[data-look="bold"] .card-mid { position: relative; z-index: 1; }
+
+/* On paper. A dark card needs a real shadow to sit on a near-white ground rather than
+   look like a hole cut in it. */
+[data-look="bold"] .action-card {
+  box-shadow: 0 10px 30px rgba(15, 20, 35, .13), 0 1px 2px rgba(15, 20, 35, .1);
+}

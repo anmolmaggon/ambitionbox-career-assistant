@@ -112,7 +112,7 @@ test('the ready state derives its metrics and arms the candidate with questions'
 
 test('the interview is visible on Home and Tracker without stealing the offer card', async ({ page }) => {
   await page.goto('/home?preset=interview')
-  await expect(page.getByText('INTERVIEW SCHEDULED').first()).toBeVisible()
+  await expect(page.getByText('INTERVIEW BOOKED').first()).toBeVisible()
   await expect(page.getByText(/Round 1 of 4/)).toBeVisible()
   await page.goto('/tracker?preset=interview')
   await expect(page.getByText('See what to expect and start tailored prep')).toBeVisible()
