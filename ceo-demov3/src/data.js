@@ -916,6 +916,16 @@ export const initialJourney = {
    * "Debrief due" to someone who had just answered five questions about it.
    */
   debriefed: {},
+  /*
+   * Applications the user has nudged from the ghosted flow, keyed by id. Home reads it so
+   * a chased application stops asking to be chased — the flow says "Marked as sent. North
+   * is watching the thread", and until this existed the card still read "Send a nudge"
+   * with "The nudge is written" underneath it.
+   *
+   * The already-chased state is not new: `bharatpe-app` ships in it, with its own copy and
+   * "Close this one" as the action. Ola simply had no way to reach it.
+   */
+  nudged: {},
   phonepeReplied: false,
   naukriConnected: false,
   preferencesConfirmed: false,

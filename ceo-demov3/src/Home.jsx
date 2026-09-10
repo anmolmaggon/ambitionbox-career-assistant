@@ -23,7 +23,7 @@ import {
   Clock3, FileCheck2, FileText, Info, Mail, Menu, MessageSquare, Mic, PiggyBank, Plus, Scale, Send, ShieldCheck, Sparkles, Target,
   UserRoundCheck, X,
 } from 'lucide-react'
-import { applications, candidate, interviewIntel, jobs, juspay, offer, offerDecision, offeredSlots, onboardingProfile, stageLabel } from './data'
+import { applications, candidate, ghostFollowUpGrace, interviewIntel, jobs, juspay, offer, offerDecision, offeredSlots, onboardingProfile, stageLabel } from './data'
 import { useJourney } from './store'
 import { AssistantDock, AssistantMark, BottomNav, CompanyLogo, Logo, NorthMark, Pill, PromptChips, Sheet, go } from './AppUI'
 
@@ -489,7 +489,7 @@ function stageNote(item) {
  * figure is the slot itself rather than a countdown to a decision already made, and the
  * action becomes preparation because choosing is behind you.
  */
-function applicationCard(item, booked) {
+function applicationCard(item, { booked, nudged } = {}) {
   const presentation = booked
     ? { kicker: 'INTERVIEW BOOKED', tone: 'interview', shape: 'task', icon: <Clock3 size={14} /> }
     : (FLOW_PRESENTATION[item.flow] || FLOW_PRESENTATION.job)
@@ -508,7 +508,18 @@ function applicationCard(item, booked) {
    * knows their calendar, the CTA for someone who wants to know what they are walking
    * into first.
    */
-  const action = booked ? 'Start prep' : (slots ? 'See what this round covers' : item.action)
+  /*
+   * A ghosted application the user has just chased. The fixture already models this state
+   * on `bharatpe-app` — chased, still quiet, and the only move left is to close it — so
+   * this puts Ola into the same state rather than inventing a third one. The grace period
+   * is `ghostFollowUpGrace`, the same fourteen days the flow promised on its way out.
+   */
+  const chased = nudged && item.stage === 'ghosted'
+  const action = booked
+    ? 'Start prep'
+    : chased ? 'Close this one'
+    : slots ? 'See what this round covers'
+    : item.action
   /*
    * Round, length and format, structured. The length is the fact this card was missing:
    * you cannot sensibly choose between 11:00 and 15:30 without knowing whether it takes a
@@ -525,6 +536,7 @@ function applicationCard(item, booked) {
     detail: action,
     claim: booked
       ? `${item.interview?.round || 'Your round'} at ${item.company} is booked for ${booked}.`
+      : chased ? `Your note to ${item.company} has gone.`
       : item.claim,
     when: item.when,
     // A booked round outranks an open invitation: it has a fixed date, and the whole
@@ -551,10 +563,12 @@ function applicationCard(item, booked) {
     // by then the card has already stopped offering the other two times.
     canRebook: Boolean(booked),
     meta,
-    foot: booked || cardFigure(item),
+    foot: booked || (chased ? 'Nudged today' : cardFigure(item)),
     reason: booked
       ? 'Prep is built from what this round covers, not the whole job description.'
-      : cardSupport(item, meta),
+      : chased
+        ? `${ghostFollowUpGrace} more days of nothing and closing it is the move that is yours.`
+        : cardSupport(item, meta),
     onSelect: () => go(`/flow/${item.flow}?application=${item.id}`),
     ...presentation,
     // A quote is what makes the reply shape a message rather than a task; without one
@@ -634,7 +648,17 @@ function setAside({ journey, action }) {
        * flow promises on its way out.
        */
       if (item.flow === 'debrief' && journey.debriefed?.[item.id]) continue
-      add(applicationCard(item, journey.bookedSlots?.[item.id]))
+      /*
+       * A stage the user moved by hand. Tracker has always honoured `applicationStages`
+       * and Home never read it, so closing a ghosted application from its own flow left
+       * the same application sitting in Rejected on one tab and asking to be chased on
+       * the other. Once the user has said what to do with it, nothing on Home needs them.
+       */
+      if (journey.applicationStages?.[item.id]) continue
+      add(applicationCard(item, {
+        booked: journey.bookedSlots?.[item.id],
+        nudged: journey.nudged?.[item.id],
+      }))
     }
     add({
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,

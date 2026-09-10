@@ -145,6 +145,11 @@ export function FlowScreen() {
     if (type === 'ghosted' && option.result === 'closed') {
       return { applicationStages: { ...(journey.applicationStages || {}), [applicationId]: 'rejected' } }
     }
+    // A nudge the user says they sent resets the clock, which is what the flow promised
+    // one screen earlier. Nothing was sent by North — the flow copies a draft and says so.
+    if (type === 'ghosted' && option.result === 'sent') {
+      return { nudged: { ...(journey.nudged || {}), [applicationId]: true } }
+    }
     /*
      * A debriefed round is done needing you. Home drops the card; Tracker keeps the
      * record, and the ghost rule brings it back on its own if the company stays silent
