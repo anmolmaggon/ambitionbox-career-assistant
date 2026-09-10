@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  ArrowLeft, BriefcaseBusiness, ChevronRight, Compass, Home, Send, X,
+  ArrowLeft, BriefcaseBusiness, ChevronRight, Compass, Home, Mic, Send, X,
 } from 'lucide-react'
 import { candidate } from './data'
 
@@ -171,6 +171,13 @@ export function AskPill({ label, examples, reduceMotion, onOpen }) {
       {animate
         ? <span className="home-dock-typed" aria-hidden="true">{typed}<i /></span>
         : <span aria-hidden="true">{label}</span>}
+      {/*
+        * Decoration, not a control — the whole pill is one button, so a nested button
+        * would be invalid, and there is nothing here for a second control to do. Tapping
+        * the mic opens the assistant, which is where dictating would happen, so the
+        * affordance does not lie about where it leads.
+        */}
+      <span className="home-dock-mic" aria-hidden="true"><Mic size={16} /></span>
       {/* North's own chevron rather than a paper plane. The mark points where the app
           points, and on a send control an upward bearing reads as submit anyway. */}
       <span className="home-dock-send"><NorthMark /></span>

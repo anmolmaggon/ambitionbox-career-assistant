@@ -194,7 +194,7 @@
   padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line);
   background: var(--canvas); color: var(--ink); font-size: 12px; font-weight: 600;
 }
-.flow-copy:hover { border-color: var(--primary); color: var(--primary); }
+.flow-copy:hover { border-color: var(--ab-color-hover); color: var(--ab-color-hover); }
 .flow-draft-body {
   width: 100%; border: 0; padding: 0; resize: none; background: transparent;
   font: inherit; font-size: 13.5px; line-height: 1.55; color: var(--ink);
@@ -288,12 +288,12 @@
   white-space: nowrap;
   transition: border-color var(--ab-motion-fast) var(--ab-ease-out), background var(--ab-motion-fast) var(--ab-ease-out);
 }
-.flow-chip:hover { border-color: var(--primary); }
+.flow-chip:hover { border-color: var(--ab-color-hover); }
 .flow-chip.is-on { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 
 /* A question the user could ask reads quieter than an answer North is waiting for. */
 .flow-chip--ask { background: var(--canvas); border-color: transparent; color: var(--muted); font-weight: 500; }
-.flow-chip--ask:hover { background: var(--surface); border-color: var(--primary); color: var(--ink); }
+.flow-chip--ask:hover { background: var(--surface); border-color: var(--ab-color-hover); color: var(--ink); }
 
 .flow-chip--confirm { border-color: var(--primary); color: var(--primary); }
 .flow-chip--confirm:disabled { opacity: .45; }

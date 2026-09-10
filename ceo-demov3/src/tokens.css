@@ -19,6 +19,13 @@
   --ab-color-line: #e7e9f1;
   --ab-color-primary: #3f5cfb;
   --ab-color-primary-dark: #263db8;
+  /*
+   * The hover ink for links and icon controls, set by the owner 2026-09-11. Its own token
+   * rather than a shade of primary: hover is a state, and pointing it at `--ab-color-primary`
+   * meant every hover moved whenever the brand blue did — including in the bold look,
+   * which redefines primary to a much lighter #7e9bff.
+   */
+  --ab-color-hover: #495ac8;
   --ab-color-success: #168b63;
   --ab-color-warning: #b96a12;
   --ab-color-danger: #c94b58;
@@ -59,6 +66,7 @@
   --line: var(--ab-color-line);
   --primary: var(--ab-color-primary);
   --primary-dark: var(--ab-color-primary-dark);
+  --hover: var(--ab-color-hover);
   --teal: var(--ab-color-success);
   --amber: var(--ab-color-warning);
   --danger: var(--ab-color-danger);

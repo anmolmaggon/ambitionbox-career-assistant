@@ -20,12 +20,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
   ArrowLeft, ArrowRight, BriefcaseBusiness, Building2, Calculator, Check, ChevronRight, CircleDollarSign,
-  Clock3, FileCheck2, FileText, Info, Mail, Menu, MessageSquare, PiggyBank, Scale, Search, Send, ShieldCheck, Sparkles, Target,
+  Clock3, FileCheck2, FileText, Info, Mail, Menu, MessageSquare, Mic, PiggyBank, Plus, Scale, Send, ShieldCheck, Sparkles, Target,
   UserRoundCheck, X,
 } from 'lucide-react'
 import { applications, candidate, interviewIntel, jobs, juspay, offer, offerDecision, offeredSlots, onboardingProfile, stageLabel } from './data'
 import { useJourney } from './store'
-import { AssistantDock, AssistantMark, BottomNav, CompanyLogo, Logo, Pill, PromptChips, Sheet, go } from './AppUI'
+import { AssistantDock, AssistantMark, BottomNav, CompanyLogo, Logo, NorthMark, Pill, PromptChips, Sheet, go } from './AppUI'
 
 const EASE = [0.22, 1, 0.36, 1]
 // Kept in step with `.action-card.is-leaving` in home.css — the timer removes the card,
@@ -1676,10 +1676,12 @@ export function capabilities({ journey }, sheets, context = 'home') {
   // label already says, and the live-state suffix that replaced it ("Tuesday 11:00",
   // "₹28L") put facts the cards already carry into a menu, where they read as clutter.
   return [
-    {
-      id: 'roles', label: 'Find roles that fit me',
-      icon: Search, onSelect: () => go('/matches'),
-    },
+    /*
+     * Removed 2026-09-11: "Find roles that fit me" and "Track every application" both
+     * routed to a bottom-nav tab — Jobs and Tracker — so the index was offering the
+     * tabs a second time, one tap further away. That is the rail HOME.md already
+     * deleted for the same reason, rebuilt as menu rows.
+     */
     {
       id: 'company', label: 'Tell me what a company is really like',
       icon: Building2, onSelect: () => go('/jobs/juspay'),
@@ -1693,10 +1695,6 @@ export function capabilities({ journey }, sheets, context = 'home') {
       icon: FileText, onSelect: () => go('/assistant/juspay'),
     },
     {
-      id: 'track', label: 'Track every application',
-      icon: BriefcaseBusiness, onSelect: () => go('/tracker'),
-    },
-    {
       id: 'prep', label: 'Add or prepare an interview',
       icon: UserRoundCheck, onSelect: () => (journey.interviewInvited ? go('/prep/juspay') : sheets.openAddInterview()),
     },
@@ -1704,15 +1702,12 @@ export function capabilities({ journey }, sheets, context = 'home') {
       id: 'offer', label: 'Evaluate an offer',
       icon: CircleDollarSign, onSelect: () => (journey.offerDetected ? go('/offer/juspay?stage=decision&story=finale') : sheets.openOfferStart()),
     },
-    {
-      // The assistant's own memory is a destination too, and the one row that answers
-      // "how do you know any of this" without the user having to ask it. Last, because
-      // it is about the assistant rather than about the search.
-      // Matches the heading on /profile, and a noun phrase reads as a destination —
-      // which also keeps the longest row in the menu to one line at 360px.
-      id: 'knows', label: 'What North knows about me',
-      icon: ShieldCheck, onSelect: () => go('/profile'),
-    },
+    /*
+     * "What North knows about me" also went. It was the row that answered "how do you
+     * know any of this" without the user having to ask, and /profile is still reachable
+     * from the avatar in the header — but nothing in the index points at it now, so the
+     * evidence boundary is one degree less discoverable than it was.
+     */
   ].map((row) => row)
 }
 
@@ -1947,13 +1942,23 @@ export function HomeAssistantSheet({ journey, initialQuestion, onClose, index })
       <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); if (draft.trim()) ask(draft.trim()) }}>
         <input aria-label="Ask North" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === 'thread' ? 'Ask something else' : 'What do you want to know?'} />
         <div className="assistant-composer-foot">
-          <AssistantMark className="assistant-composer-mark" />
-          {/* The assistant signs the field it answers from. The state-dependent grounding
-              line that used to sit here restated what the answer already qualifies. */}
-          <small>North Career Intelligence</small>
-          <button aria-label="Send question" disabled={!draft.trim()}><Send size={16} /></button>
+          {/* Attach and dictate are drawn because an assistant input is expected to carry
+              them, and disabled because this prototype has nowhere to put a file and no
+              microphone. Their labels say so rather than leaving a live-looking control
+              that does nothing. */}
+          <button type="button" className="assistant-composer-icon" aria-label="Attach a file (not available in this demo)" disabled>
+            <Plus size={20} />
+          </button>
+          <span className="assistant-composer-spacer" />
+          <button type="button" className="assistant-composer-icon" aria-label="Dictate (not available in this demo)" disabled>
+            <Mic size={18} />
+          </button>
+          <button className="assistant-composer-send" aria-label="Send question" disabled={!draft.trim()}><NorthMark /></button>
         </div>
       </form>
+      {/* The assistant signs the field it answers from, below it rather than inside it.
+          Sitting on the same row as the controls it read as a label on the send button. */}
+      <small className="assistant-composer-brand">North Career Intelligence</small>
     </div>}
   </Sheet>
 }

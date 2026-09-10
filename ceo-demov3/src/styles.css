@@ -695,7 +695,7 @@ h1, h2, h3 { text-wrap: balance; }
 .application-moved strong { color: var(--ink); font-weight: 600; }
 .application-moved__text { flex: 1; min-width: 0; text-align: left; }
 .application-moved__undo { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; border: 1px solid #dfe3ef; background: #fff; color: var(--ink); font-size: 11px; font-weight: 700; }
-.application-moved__undo:hover { border-color: var(--primary); color: var(--primary); }
+.application-moved__undo:hover { border-color: var(--ab-color-hover); color: var(--ab-color-hover); }
 .application-card--closed .application-moved { opacity: .6; }
 
 /* A role with no requirement list behind it. Drawn as an absence with the reason — an
