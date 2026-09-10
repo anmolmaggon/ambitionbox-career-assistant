@@ -24,7 +24,7 @@
  *    system in this look: hue is expensive here because the accent has to stay unique.
  *
  * Semantic collision, handled: success cannot stay green beside an acid-lime accent, so
- * it becomes a deep forest ink that reads as "settled" rather than "go".
+ * it becomes a deep blue that reads as "settled" rather than "go".
  */
 
 :root[data-look="bold"] {
@@ -41,8 +41,13 @@
   --ab-color-primary-dark: #b6e02f;
   --bold-on-accent: #0b0b0b;
 
-  /* Deep, not bright: success has to read as settled next to the accent, not compete. */
-  --ab-color-success: #12503c;
+  /*
+   * Success is a deep blue here, not a green. Green beside acid lime reads as two of the
+   * same colour arguing, and the one that is meant to mean "go" loses. Blue also carries
+   * the needle's own ground, so the confirmed state and the mark come from one family —
+   * and it is far enough off the accent that nothing has to fight for attention.
+   */
+  --ab-color-success: #1d3e78;
   --ab-color-warning: #8a5410;
   --ab-color-danger: #b3323f;
 
