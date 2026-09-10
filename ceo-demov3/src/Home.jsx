@@ -546,6 +546,10 @@ function applicationCard(item, booked) {
     // A booked round's one number is the slot itself. `cardFigure` would return the round
     // ("Round 1 of 5"), which the claim above already names.
     slots,
+    // A booked round can be un-booked. Committing from the card face is only fair if the
+    // card face can undo it — the flow's "Pick a different slot" is a level deeper, and
+    // by then the card has already stopped offering the other two times.
+    canRebook: Boolean(booked),
     meta,
     foot: booked || cardFigure(item),
     reason: booked
@@ -736,6 +740,7 @@ function carouselCards({ action, aside, journey, sheets }) {
       stats: row.stats,
       stage: row.stage,
       slots: row.slots,
+      canRebook: row.canRebook,
       meta: row.meta,
       applicationId: row.id,
       source: row.source,
@@ -1045,6 +1050,13 @@ function ActionCarousel({ ctx, cards }) {
    * Added so the states board can show a card that is never the pick, and so a card can
    * be linked to directly for review.
    */
+  /* Clearing the slot returns the card to SLOTS OFFERED, chips and all. */
+  const rebook = (id) => {
+    const next = { ...(ctx.journey.bookedSlots || {}) }
+    delete next[id]
+    ctx.update({ bookedSlots: next })
+  }
+
   const carouselRef = useRef(null)
   useEffect(() => {
     const wanted = new URLSearchParams(window.location.search).get('card')
@@ -1094,6 +1106,7 @@ function ActionCarousel({ ctx, cards }) {
             menuOpen={menuFor === card.id}
             onMenu={() => setMenuFor(menuFor === card.id ? null : card.id)}
             onDismiss={() => dismiss(card.id)}
+            onRebook={() => rebook(card.id)}
           />
         ))}
       </div>
@@ -1170,7 +1183,7 @@ function CardKicker({ card }) {
   return <span className="action-card-kicker card-kicker">{card.kicker}</span>
 }
 
-function CardMiddle({ card }) {
+function CardMiddle({ card, onRebook }) {
   // A message: the quote leads behind a rule, and the sender signs it underneath —
   // the order an email actually arrives in.
   if (card.shape === 'reply') {
@@ -1261,6 +1274,9 @@ function CardMiddle({ card }) {
           * The slot travels in the URL rather than being written here, so the card stays
           * a pure render and the flow owns every consequence of the choice.
           */}
+        {card.canRebook && onRebook && (
+          <button className="card-rebook" onClick={onRebook}>Select a different slot</button>
+        )}
         {card.slots && (
           <div className="card-slots" role="group" aria-label="Slots this recruiter offered">
             {card.slots.map((slot) => {
@@ -1311,7 +1327,7 @@ function CardMiddle({ card }) {
   )
 }
 
-function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }) {
+function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss, onRebook }) {
   const duration = reduceMotion ? 0 : 0.32
   return (
     <motion.article
@@ -1335,7 +1351,7 @@ function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }
         </span>
       </div>
 
-      <CardMiddle card={card} />
+      <CardMiddle card={card} onRebook={onRebook} />
 
       {/*
         * The footer band: the one number this card is about, and the one thing to do

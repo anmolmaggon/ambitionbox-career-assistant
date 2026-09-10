@@ -439,7 +439,10 @@ function rejectionFlow(app) {
   return [
     {
       id: 'found', from: 'north', type: 'message',
-      text: `${app.company} closed ${app.when}. You reached ${app.reachedRound?.toLowerCase() || 'the final round'} — further than most people who applied.`,
+      // Matches the card, which stopped saying "closed" on 2026-09-11. The thread opens
+      // where the card left off, and "further than most people who applied" stays because
+      // it is the one comfort here that is a fact rather than a sentiment.
+      text: `${app.company} went with someone else, ${app.when}. You made it to ${app.reachedRound?.toLowerCase() || 'the final round'} — further than most people who applied.`,
     },
     {
       id: 'quote', from: 'north', type: 'quote',

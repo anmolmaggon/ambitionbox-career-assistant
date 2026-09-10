@@ -284,19 +284,39 @@ export const applications = [
   /* ---- Rejected: finished, and the only stage that explains itself ------------- */
   {
     id: 'navi-app', company: 'Navi', role: 'Senior Backend Engineer', initials: 'NV', color: '#2c3e8f',
-    claim: 'Navi is closed.',
+    /*
+     * "Navi is closed" was a status, the way a shop is closed — a door shutting with
+     * nobody on the other side of it. What happened is that people met four times and
+     * then chose someone else, and the card should say that: it is the same fact with
+     * the human restored to it.
+     *
+     * This is as far as the empathy goes on the card face. Sympathy from software reads
+     * as performance, and this card is seen every morning until it is dismissed — the
+     * loss does not renew, but the line would. The warmth that survives repetition is
+     * specificity, which is why the support line names the final round and the figure
+     * beneath it says Round 4 of 4. Colour agrees: rejection stays on slate rather than
+     * red or amber, so Home is never a screen you flinch at.
+     */
+    claim: 'Navi went with someone else.',
     stage: 'rejected', source: 'Gmail', appliedAgo: '41d ago', when: '6d ago',
     outcome: 'Not selected after the final round', action: 'Understand why', flow: 'rejection',
     /*
-     * The line points forward rather than back. A rejection you can do nothing about is
-     * only worth reading if it changes the next decision, and Paytm's is live.
+     * Ends at "worth knowing" as of 2026-09-11. It used to point forward — "...before
+     * Paytm decides" — on the argument that a rejection you cannot undo is only worth
+     * reading if it changes the next decision. The argument is right; the card was the
+     * wrong place for it. Paytm appears nowhere else on this card, so the name arrived
+     * cold, and "before Paytm decides" overstated it besides: Paytm is mid-loop at Round
+     * 2 of 4, not about to rule. It was also hardcoded, and stayed hardcoded whether or
+     * not the Paytm card was on screen.
+     *
+     * The forward argument now lives in the flow, which closes on "The useful part is
+     * what it changes about Paytm" — by then the reader has seen the three reasons and
+     * been asked whether they match, so the name lands instead of appearing.
      *
      * "You reached the final round" is `reachedRound`. An earlier draft said "you were one
      * of the last two", which no rejection email states and North therefore cannot know.
-     * The named company is coupled to the interview-stage fixture above; if that moves,
-     * this line moves with it.
      */
-    insight: 'You reached the final round. Whatever separated you from the person they picked is worth knowing before Paytm decides.',
+    insight: 'You made it to the final round. Whatever separated you from the person they picked is worth knowing.',
     reachedRound: 'Round 4 of 4',
     movedBy: 'north', movedFrom: 'interview', movedAgo: '6d ago', movedVia: 'Gmail',
     movedNote: 'Rejection detected',

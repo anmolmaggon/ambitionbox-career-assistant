@@ -237,8 +237,13 @@
   box-sizing: border-box;
   z-index: 30;
 }
-/* Transparent, and above the sheet in the stack rather than on top of it in space. */
-.flow-rail--floating { background: transparent; padding-bottom: 10px; }
+/*
+ * Transparent, and above the sheet in the stack rather than on top of it in space.
+ * The gap is 18px rather than 10: at 10 the chips sat on the sheet's edge and the two
+ * read as one control, which is the thing moving the rail out of the sheet was meant to
+ * stop. They are separate objects and need to look separate.
+ */
+.flow-rail--floating { background: transparent; margin-bottom: 16px; }
 
 .flow-dock {
   position: static;
