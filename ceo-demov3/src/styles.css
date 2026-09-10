@@ -524,6 +524,7 @@ h1, h2, h3 { text-wrap: balance; }
 .detail-dock-ask > span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-dock-mark { width: 26px; height: 26px; flex: 0 0 auto; display: block; }
 .detail-dock-send { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--primary); }
+.detail-dock-send .north-mark { width: 15px; height: 15px; }
 .detail-screen { padding-bottom: 116px; }
 
 /* ---------- Evidence conversation · prototype/job-detail-1b.html ----------

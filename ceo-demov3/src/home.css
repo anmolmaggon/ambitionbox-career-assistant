@@ -852,7 +852,7 @@
   background: #f5f7fc; color: #202641;
   font-size: var(--h-small); font-weight: 700; text-align: left; cursor: pointer;
 }
-.home-dock-ask > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-dock-ask > span:not(.home-dock-send) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-dock-mark { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 8px; display: block; }
 
 /* The typed line is a placeholder, so it takes placeholder ink and weight — it must not
@@ -864,10 +864,11 @@
 }
 @keyframes home-caret { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .home-dock-typed > i { animation: none; } }
-.home-dock-ask > svg:last-child {
-  flex: 0 0 auto; box-sizing: content-box; width: 16px; height: 16px; padding: 11px;
+.home-dock-ask > .home-dock-send {
+  flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center;
   border-radius: 50%; color: #fff; background: var(--ab-color-ink);
 }
+.home-dock-send .north-mark { width: 14px; height: 14px; }
 
 /* Inside the cluster the tab bar is no longer the thing pinned to the bottom — the
    cluster is — so it drops its own positioning, field and blur and just lays out. */

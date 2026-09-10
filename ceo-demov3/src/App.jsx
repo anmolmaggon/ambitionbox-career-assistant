@@ -1206,7 +1206,7 @@ function JobDetailScreen() {
         <button className="detail-dock-ask" onClick={() => setAssistant('')}>
           <AssistantMark className="detail-dock-mark" />
           <span>Ask about this role</span>
-          <span className="detail-dock-send"><Send size={16} /></span>
+          <span className="detail-dock-send"><NorthMark /></span>
         </button>
       </div>
 

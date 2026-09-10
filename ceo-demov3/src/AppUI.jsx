@@ -171,7 +171,9 @@ export function AskPill({ label, examples, reduceMotion, onOpen }) {
       {animate
         ? <span className="home-dock-typed" aria-hidden="true">{typed}<i /></span>
         : <span aria-hidden="true">{label}</span>}
-      <Send size={16} />
+      {/* North's own chevron rather than a paper plane. The mark points where the app
+          points, and on a send control an upward bearing reads as submit anyway. */}
+      <span className="home-dock-send"><NorthMark /></span>
     </button>
   )
 }
