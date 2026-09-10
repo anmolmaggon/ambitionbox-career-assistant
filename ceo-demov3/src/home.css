@@ -480,10 +480,33 @@
 
 /* Action-title step from context/UI.md rather than a display step: the card holds a
    claim, not a headline, and at 20px a three-line quote crowded everything under it. */
+/*
+ * `text-wrap: pretty`, overriding the global `h1, h2, h3 { text-wrap: balance }` in
+ * styles.css. Balance distributes the words evenly across lines, which on a 270px measure
+ * broke "Google is holding three slots for you." after "holding" and left a third of the
+ * card empty. Pretty fills each line and only protects the last one from a single word.
+ */
 .action-card h2 {
   margin: var(--h-3) 0 6px;
   font-size: 17px; font-weight: 800; line-height: 1.3; letter-spacing: -.026em;
   color: var(--ab-color-ink);
+  text-wrap: pretty;
+}
+
+/*
+ * The kicker moved out of the masthead on 2026-09-11, so the role gets the full width and
+ * fits on one line. It now sits under the claim, where it reads as a label on the news
+ * rather than as a label on the company.
+ */
+/* `inline-flex`, not `block`: the kicker is a chip and has to hug its text. As a block it
+   inherited the chip's background across the full measure and read as a section bar. */
+.card-kicker { display: inline-flex; align-self: flex-start; width: auto; max-width: 100%; margin: 0 0 var(--h-2); flex: 0 0 auto; }
+
+/* The round, its length and where it happens — the three facts you need to choose a time.
+   Structured as one middot line rather than folded into the sentence below it. */
+.card-meta {
+  margin: 0 0 var(--h-2);
+  color: var(--h-quiet); font-size: 11px; font-weight: 700; letter-spacing: -.005em;
 }
 .action-card > p { margin: 0; color: #5a6178; font-size: 12.5px; line-height: 1.5; }
 
@@ -581,8 +604,13 @@
 /* A queued role has nobody waiting on it, so its action is quiet rather than solid. */
 .action-card--queued.action-card--role .action-card-cta { color: #262d46; background: #f0f3fa; }
 
+/*
+ * z-index 4, above the masthead. `.action-card-head` takes `position: relative; z-index: 1`
+ * in bold.css, so once the head grew a second line for the role it covered this button and
+ * swallowed the click — the ✕ looked fine and did nothing.
+ */
 .action-card-dismiss {
-  position: absolute; top: var(--h-2); right: var(--h-2);
+  position: absolute; z-index: 4; top: var(--h-2); right: var(--h-2);
   width: 44px; height: 44px; border: 0; border-radius: 50%;
   display: grid; place-items: center;
   color: #a3aabd; background: transparent; cursor: pointer;
@@ -758,19 +786,28 @@
 
 /* No rule above it: the whitespace is the separation. A hairline made the quote read as
    a section boundary rather than as the page simply ending. */
-.home-quote { position: relative; margin: 0; padding-top: var(--h-8); padding-bottom: var(--h-2); }
+/*
+ * Tightened 2026-09-11 to the owner's reference. The block used to open a 42px gap under
+ * the label and hang a 62px glyph across it, which made the quotation read as a section
+ * with a decorative header. The reference stacks the four parts close together, so the
+ * whole thing reads as one quiet object — which is what it is, and it is the screen
+ * exhaling after the work rather than a fifth thing asking for attention.
+ */
+.home-quote { position: relative; margin: 0; padding-top: var(--h-6); padding-bottom: var(--h-2); }
 .home-quote-label {
-  display: block; margin-bottom: 42px;
+  display: block; margin-bottom: var(--h-2);
   color: #9aa2b8; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
 }
 /* One glyph, set in a serif because Figtree's quote mark is two flat slabs and reads as
    an artifact at this size rather than as a mark. The typeface rule still governs text;
    this is a piece of punctuation used as ornament, and it is the only place it appears. */
 .home-quote-mark {
-  position: absolute; top: 40px; left: 17px;
+  /* In the flow, not over it. Absolute positioning was what forced the 42px gap to exist
+     for it to sit in; at this size it can simply take its own line. */
+  display: block; margin-bottom: 2px;
   font-family: Georgia, 'Times New Roman', 'Iowan Old Style', serif;
-  font-size: 62px; line-height: 1; font-weight: 400;
-  color: #dfe4f1; user-select: none;
+  font-size: 30px; line-height: .72; font-weight: 400;
+  color: #c3cbe2; user-select: none;
 }
 /* Set in a serif, like the mark above it. A quotation is editorial content and the one
    place on Home where the voice is not AmbitionBox's, so it is allowed to look that way.
@@ -1093,3 +1130,25 @@
 .debrief-questions { margin-top: var(--h-6); padding-top: var(--h-5); border-top: 1px solid #eceff6; }
 .debrief-questions h3 { margin: 0; font-size: var(--h-title); letter-spacing: -.03em; }
 .debrief-questions > p { margin: var(--h-2) 0 var(--h-4); color: var(--ab-color-muted); font-size: var(--h-small); line-height: 1.55; }
+
+/*
+ * THE SLOT CHIPS — owner's instruction 2026-09-11.
+ *
+ * Three recruiter-offered times, chosen in one tap from the card. They sit in the 71px
+ * this card measured as dead space, so they cost no height: the carousel's height is set
+ * by the Juspay card at 357px of content, not by this one at 288px.
+ *
+ * Not styled as CTAs. The card already has one, and a row of three solid buttons beside
+ * it would be four things asking to be pressed.
+ */
+.card-slots { display: flex; gap: var(--h-2); margin-top: var(--h-3); }
+.card-slot {
+  flex: 1 1 0; min-width: 0; min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  padding: 6px 4px; border-radius: 12px;
+  border: 1px solid rgba(24,31,62,.12); background: var(--ab-color-white);
+  cursor: pointer;
+}
+.card-slot b { color: #262d46; font-size: 11px; font-weight: 700; letter-spacing: -.01em; }
+.card-slot i { color: var(--h-quiet); font-size: 10px; font-style: normal; font-weight: 600; }
+.card-slot:hover { border-color: rgba(63,92,251,.45); background: #f7f9ff; }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ArrowLeft, Check, Copy, Send } from 'lucide-react'
+import { ArrowLeft, Check, Copy, Mic, Plus, Send } from 'lucide-react'
 import { AppLink, NorthMark, go } from './AppUI'
 import { useJourney } from './store'
 import { answerQuestion, buildFlow, followUps } from './flows'
@@ -32,7 +32,25 @@ export function FlowScreen() {
   const type = window.location.pathname.split('/')[2]
   const applicationId = params.get('application')
 
-  const flow = useMemo(() => buildFlow(type, applicationId), [type, applicationId])
+  /*
+   * The slot the user already picked — either tapped on the Home card, which sends it in
+   * the URL, or chosen in a previous run of this flow. Either way the flow opens on the
+   * choice instead of asking for it again.
+   */
+  const slotParam = params.get('slot')
+  const booked = slotParam || journey.bookedSlots?.[applicationId]
+
+  /*
+   * A choice made on the card is persisted the moment the flow opens, not when it closes.
+   * Someone who taps a slot and then backs out has still chosen — and if Home showed them
+   * the same three chips again tomorrow, the tap would have meant nothing.
+   */
+  useEffect(() => {
+    if (!slotParam || !applicationId) return
+    if (journey.bookedSlots?.[applicationId] === slotParam) return
+    update({ bookedSlots: { ...(journey.bookedSlots || {}), [applicationId]: slotParam } })
+  }, [slotParam, applicationId, journey.bookedSlots, update])
+  const flow = useMemo(() => buildFlow(type, applicationId, booked), [type, applicationId, booked])
 
   const [answers, setAnswers] = useState({})
   const [turn, setTurn] = useState(0)      // how many script steps have been revealed
@@ -127,6 +145,11 @@ export function FlowScreen() {
     if (type === 'ghosted' && option.result === 'closed') {
       return { applicationStages: { ...(journey.applicationStages || {}), [applicationId]: 'rejected' } }
     }
+    // Picking a slot is the one moment the interview story moves: the card that offered
+    // slots has to come back tomorrow as the round you booked, not as the same offer.
+    if (type === 'prep' && option.result === 'booked' && answers.slot) {
+      return { bookedSlots: { ...(journey.bookedSlots || {}), [applicationId]: answers.slot } }
+    }
     return {}
   }
 
@@ -158,7 +181,12 @@ export function FlowScreen() {
              * every turn. North talks for four or five turns at a stretch; repeating the
              * mark down all of them turns the speaker into a column of decoration.
              */
-            showAvatar={index === 0 || answers[visible[index - 1]?.key] !== undefined}
+            /*
+             * ...and after the user speaks, because a reply needs to show who is replying.
+             * Without this, a thread that opens on the user's slot left North's first line
+             * unattributed.
+             */
+            showAvatar={index === 0 || visible[index - 1]?.from === 'you' || answers[visible[index - 1]?.key] !== undefined}
             isLast={index === visible.length - 1}
             draft={draft}
             setDraft={setDraft}
@@ -183,6 +211,21 @@ export function FlowScreen() {
         <div ref={endRef} />
       </div>
 
+      {/*
+        * The bottom stack: chips on top of the sheet, not inside it. They are things to
+        * say; the sheet is where you say them. One fixed container rather than two, so
+        * the rail can never overlap the sheet's own buttons — as a separately fixed
+        * element it sat on top of "Back to Home" and ate the click.
+        */}
+      <div className="flow-bottom">
+      <FlowChips
+        step={waiting ? current : null}
+        answers={answers}
+        suggestions={followUps(type, flow.app)}
+        onAnswer={answer}
+        onAsk={ask}
+      />
+
       <div className="flow-dock">
         {closing ? (
           <>
@@ -205,19 +248,12 @@ export function FlowScreen() {
           </div>
         ) : null}
 
-        <FlowChips
-          step={waiting ? current : null}
-          answers={answers}
-          suggestions={followUps(type, flow.app)}
-          onAnswer={answer}
-          onAsk={ask}
-        />
-
         <FlowComposer
           step={waiting && current.type === 'input' ? current : null}
           onAnswer={answer}
           onAsk={ask}
         />
+      </div>
       </div>
 
     </main>
@@ -254,6 +290,23 @@ function FlowHeader({ meta, app }) {
 
 function FlowTurn({ step, answers, reduceMotion, isLast, showAvatar, draft, setDraft, copied, setCopied }) {
   const answered = step.key !== undefined && answers[step.key] !== undefined
+  /*
+   * A scripted turn that belongs to the user. Tapping a slot on the Home card is the user
+   * saying something, and the thread should open with them saying it — North replying to
+   * a choice reads as a conversation; North announcing the choice back reads as a receipt.
+   */
+  if (step.from === 'you') {
+    return (
+      <motion.div
+        className="flow-turn flow-turn--you"
+        initial={reduceMotion ? false : { y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: .3, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <span className="flow-said">{resolve(step.text, answers)}</span>
+      </motion.div>
+    )
+  }
   return (
     <>
       <motion.div
@@ -412,7 +465,7 @@ function FlowChips({ step, answers, suggestions, onAnswer, onAsk }) {
   const options = choosing ? resolve(step.options, answers) : []
 
   return (
-    <div className="flow-rail" role="group" aria-label={choosing ? 'Answers' : 'Suggested questions'}>
+    <div className="flow-rail flow-rail--floating" role="group" aria-label={choosing ? 'Answers' : 'Suggested questions'}>
       {choosing
         ? options.map((option) => {
           const on = picked.includes(option)
@@ -467,15 +520,26 @@ function FlowComposer({ step, onAnswer, onAsk }) {
 
   return (
     <div className="flow-composer">
+      {/* Attach is present because an assistant input is expected to have one. It is
+          disabled and says so, rather than being drawn and then doing nothing — this
+          prototype has nowhere to put a file. */}
+      <button className="flow-attach" aria-label="Attach a file (not available in this demo)" disabled>
+        <Plus size={19} />
+      </button>
       <input
         value={typed}
         onChange={(event) => setTyped(event.target.value)}
-        placeholder={answering ? (step.placeholder || 'Type your answer') : 'Ask North anything about this'}
+        placeholder={answering ? (step.placeholder || 'Type your answer') : 'Ask North'}
         aria-label={answering ? resolve(step.text, {}) : 'Ask North about this'}
         onKeyDown={(event) => { if (event.key === 'Enter') submit() }}
       />
       {answering && (
         <button className="flow-skip" onClick={() => onAnswer(step.key, 'Nothing to add')}>Skip</button>
+      )}
+      {!typed.trim() && !answering && (
+        <button className="flow-mic" aria-label="Dictate (not available in this demo)" disabled>
+          <Mic size={18} />
+        </button>
       )}
       <button className="flow-send" aria-label={answering ? 'Send answer' : 'Ask'} disabled={!typed.trim()} onClick={submit}>
         <NorthMark />

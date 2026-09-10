@@ -1,4 +1,4 @@
-import { applications, candidate, interviewIntel, juspay, offer, roundHistory, roundIntel } from './data'
+import { applications, candidate, interviewIntel, juspay, offer, offeredSlots, roundHistory, roundIntel } from './data'
 
 /*
  * The flow scripts.
@@ -107,20 +107,77 @@ function replyFlow(app) {
  * what they are picking a time for.
  */
 
-function prepFlow(app) {
+function prepFlow(app, booked) {
   const intel = roundIntel[app.id]
-  const slots = ['Mon 15 Sep · 11:00', 'Tue 16 Sep · 15:30', 'Thu 18 Sep · 10:00']
+  const slots = offeredSlots
   const named = app.interview?.interviewer && !/not named/i.test(app.interview.interviewer)
+
+  /*
+   * WHICH ROUND IS THIS — the fallback chain, owner's instruction 2026-09-11.
+   *
+   * Three sources, in descending confidence, and the flow says which one it used:
+   *
+   *   1. `interview.round` — we know it. North states it and attributes it, because the
+   *      invitation itself never numbers the round; knowing it is inference, not reading.
+   *   2. the interview reports — the email is silent and so is the record, so North works
+   *      from what the reports have in common and says the round is unnumbered.
+   *   3. nothing — North asks. A guess dressed as a finding is the one thing this flow
+   *      cannot afford, because everything after it is built on which round this is.
+   *
+   * This also removes a contradiction that was live until today: `unknowns` claimed
+   * "Which of the five rounds this one is" while the two steps below it printed
+   * "Round 1 of 5" twice. North cannot say it does not know a thing and then say it.
+   */
+  const knownRound = app.interview?.round
+  const roundSource = knownRound ? 'known' : (intel ? 'inferred' : 'ask')
+  // Drop any "which round" unknown the application actually answers.
+  const unknowns = (intel?.unknowns || ['What this round covers'])
+    .filter((label) => !(knownRound && /which .*round/i.test(label)))
   return [
+    /*
+     * The user speaks first when the slot came from the Home card — they chose it, so the
+     * thread opens with them saying so and North answering. North announcing the choice
+     * back to the person who made it reads as a receipt, not a conversation.
+     */
+    {
+      id: 'you-slot', from: 'you', type: 'said', text: booked,
+      when: () => Boolean(booked),
+    },
     {
       id: 'found', from: 'north', type: 'message',
-      text: `${app.when} by ${app.company}, and none is picked yet. Before you choose, here is everything I have on this round.`,
+      /*
+       * Path A — the user tapped a slot on the Home card. North acknowledges the choice
+       * and nothing more: it has not booked anything and says so, because it cannot. The
+       * calendar is not connected, which is the same reason the slot had to be offered as
+       * a question rather than read off a calendar in the first place.
+       */
+      text: booked
+        // The user's own bubble states the slot directly above this, so North does not
+        // repeat it — the one thing COPY.md rules out is the same context twice in
+        // adjacent elements.
+        ? `Noted. I cannot see your calendar, so you confirm it with ${app.company} yourself.`
+        : `${app.when} by ${app.company}, and none is picked yet. Before you choose, here is everything I have on this round.`,
+    },
+    /*
+     * Committing in one tap is only fair if one tap can undo it. Without this the other
+     * two slots are gone for good, because the flow skips the question it would have
+     * asked. Answering "Pick a different slot" puts that question back, below.
+     */
+    {
+      id: 'confirm', from: 'north', type: 'choice', gap: true,
+      text: 'Before I build your prep around it, is that the one you want?',
+      key: 'confirm',
+      options: ['That is the one', 'Pick a different slot'],
+      when: () => Boolean(booked),
     },
     {
       id: 'invite', from: 'north', type: 'quote',
+      when: (answers) => !booked || answers.confirm === 'Pick a different slot',
       quote: `We would like to invite you to a ${app.interview?.duration || '45 minute'} conversation for the ${app.role} role. Please pick a slot that works for you.`,
       sender: `Talent team · ${app.company}`,
-      meta: `Gmail · ${app.when.toLowerCase()}`,
+      // `app.when` is the card's line ("Slots offered 3d ago"); lowercased into a byline it
+      // read as "Gmail · slots offered 3d ago". The byline only owes the channel and when.
+      meta: `Gmail · ${(app.when.match(/\d+[dhm] ago/) || ['recently'])[0]}`,
     },
     {
       /*
@@ -129,8 +186,41 @@ function prepFlow(app) {
        * because everything after it is North filling a gap the user can see for themselves.
        */
       id: 'unknowns', from: 'north', type: 'list',
-      title: 'That is the whole email. Here is what it does not tell you.',
-      items: (intel?.unknowns || ['What this round covers']).map((label) => ({ label, meta: 'Not stated anywhere in the thread', tone: 'neutral' })),
+      // "That is the whole email" only works directly under the quoted email. On a booked
+      // round the quote is gone, so the line has to stand on its own.
+      /*
+       * "That is the whole email" only works directly under the quoted email. The quote is
+       * hidden on a booked round — but it comes back when the user reopens the choice, so
+       * this title has to follow the same condition the quote does, not `booked` alone.
+       */
+      title: (answers) => (booked && answers.confirm !== 'Pick a different slot'
+        ? 'What their email still does not tell you.'
+        : 'That is the whole email. Here is what it does not tell you.'),
+      items: unknowns.map((label) => ({ label, meta: 'Not stated anywhere in the thread', tone: 'neutral' })),
+      when: () => unknowns.length > 0,
+    },
+    /*
+     * How North knows which round this is. It sits between the unknowns and the briefing
+     * because everything below is built on the answer, and a reader who has just been told
+     * what the email does not say deserves to know where the next claim came from.
+     */
+    {
+      id: 'round-source', from: 'north', type: 'message',
+      text: roundSource === 'known'
+        ? `Their email does not number the round. From the loop ${app.company} runs for this role, this is ${knownRound}.`
+        : 'Their email does not number the round, and I cannot pin it down from the thread. I will work from what every round in this loop has in common.',
+      when: () => roundSource !== 'ask',
+    },
+    /*
+     * Source three: ask. Reached only when there is no round on the application and no
+     * reports to reason from, and it is the honest end of the chain rather than a failure.
+     */
+    {
+      id: 'round-ask', from: 'north', type: 'choice', gap: true,
+      text: 'One thing I cannot work out, and it changes everything below: which round is this?',
+      key: 'round',
+      options: ['The first one', 'A middle round', 'The final round', 'I do not know either'],
+      when: () => roundSource === 'ask',
     },
     {
       id: 'reading', from: 'north', type: 'thinking',
@@ -139,7 +229,13 @@ function prepFlow(app) {
     },
     {
       id: 'covers', from: 'north', type: 'list',
-      title: `What ${app.interview?.round?.split(' of ')[0] || 'this round'} actually covers here.`,
+      title: (answers) => {
+        if (knownRound) return `What ${knownRound.split(' of ')[0]} actually covers here.`
+        const said = answers.round
+        if (said === 'The first one') return 'What a first round covers here.'
+        if (said === 'The final round') return 'What a final round covers here.'
+        return 'What these rounds cover here.'
+      },
       items: intel?.covers || [],
       source: intel ? `From ${intel.reports} reports · ${intel.scope}` : undefined,
       when: () => Boolean(intel?.covers?.length),
@@ -158,6 +254,7 @@ function prepFlow(app) {
     },
     {
       id: 'gap', from: 'north', type: 'choice', gap: true,
+      when: (answers) => !booked || answers.confirm === 'Pick a different slot',
       text: 'Your calendar is not connected, so the one thing I cannot work out is which of these is free. Which works?',
       key: 'slot',
       options: slots,
@@ -177,7 +274,7 @@ function prepFlow(app) {
     },
     {
       id: 'verdict', from: 'north', type: 'verdict',
-      title: (answers) => `Booked for ${answers.slot}.`,
+      title: (answers) => `Booked for ${answers.slot || booked}.`,
       text: (answers) => {
         const weak = (intel?.stand || []).find((row) => row.tone === 'warn')
         return weak
@@ -185,13 +282,25 @@ function prepFlow(app) {
           : 'I will put the whole briefing in front of you the evening before, and ask how it went the day after.'
       },
     },
+    /*
+     * The briefing option is Juspay's alone, because the briefing screen is. `/prep/juspay`
+     * is the only prep route in App.jsx and `PrepScreen` reads Juspay's `interviewIntel`
+     * directly, so offering it on the Google card sent the user to another company's
+     * interview prep. Offering a door that opens onto the wrong room is worse than not
+     * offering it: everything this flow has just said about Google is contradicted by the
+     * screen behind the button.
+     */
     {
       id: 'done', from: 'north', type: 'actions',
       text: 'Nothing is on your calendar yet — you confirm the slot with them.',
-      options: [
-        { label: 'Open the full briefing', primary: true, result: 'prep' },
-        { label: 'Just save the slot', result: 'booked' },
-      ],
+      options: booked
+        ? [{ label: 'Got it', primary: true, result: 'booked' }]
+        : app.id === 'juspay'
+        ? [
+            { label: 'Open the full briefing', primary: true, result: 'prep' },
+            { label: 'Just save the slot', result: 'booked' },
+          ]
+        : [{ label: 'Save the slot', primary: true, result: 'booked' }],
     },
   ]
 }
@@ -795,12 +904,12 @@ export const flowMeta = {
  * `application` is the id from the Home card. The offer flow is the golden path's and
  * runs off the Juspay fixtures rather than a Tracker row, so it takes no application.
  */
-export function buildFlow(type, applicationId) {
+export function buildFlow(type, applicationId, booked) {
   const build = BUILDERS[type]
   if (!build) return null
   const app = applicationId === 'juspay' ? juspayInterview() : (applicationId ? byId(applicationId) : {})
   if (type !== 'offer' && !app.id) return null
-  return { steps: build(app), app, meta: flowMeta[type] }
+  return { steps: build(app, booked), app, meta: flowMeta[type] }
 }
 
 export { interviewIntel }

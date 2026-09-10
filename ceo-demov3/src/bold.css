@@ -205,7 +205,10 @@
   font-weight: 500;
   letter-spacing: -.02em;
 }
-[data-look="bold"] .home-quote-mark { color: var(--primary); opacity: 1; }
+/* A tint of the accent, not the accent. At full strength the mark was the brightest
+   thing below the carousel, which put the loudest colour on the one block that is not
+   asking for anything. */
+[data-look="bold"] .home-quote-mark { color: color-mix(in srgb, var(--primary) 34%, transparent); opacity: 1; }
 
 /* Bottom cluster --------------------------------------------------------- */
 
@@ -364,7 +367,13 @@
 
 [data-look="bold"] .action-card-org { display: grid; gap: 1px; min-width: 0; flex: 1; }
 [data-look="bold"] .action-card-org strong { color: var(--ink); }
-[data-look="bold"] .action-card-org small { font-size: 10.5px; color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/*
+ * The role wraps rather than truncating. This line was authored empty — nothing rendered
+ * in it until 2026-09-10 — so `nowrap` was free. Now that it carries the role, clipping
+ * it to "Senior Backend Engine…" defeats the point of putting it there: the company and
+ * the role are the two facts that say what the card is about.
+ */
+[data-look="bold"] .action-card-org small { font-size: 10.5px; color: var(--subtle); line-height: 1.3; }
 
 /* The event, set as a chip in the top corner the way the reference tabs its category. */
 [data-look="bold"] .action-card-kicker {

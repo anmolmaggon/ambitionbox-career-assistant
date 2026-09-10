@@ -23,7 +23,7 @@ import {
   Clock3, FileCheck2, FileText, Info, Mail, Menu, MessageSquare, PiggyBank, Scale, Search, Send, ShieldCheck, Sparkles, Target,
   UserRoundCheck, X,
 } from 'lucide-react'
-import { applications, candidate, interviewIntel, jobs, juspay, offer, offerDecision, onboardingProfile, stageLabel } from './data'
+import { applications, candidate, interviewIntel, jobs, juspay, offer, offerDecision, offeredSlots, onboardingProfile, stageLabel } from './data'
 import { useJourney } from './store'
 import { AssistantDock, AssistantMark, BottomNav, CompanyLogo, Logo, Pill, PromptChips, Sheet, go } from './AppUI'
 
@@ -242,7 +242,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'OFFER IN',
       badge: <Pill tone="success">Today</Pill>,
       when: 'Today',
-      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · ${juspay.location}` },
+      company: { initials: 'JP', name: 'Juspay', role: juspay.role, detail: `${juspay.role} · ${juspay.location}` },
       // The number is the fact this card exists to deliver, so the card leads with it
       // and splits it — a CTC headline with the variable folded in flatters the offer.
       money: { total: offer.total, fixed: offer.fixed, variable: offer.variable, market: offer.market, delta: offer.currentDelta },
@@ -278,7 +278,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'HOW DID IT GO',
       badge: <Pill tone="attention">Yesterday</Pill>,
       when: 'Yesterday',
-      company: { initials: 'JP', name: 'Juspay', detail: `${juspay.role} · Round 1 of 4` },
+      company: { initials: 'JP', name: 'Juspay', role: juspay.role, detail: `${juspay.role} · Round 1 of 4` },
       headline: `You sat ${round ? round.label.toLowerCase() : 'your round'} at ${juspay.company} yesterday.`,
       support: 'No email reports how a round actually went. Thirty seconds, and your next round gets sharper.',
       why: 'Nothing else in your search can move until this one is settled.',
@@ -300,7 +300,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       // "Round 1 of 4" moves out of company.detail and into the schedule block so the
       // string still appears exactly once on the screen, which prep-intel.spec asserts.
       schedule: interviewSchedule(),
-      company: { initials: 'JP', name: 'Juspay', detail: juspay.role },
+      company: { initials: 'JP', name: 'Juspay', role: juspay.role, detail: juspay.role },
       headline: journey.prepComplete
         ? `You’re ready for ${interviewIntel.invitation.time} on Tuesday.`
         : 'The invite doesn’t say what this round covers.',
@@ -324,7 +324,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       kicker: 'THEY REPLIED',
       badge: <span className="time-chip">2h ago</span>,
       when: '2h ago',
-      company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', detail: 'Backend Engineer III' },
+      company: { initials: 'PP', color: '#5f259f', name: 'PhonePe', role: 'Backend Engineer III', detail: 'Backend Engineer III' },
       headline: '“Can you confirm your availability for a quick conversation?”',
       support: 'Sneha at PhonePe, waiting since 7:40. Your draft is written.',
       // Split out of `support` so the byline can sit under the quote where a message
@@ -345,7 +345,7 @@ function nextBestAction({ journey, hasProfileContext, openReply, sheets }) {
       shape: 'role',
       kicker: `NEW MATCH · ${juspay.preferenceMatch}%`,
       when: juspay.posted,
-      company: { initials: juspay.initials, name: juspay.company, detail: juspay.role },
+      company: { initials: juspay.initials, name: juspay.company, role: juspay.role, detail: juspay.role },
       headline: `${juspay.role} at ${juspay.company}.`,
       // `facts` is still what the three legacy directions render. `stats` is the same
       // evidence given columns, which is what stops it wrapping into a grey sentence.
@@ -452,7 +452,12 @@ const FLOW_PRESENTATION = {
  * true, it is decoration. Every one of these names a number or a name only its own card
  * has.
  */
-function cardSupport(item) {
+function cardSupport(item, meta) {
+  // The meta row states the round now, so the sentence beneath it must not open by
+  // repeating it — "Round 1 of 5. Round 1 of 5 · 45 min · Google Meet" on one card.
+  if (meta && item.interview?.round && item.insight?.startsWith(`${item.interview.round}.`)) {
+    return item.insight.slice(item.interview.round.length + 2)
+  }
   return item.insight
 }
 
@@ -477,18 +482,55 @@ function stageNote(item) {
   return `Ghosted · from ${origin}`
 }
 
-function applicationCard(item) {
-  const presentation = FLOW_PRESENTATION[item.flow] || FLOW_PRESENTATION.job
+/*
+ * `booked` is the slot the user picked in the prep flow, or undefined. It turns card 2
+ * (PICK A SLOT) into card 3 (INTERVIEW BOOKED) — the same application, one event later.
+ * Everything the booked card says is derived: the claim names the round and the slot, the
+ * figure is the slot itself rather than a countdown to a decision already made, and the
+ * action becomes preparation because choosing is behind you.
+ */
+function applicationCard(item, booked) {
+  const presentation = booked
+    ? { kicker: 'INTERVIEW BOOKED', tone: 'interview', shape: 'task', icon: <Clock3 size={14} /> }
+    : (FLOW_PRESENTATION[item.flow] || FLOW_PRESENTATION.job)
+  /*
+   * Slots on the card face, owner's instruction 2026-09-11. The card measured 288px of
+   * content in a 359px shell — 71px of dead space on the one card whose whole claim is
+   * "nobody can pick one but you". The chips spend that space on the choice itself.
+   *
+   * Once a slot exists the chips go, because the card has become a booked round.
+   */
+  const slots = !booked && item.flow === 'prep' ? offeredSlots : null
+  /*
+   * The CTA stops saying "Pick a slot" the moment the chips do that job better. Two
+   * controls with one purpose, one of them slower, is a choice the reader has to make
+   * before they can make the real one. The fork is now genuine: chips for someone who
+   * knows their calendar, the CTA for someone who wants to know what they are walking
+   * into first.
+   */
+  const action = booked ? 'Start prep' : (slots ? 'See what this round covers' : item.action)
+  /*
+   * Round, length and format, structured. The length is the fact this card was missing:
+   * you cannot sensibly choose between 11:00 and 15:30 without knowing whether it takes a
+   * quarter of an hour or most of an afternoon.
+   */
+  const meta = item.interview
+    ? [item.interview.round, item.interview.duration, item.interview.mode].filter(Boolean).join(' · ')
+    : null
   return {
     id: item.id,
     initials: item.initials,
     color: item.color,
     company: item.company,
-    detail: item.action,
-    claim: item.claim,
+    detail: action,
+    claim: booked
+      ? `${item.interview?.round || 'Your round'} at ${item.company} is booked for ${booked}.`
+      : item.claim,
     when: item.when,
-    rank: FLOW_RANK[item.flow] ?? 9,
-    ctaLabel: item.action,
+    // A booked round outranks an open invitation: it has a fixed date, and the whole
+    // point of ranking by who is waiting on whom is that a date waits for nobody.
+    rank: booked ? 1 : (FLOW_RANK[item.flow] ?? 9),
+    ctaLabel: action,
     role: item.role,
     stage: stageNote(item),
     quote: item.quote,
@@ -501,8 +543,14 @@ function applicationCard(item) {
      * silence for a ghosting, how far you got for a rejection. Picking it per type is
      * what stops the band from being a slot that sometimes has nothing in it.
      */
-    foot: cardFigure(item),
-    reason: cardSupport(item),
+    // A booked round's one number is the slot itself. `cardFigure` would return the round
+    // ("Round 1 of 5"), which the claim above already names.
+    slots,
+    meta,
+    foot: booked || cardFigure(item),
+    reason: booked
+      ? 'Prep is built from what this round covers, not the whole job description.'
+      : cardSupport(item, meta),
     onSelect: () => go(`/flow/${item.flow}?application=${item.id}`),
     ...presentation,
     // A quote is what makes the reply shape a message rather than a task; without one
@@ -572,7 +620,7 @@ function setAside({ journey, action }) {
      */
     for (const item of applications.filter((entry) => entry.action)) {
       if (item.company === 'PhonePe') continue
-      add(applicationCard(item))
+      add(applicationCard(item, journey.bookedSlots?.[item.id]))
     }
     add({
       id: 'opportunity', initials: juspay.initials, company: juspay.company, detail: `${juspay.preferenceMatch}% Preference Match`,
@@ -680,13 +728,16 @@ function carouselCards({ action, aside, journey, sheets }) {
       icon: row.icon,
       kicker: row.kicker,
       when: row.when,
-      company: { initials: row.initials, color: row.color, name: row.company, detail: row.role },
+      company: { initials: row.initials, color: row.color, name: row.company, role: row.role, detail: row.role },
       headline: row.claim || row.detail,
       title: row.title,
       support: row.reason,
       schedule: row.schedule,
       stats: row.stats,
       stage: row.stage,
+      slots: row.slots,
+      meta: row.meta,
+      applicationId: row.id,
       source: row.source,
       foot: row.foot,
       // The queued cards all reach the same few destinations, so each CTA names the
@@ -1093,6 +1144,16 @@ function Entity({ company, className = 'action-card-entity' }) {
   )
 }
 
+/*
+ * The kicker, under the claim. It used to sit beside the company in the masthead, which
+ * cost the role about 90px and pushed every role onto two lines. Below the claim it also
+ * says something truer: it labels the news, and the news is the sentence above it.
+ */
+function CardKicker({ card }) {
+  if (!card.kicker) return null
+  return <span className="action-card-kicker card-kicker">{card.kicker}</span>
+}
+
 function CardMiddle({ card }) {
   // A message: the quote leads behind a rule, and the sender signs it underneath —
   // the order an email actually arrives in.
@@ -1100,6 +1161,7 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <blockquote className="card-quote">{card.headline}</blockquote>
+        <CardKicker card={card} />
         {card.source && <small className="card-source">{card.source}</small>}
         {card.support && <p>{card.support}</p>}
       </div>
@@ -1119,6 +1181,7 @@ function CardMiddle({ card }) {
           </span>
         </div>
         <h2>{card.headline}</h2>
+        <CardKicker card={card} />
         <p className="card-entity-line">{card.company?.name} · {round}</p>
         {card.support && <p>{card.support}</p>}
       </div>
@@ -1134,6 +1197,7 @@ function CardMiddle({ card }) {
           <small>{card.money.fixed} fixed · {card.money.variable} variable</small>
         </div>
         <h2>{card.headline}</h2>
+        <CardKicker card={card} />
         <div className="card-band">
           <span>Inside the {card.money.market} market band</span>
           <span>{card.money.delta.replace('above current', 'above your current pay')}</span>
@@ -1149,6 +1213,7 @@ function CardMiddle({ card }) {
         {/* `title` on a queued role, because its `headline` is the Preference Match
             string that the stat row below already carries. */}
         <h2>{card.title || card.headline}</h2>
+        <CardKicker card={card} />
         {card.support && <p>{card.support}</p>}
         {card.stats && (
           <div className="card-stats">
@@ -1166,10 +1231,38 @@ function CardMiddle({ card }) {
     return (
       <div className="card-mid">
         <h2>{card.headline}</h2>
+        <CardKicker card={card} />
+        {card.meta && <p className="card-meta">{card.meta}</p>}
         {card.stage && card.stage.startsWith('Ghosted') && (
           <div className="card-taskmeta"><span className="card-stage">{card.stage}</span></div>
         )}
         {card.support && <p>{card.support}</p>}
+        {/*
+          * The three slots, tappable. The weekday and the time are split across two lines
+          * because "Mon 15 Sep · 11:00" is ~110px and three of those do not fit the 272px
+          * of usable card width; "Mon 15" over "11:00" is ~62px and three do.
+          *
+          * The slot travels in the URL rather than being written here, so the card stays
+          * a pure render and the flow owns every consequence of the choice.
+          */}
+        {card.slots && (
+          <div className="card-slots" role="group" aria-label="Slots this recruiter offered">
+            {card.slots.map((slot) => {
+              const [day, time] = slot.split(' · ')
+              return (
+                <button
+                  key={slot}
+                  className="card-slot"
+                  aria-label={`Choose ${slot}`}
+                  onClick={() => go(`/flow/prep?application=${card.applicationId}&slot=${encodeURIComponent(slot)}`)}
+                >
+                  <b>{day.replace(/ [A-Za-z]{3}$/, '')}</b>
+                  <i>{time}</i>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
     )
   }
@@ -1181,6 +1274,7 @@ function CardMiddle({ card }) {
       <div className="card-mid">
         <Entity company={card.company} />
         <h2>{card.headline}</h2>
+        <CardKicker card={card} />
         {card.support && <p>{card.support}</p>}
       </div>
     )
@@ -1194,6 +1288,7 @@ function CardMiddle({ card }) {
     <div className="card-mid">
       <Entity company={card.company} />
       <h2>{card.headline}</h2>
+      <CardKicker card={card} />
       {card.support && <p>{card.support}</p>}
       {card.footnote && <small className="action-card-note"><ShieldCheck size={12} /> {card.footnote}</small>}
     </div>
@@ -1219,8 +1314,8 @@ function ActionCard({ card, reduceMotion, leaving, menuOpen, onMenu, onDismiss }
           : <span className="action-card-mark">{card.icon}</span>}
         <span className="action-card-org">
           <strong>{card.company?.name || 'North'}</strong>
+          {card.company?.role && <small>{card.company.role}</small>}
         </span>
-        <span className="action-card-kicker">{card.kicker}</span>
       </div>
 
       <CardMiddle card={card} />

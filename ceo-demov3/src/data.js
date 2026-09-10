@@ -147,6 +147,17 @@ export const ghostRules = {
 export const ghostFollowUpGrace = 14
 
 /*
+ * The slots a recruiter offered. One list, read by two surfaces: the Home card renders
+ * them as chips so a slot can be chosen in one tap, and the prep flow offers the same
+ * three when the choice has not been made yet. Two hardcoded copies of this would drift
+ * the first time a slot changed, and the card would offer a time the flow did not.
+ *
+ * Nothing here is a booking. North has no calendar access — the flow says so — so these
+ * are the times the other side put on the table, and the user still confirms with them.
+ */
+export const offeredSlots = ['Mon 15 Sep · 11:00', 'Tue 16 Sep · 15:30', 'Thu 18 Sep · 10:00']
+
+/*
  * What the import screen reports. These are the three shapes a scanned application can
  * be in at the moment it lands — needing the user, waiting on someone else, or finished.
  * The pipeline stages are the finer model; this is the receipt.
@@ -863,6 +874,15 @@ export const initialJourney = {
   importComplete: false,
   manualApplications: [],
   applicationStages: {},
+  /*
+   * The slot picked inside the prep flow, keyed by application. Home reads it to turn a
+   * PICK A SLOT card into an INTERVIEW BOOKED one — without it the flow's whole point is
+   * lost, because the card that sent you there comes back unchanged tomorrow.
+   *
+   * It records what the user said they chose. Nothing here books anything: the flow says
+   * so on its face — "Nothing is on your calendar yet — you confirm the slot with them."
+   */
+  bookedSlots: {},
   phonepeReplied: false,
   naukriConnected: false,
   preferencesConfirmed: false,
